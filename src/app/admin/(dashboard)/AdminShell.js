@@ -31,7 +31,7 @@ export default function AdminShell({ user, children }) {
               <Link href="/admin/categories" className={styles.navLink}>Categorías</Link>
               <Link href="/admin/products" className={styles.navLink}>Productos</Link>
               <Link href="/admin/settings" className={styles.navLink}>Configuración</Link>
-              <div style={{ padding: '20px', borderTop: '1px solid var(--border-color)', marginTop: 'auto' }}>
+              <div className={styles.storeLinkWrapper}>
                 <a 
                   href={`/${user.storeSlug || ''}`}
                   target="_blank"

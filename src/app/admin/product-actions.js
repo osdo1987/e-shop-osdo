@@ -23,9 +23,10 @@ export async function createProduct(formData) {
   const price = parseFloat(formData.get('price'));
   const promoPrice = formData.get('promoPrice') ? parseFloat(formData.get('promoPrice')) : null;
   const categoryId = parseInt(formData.get('categoryId'));
+  const stock = parseInt(formData.get('stock') || '0');
   const imageFile = formData.get('image');
 
-  if (!name || isNaN(price) || isNaN(categoryId)) {
+  if (!name || isNaN(price) || isNaN(categoryId) || isNaN(stock)) {
     return { error: 'Faltan campos obligatorios' };
   }
 
@@ -47,6 +48,7 @@ export async function createProduct(formData) {
         price,
         promoPrice,
         imageUrl,
+        stock,
         categoryId,
         storeId: user.storeId,
       },
@@ -57,6 +59,33 @@ export async function createProduct(formData) {
   } catch (error) {
     console.error('Error creating product:', error);
     return { error: 'Error al crear el producto' };
+  }
+}
+
+export async function updateProductStock(id, newStock) {
+  const user = await getAuthenticatedUser();
+  if (!user || !user.storeId) return { error: 'No autorizado' };
+
+  if (isNaN(newStock) || newStock < 0) {
+    return { error: 'Stock inválido' };
+  }
+
+  try {
+    const product = await db.product.findFirst({
+      where: { id, storeId: user.storeId },
+    });
+
+    if (!product) return { error: 'Producto no encontrado' };
+
+    await db.product.update({
+      where: { id },
+      data: { stock: newStock },
+    });
+
+    revalidatePath('/admin/products');
+    return { success: true };
+  } catch (error) {
+    return { error: 'Error al actualizar el stock' };
   }
 }
 

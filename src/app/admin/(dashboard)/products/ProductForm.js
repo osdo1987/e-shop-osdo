@@ -66,8 +66,12 @@ export default function ProductForm({ categories }) {
             <input type="number" step="0.01" id="price" name="price" placeholder="29.99" required />
           </div>
           <div className="input-group" style={{ flex: 1 }}>
-            <label htmlFor="promoPrice">Precio Promo (opcional)</label>
+            <label htmlFor="promoPrice">Promo (opcional)</label>
             <input type="number" step="0.01" id="promoPrice" name="promoPrice" placeholder="19.99" />
+          </div>
+          <div className="input-group" style={{ flex: 1 }}>
+            <label htmlFor="stock">Stock</label>
+            <input type="number" id="stock" name="stock" defaultValue="0" min="0" required />
           </div>
         </div>
 

@@ -43,8 +43,18 @@ export default function CatalogView({ store, categories, initialProducts }) {
   return (
     <div className={styles.wrapper}>
       <header className={styles.topBar}>
-        <div className={styles.logo}>{store.name.toUpperCase()}<span>.</span></div>
-        <div style={{ fontSize: '12px', opacity: 0.6 }}>{filteredProducts.length} resultados</div>
+        <div className={styles.logoContainer}>
+          <div className={styles.logoIcon}>
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" style={{ width: '20px', height: '20px' }}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 21v-7.5a.75.75 0 01.75-.75h3a.75.75 0 01.75.75V21m-4.5 0H2.36m11.14 0H18m0 0h3.64m-1.39 0V9.809c0-.816-.31-1.597-.86-2.176l-3.32-3.483A3.013 3.013 0 0015.36 3.25h-6.72c-.8 0-1.564.316-2.128.878L3.192 7.61a3 3 0 00-.86 2.122V21m15.66 0h-3.66m-1.34 0v-7.5a.75.75 0 00-.75-.75h-3a.75.75 0 00-.75.75V21M3.66 21H2.34m0 0v-7.5a.75.75 0 01.75-.75h3a.75.75 0 01.75.75V21" />
+            </svg>
+          </div>
+          <div className={styles.logoText}>{store.name}<span>.</span></div>
+        </div>
+        <div className={styles.topBarStats}>
+          <span className={styles.pulseDot}></span>
+          {filteredProducts.length} resultados
+        </div>
       </header>
 
       <main className={styles.mainLayout}>
@@ -140,11 +150,16 @@ export default function CatalogView({ store, categories, initialProducts }) {
               const discount = product.promoPrice ? Math.round(((product.price - product.promoPrice) / product.price) * 100) : null;
               const waMessage = encodeURIComponent(`¡Hola! Me interesa el producto: ${product.name}\nPrecio: $${product.promoPrice || product.price}`);
               const waUrl = `https://wa.me/${store.whatsapp?.replace('+', '') || ''}?text=${waMessage}`;
+              const isSoldOut = product.stock <= 0;
 
               return (
-                <div key={product.id} className={styles.productCard}>
-                  {product.promoPrice && <div className={styles.badge}>Nuevo</div>}
-                  <div className={styles.imgWrapper}>
+                <div key={product.id} className={styles.productCard} style={{ opacity: isSoldOut ? 0.6 : 1 }}>
+                  {isSoldOut ? (
+                    <div className={styles.badge} style={{ background: '#ef4444' }}>Agotado</div>
+                  ) : (
+                    product.promoPrice && <div className={styles.badge}>Nuevo</div>
+                  )}
+                  <div className={styles.imgWrapper} style={{ filter: isSoldOut ? 'grayscale(100%)' : 'none' }}>
                     {product.imageUrl ? (
                       <img src={product.imageUrl} alt={product.name} className={styles.productImg} />
                     ) : (
@@ -152,7 +167,7 @@ export default function CatalogView({ store, categories, initialProducts }) {
                     )}
                   </div>
                   <div className={styles.itemCat}>{categories.find(c => c.id === product.categoryId)?.name}</div>
-                  <h4 className={styles.itemName}>{product.name}</h4>
+                  <h4 className={styles.itemName} style={{ textDecoration: isSoldOut ? 'line-through' : 'none', color: isSoldOut ? '#94a3b8' : '#111827' }}>{product.name}</h4>
                   
                   <div className={styles.priceLine}>
                     <span className={styles.currPrice}>${(product.promoPrice || product.price).toLocaleString()}</span>
@@ -164,9 +179,20 @@ export default function CatalogView({ store, categories, initialProducts }) {
                     )}
                   </div>
 
-                  <a href={waUrl} target="_blank" rel="noopener noreferrer" className={styles.buyBtn}>
-                    Pedir por WhatsApp
-                  </a>
+                  <div style={{ fontSize: '12px', color: isSoldOut ? '#ef4444' : '#64748b', marginBottom: '15px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: isSoldOut ? '#ef4444' : (product.stock < 5 ? '#f59e0b' : '#22c55e') }}></span>
+                    {isSoldOut ? 'Producto Agotado' : `Disponibles: ${product.stock} unidades`}
+                  </div>
+
+                  {isSoldOut ? (
+                    <div className={styles.buyBtn} style={{ background: '#e2e8f0', color: '#64748b', cursor: 'not-allowed', boxShadow: 'none' }}>
+                      Sin Stock
+                    </div>
+                  ) : (
+                    <a href={waUrl} target="_blank" rel="noopener noreferrer" className={styles.buyBtn}>
+                      Pedir por WhatsApp
+                    </a>
+                  )}
                 </div>
               );
             })}

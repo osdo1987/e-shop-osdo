@@ -54,6 +54,7 @@ model Product {
   price       Float
   promoPrice  Float?
   imageUrl    String?
+  stock       Int      @default(0)
   
   categoryId  Int
   category    Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
