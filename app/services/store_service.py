@@ -2,16 +2,23 @@ from app.extensions import db
 from app.models.store import Store
 from app.models.user import User
 from app.schemas.store_schema import StoreSchema
+from app.schemas.user_schema import UserSchema
 
 store_schema = StoreSchema()
 stores_schema = StoreSchema(many=True)
+user_schema = UserSchema(many=True)
 
 class StoreService:
     @staticmethod
     def get_all_stores():
-        """Get all stores"""
+        """Get all stores with users"""
         stores = Store.query.all()
-        return stores_schema.dump(stores)
+        result = stores_schema.dump(stores)
+        for store_data in result:
+            store = Store.query.get(store_data['id'])
+            if store:
+                store_data['users'] = user_schema.dump(store.users)
+        return result
     
     @staticmethod
     def get_store_by_id(store_id):

@@ -24,7 +24,7 @@ class AuthService:
             additional_claims['storeSlug'] = user.store.slug
         
         access_token = create_access_token(
-            identity=user.id,
+            identity=str(user.id),
             expires_delta=timedelta(hours=24),
             additional_claims=additional_claims
         )
