@@ -74,11 +74,33 @@ function Dashboard({ user, onLogout }) {
     const stats = useMemo(() => {
         const lowStock = products.filter(p => p.stock > 0 && p.stock < 5)
         const outOfStock = products.filter(p => p.stock <= 0)
+        
+        const inventoryValue = products.reduce((sum, p) => {
+            const activePrice = (p.promo_price !== null && p.promo_price !== undefined) ? p.promo_price : p.price
+            return sum + (p.stock > 0 ? activePrice * p.stock : 0)
+        }, 0)
+        
+        const inventoryCost = products.reduce((sum, p) => {
+            return sum + (p.stock > 0 ? (p.purchase_price || 0) * p.stock : 0)
+        }, 0)
+        
+        const projectedProfit = inventoryValue - inventoryCost
+        const marginPercent = inventoryValue > 0 ? (projectedProfit / inventoryValue) * 100 : 0
+        
+        const promoCount = products.filter(p => p.promo_price !== null && p.promo_price !== undefined).length
+        const totalUnits = products.reduce((sum, p) => sum + (p.stock || 0), 0)
+
         return {
             total: products.length,
             lowStock: lowStock.length,
             outOfStock: outOfStock.length,
-            categories: categories.length
+            categories: categories.length,
+            inventoryValue,
+            inventoryCost,
+            projectedProfit,
+            marginPercent,
+            promoCount,
+            totalUnits
         }
     }, [products, categories])
 
@@ -118,7 +140,7 @@ function Dashboard({ user, onLogout }) {
                 {!loading && (
                     <div className="stats-grid" style={{
                         display: 'grid',
-                        gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                        gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
                         gap: '16px',
                         marginBottom: '24px'
                     }}>
@@ -127,12 +149,35 @@ function Dashboard({ user, onLogout }) {
                             value={stats.total}
                             icon="📦"
                             color="var(--primary-color)"
+                            subtitle={`${stats.totalUnits} piezas en total`}
                         />
                         <StatCard
-                            title="Categorías"
-                            value={stats.categories}
-                            icon="📂"
-                            color="var(--warning)"
+                            title="Valor Venta"
+                            value={`$${stats.inventoryValue.toLocaleString()}`}
+                            icon="💰"
+                            color="#2ecc71"
+                            subtitle="Valuado a precio activo"
+                        />
+                        <StatCard
+                            title="Costo Inventario"
+                            value={`$${stats.inventoryCost.toLocaleString()}`}
+                            icon="📉"
+                            color="#9b59b6"
+                            subtitle="Inversión total en stock"
+                        />
+                        <StatCard
+                            title="Ganancia Estimada"
+                            value={`$${stats.projectedProfit.toLocaleString()}`}
+                            icon="📈"
+                            color="#1abc9c"
+                            subtitle={`Margen: ${stats.marginPercent.toFixed(1)}%`}
+                        />
+                        <StatCard
+                            title="En Oferta"
+                            value={stats.promoCount}
+                            icon="🏷️"
+                            color="#3498db"
+                            subtitle="Con precio promo"
                         />
                         <StatCard
                             title="Stock Bajo"
@@ -240,7 +285,9 @@ function Dashboard({ user, onLogout }) {
                                     <thead>
                                         <tr>
                                             <th>Nombre</th>
-                                            <th>Precio</th>
+                                            <th>Precio Venta</th>
+                                            <th>Costo</th>
+                                            <th>Margen</th>
                                             <th>Stock</th>
                                             <th>Categoría</th>
                                             <th>Acciones</th>
@@ -249,13 +296,38 @@ function Dashboard({ user, onLogout }) {
                                     <tbody>
                                         {paginatedProducts.map(product => {
                                             const badge = getStockBadge(product.stock)
+                                            const activePrice = product.promo_price || product.price
+                                            const margin = product.purchase_price 
+                                                ? ((activePrice - product.purchase_price) / activePrice) * 100 
+                                                : null
+                                                
                                             return (
                                                 <tr key={product.id}>
                                                     <td className="cell-name">{product.name}</td>
                                                     <td>
-                                                        ${product.promo_price || product.price}
+                                                        ${activePrice.toLocaleString()}
                                                         {product.promo_price && (
-                                                            <span className="old-price-inline">${product.price}</span>
+                                                            <span className="old-price-inline">${product.price.toLocaleString()}</span>
+                                                        )}
+                                                    </td>
+                                                    <td>
+                                                        {product.purchase_price ? `$${product.purchase_price.toLocaleString()}` : <span style={{ color: 'var(--text-muted)' }}>—</span>}
+                                                    </td>
+                                                    <td>
+                                                        {margin !== null ? (
+                                                            <span style={{
+                                                                background: margin >= 0 ? 'rgba(46, 204, 113, 0.15)' : 'rgba(231, 76, 60, 0.15)',
+                                                                color: margin >= 0 ? '#27ae60' : '#c0392b',
+                                                                padding: '3px 8px',
+                                                                borderRadius: '4px',
+                                                                fontSize: '11px',
+                                                                fontWeight: '700',
+                                                                display: 'inline-block'
+                                                            }}>
+                                                                {margin >= 0 ? '+' : ''}{margin.toFixed(0)}%
+                                                            </span>
+                                                        ) : (
+                                                            <span style={{ color: 'var(--text-muted)' }}>—</span>
                                                         )}
                                                     </td>
                                                     <td>

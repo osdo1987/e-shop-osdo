@@ -3,6 +3,28 @@ import { useParams } from 'react-router-dom'
 import useDebounce from '../hooks/useDebounce'
 import { GridSkeleton } from '../components/Skeleton'
 
+// Adaptative parser for sizes stock JSON or comma list
+const parseSizes = (sizesStr, overallStock) => {
+    if (!sizesStr) return null
+    try {
+        if (sizesStr.startsWith('{')) {
+            return JSON.parse(sizesStr)
+        } else {
+            const map = {}
+            sizesStr.split(',').forEach(s => {
+                const cleanS = s.trim()
+                if (cleanS) {
+                    map[cleanS] = Math.max(0, Math.min(10, overallStock))
+                }
+            })
+            return map
+        }
+    } catch (e) {
+        console.error("Error parsing sizes:", e)
+        return null
+    }
+}
+
 function Catalog() {
     const { slug } = useParams()
     const [store, setStore] = useState(null)
@@ -127,19 +149,25 @@ function Catalog() {
     const toggleCart = () => setCartOpen(!cartOpen)
 
     const addToCart = (product, size = null) => {
-        if (product.sizes && !size) {
+        const parsedSizes = parseSizes(product.sizes, product.stock)
+        
+        if (parsedSizes && !size) {
             setSizeModalProduct(product)
-            const availableSizes = product.sizes.split(',').map(s => s.trim()).filter(Boolean)
+            const availableSizes = Object.keys(parsedSizes).filter(Boolean)
             setSelectedSizeForModal(availableSizes[0] || '')
             return
         }
 
+        const sizeStock = parsedSizes && size ? (parsedSizes[size] ?? 0) : product.stock
+
         setCart(currentCart => {
             const existingItemIndex = currentCart.findIndex(item => item.id === product.id && item.selected_size === size)
             if (existingItemIndex > -1) {
-                const newCart = [...currentCart]
-                newCart[existingItemIndex].quantity += 1
-                return newCart
+                return currentCart.map((item, idx) => 
+                    idx === existingItemIndex 
+                        ? { ...item, quantity: Math.min(item.quantity + 1, sizeStock) } 
+                        : item
+                )
             } else {
                 return [...currentCart, {
                     id: product.id,
@@ -149,7 +177,7 @@ function Catalog() {
                     image_url: product.image_url,
                     selected_size: size,
                     quantity: 1,
-                    stock: product.stock
+                    stock: sizeStock
                 }]
             }
         })
@@ -164,16 +192,19 @@ function Catalog() {
             const itemIndex = currentCart.findIndex(item => item.id === productId && item.selected_size === size)
             if (itemIndex === -1) return currentCart
 
-            const newCart = [...currentCart]
-            const newQty = newCart[itemIndex].quantity + change
+            const item = currentCart[itemIndex]
+            const newQty = item.quantity + change
 
             if (newQty <= 0) {
-                return newCart.filter((_, idx) => idx !== itemIndex)
-            } else if (newQty > newCart[itemIndex].stock) {
+                return currentCart.filter((_, idx) => idx !== itemIndex)
+            } else if (newQty > item.stock) {
                 return currentCart
             } else {
-                newCart[itemIndex].quantity = newQty
-                return newCart
+                return currentCart.map((it, idx) => 
+                    idx === itemIndex 
+                        ? { ...it, quantity: newQty } 
+                        : it
+                )
             }
         })
     }
@@ -259,10 +290,13 @@ function Catalog() {
                     {/* Mobile filter toggle */}
                     <button
                         className="btn btn-secondary"
-                        style={{ display: 'none', padding: '6px 10px', fontSize: '13px' }}
+                        style={{ display: 'none', padding: '6px 12px', fontSize: '13px', alignItems: 'center', gap: '6px', borderRadius: '20px' }}
                         onClick={() => setSidebarOpen(!sidebarOpen)}
                         id="mobile-filter-btn"
                     >
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" style={{ width: '16px', height: '16px' }}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 6h9.75M10.5 6a1.5 1.5 0 11-3 0m3 0a1.5 1.5 0 10-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-9.75 0h9.75" />
+                        </svg>
                         Filtros {hasActiveFilters ? '✓' : ''}
                     </button>
                     <span className="pulse-dot" style={{ display: 'inline-block', width: '8px', height: '8px', borderRadius: '50%', background: 'var(--success)', marginRight: '8px' }}></span>
@@ -416,15 +450,37 @@ function Catalog() {
                 </aside>
 
                 <section className="catalog-content">
+                    {/* Mobile Horizontal Category Chips */}
+                    <div className="mobile-category-scroll">
+                        <button 
+                            className={`category-chip ${selectedCategory === 'all' ? 'active' : ''}`}
+                            onClick={() => setSelectedCategory('all')}
+                        >
+                            🏷️ Todos
+                        </button>
+                        {categories.map(cat => (
+                            <button
+                                key={cat.id}
+                                className={`category-chip ${selectedCategory === cat.id.toString() ? 'active' : ''}`}
+                                onClick={() => setSelectedCategory(cat.id.toString())}
+                            >
+                                {cat.name === 'Ropa' ? '👕' : cat.name === 'Calzado' ? '👟' : cat.name === 'Accesorios' ? '👜' : '📦'} {cat.name}
+                            </button>
+                        ))}
+                    </div>
+
                     <div className="content-header">
                         <div style={{ fontWeight: '700' }}>{filteredProducts.length} productos</div>
                         <div style={{ fontSize: '13px', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '8px' }}>
                             <button
                                 className="btn btn-secondary"
-                                style={{ display: 'none', padding: '6px 10px', fontSize: '13px' }}
+                                style={{ display: 'none', padding: '6px 12px', fontSize: '13px', alignItems: 'center', gap: '6px', borderRadius: '20px' }}
                                 onClick={() => setSidebarOpen(true)}
                                 id="mobile-filter-btn-2"
                             >
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" style={{ width: '16px', height: '16px' }}>
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 13.5V3.75m0 9.75a1.5 1.5 0 010 3m0-3a1.5 1.5 0 000 3m0 0V21m6-7.5V3.75m0 9.75a1.5 1.5 0 010 3m0-3a1.5 1.5 0 000 3m0 0V21m6-9V3.75m0 9a1.5 1.5 0 010 3m0-3a1.5 1.5 0 000 3m0 0V21" />
+                                </svg>
                                 Filtrar {hasActiveFilters ? '✓' : ''}
                             </button>
                             Ordenar: <select style={{ border: 'none', background: 'none', fontWeight: '700' }}><option>Destacados</option></select>
@@ -529,12 +585,33 @@ function Catalog() {
                     </div>
 
                     {filteredProducts.length === 0 && (
-                        <div style={{ textAlign: 'center', padding: '100px 0', color: 'var(--text-muted)' }}>
-                            <div style={{ fontSize: '48px', marginBottom: '16px' }}>📭</div>
-                            <p style={{ fontSize: '16px' }}>No se encontraron productos con estos filtros.</p>
+                        <div style={{
+                            textAlign: 'center',
+                            padding: '60px 20px',
+                            background: 'var(--background)',
+                            borderRadius: '12px',
+                            border: '1px dashed var(--border)',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            gap: '12px',
+                            width: '100%',
+                            boxSizing: 'border-box',
+                            margin: '30px 0',
+                            gridColumn: '1 / -1'
+                        }}>
+                            <div style={{ fontSize: '54px', animation: 'float 3s ease-in-out infinite' }}>🔍</div>
+                            <h3 style={{ margin: '0', fontSize: '18px', fontWeight: '700', color: 'var(--text-primary)' }}>No se encontraron productos</h3>
+                            <p style={{ margin: '0', color: 'var(--text-secondary)', fontSize: '14px', maxWidth: '340px', lineHeight: '1.5' }}>
+                                Prueba cambiando de categoría, buscando otros términos o desactivando los filtros activos.
+                            </p>
                             {hasActiveFilters && (
-                                <button className="btn btn-secondary" onClick={clearFilters} style={{ marginTop: '16px' }}>
-                                    Limpiar filtros
+                                <button
+                                    className="btn btn-secondary"
+                                    style={{ marginTop: '12px', padding: '10px 20px', fontSize: '13px', borderRadius: '30px', fontWeight: '600' }}
+                                    onClick={clearFilters}
+                                >
+                                    Restablecer Búsqueda
                                 </button>
                             )}
                         </div>
@@ -775,32 +852,61 @@ function Catalog() {
                             Elige una talla para <strong>{sizeModalProduct.name}</strong> antes de agregarlo al carrito.
                         </p>
                         
-                        <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', marginBottom: '24px' }}>
-                            {sizeModalProduct.sizes?.split(',').map(s => s.trim()).filter(Boolean).map(size => (
-                                <button
-                                    key={size}
-                                    onClick={() => setSelectedSizeForModal(size)}
-                                    style={{
-                                        minWidth: '45px',
-                                        height: '45px',
-                                        padding: '8px',
-                                        borderRadius: '50%',
-                                        border: selectedSizeForModal === size ? '2px solid #4caf50' : '1px solid var(--border)',
-                                        background: selectedSizeForModal === size ? '#e8f5e9' : 'var(--surface)',
-                                        color: selectedSizeForModal === size ? '#2e7d32' : 'var(--text-primary)',
-                                        fontSize: '14px',
-                                        fontWeight: '700',
-                                        cursor: 'pointer',
-                                        transition: 'all 0.2s ease',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center'
-                                    }}
-                                >
-                                    {size}
-                                </button>
-                            ))}
-                        </div>
+                        {(() => {
+                            const parsedSizes = parseSizes(sizeModalProduct.sizes, sizeModalProduct.stock) || {}
+                            const sizeKeys = Object.keys(parsedSizes).filter(Boolean)
+                            
+                            return (
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '24px' }}>
+                                    <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                                        {sizeKeys.map(size => {
+                                            const sizeStock = parsedSizes[size] ?? 0
+                                            const isOutOfStock = sizeStock <= 0
+                                            const isSelected = selectedSizeForModal === size
+                                            
+                                            return (
+                                                <button
+                                                    key={size}
+                                                    type="button"
+                                                    onClick={() => !isOutOfStock && setSelectedSizeForModal(size)}
+                                                    disabled={isOutOfStock}
+                                                    style={{
+                                                        minWidth: '60px',
+                                                        height: '48px',
+                                                        padding: '6px 8px',
+                                                        borderRadius: '8px',
+                                                        border: isSelected 
+                                                            ? '2px solid #4caf50' 
+                                                            : (isOutOfStock ? '1px dashed var(--border)' : '1px solid var(--border)'),
+                                                        background: isSelected 
+                                                            ? '#e8f5e9' 
+                                                            : (isOutOfStock ? 'rgba(0,0,0,0.03)' : 'var(--surface)'),
+                                                        color: isSelected 
+                                                            ? '#2e7d32' 
+                                                            : (isOutOfStock ? 'var(--text-muted)' : 'var(--text-primary)'),
+                                                        fontSize: '13px',
+                                                        fontWeight: '700',
+                                                        cursor: isOutOfStock ? 'not-allowed' : 'pointer',
+                                                        transition: 'all 0.2s ease',
+                                                        display: 'flex',
+                                                        flexDirection: 'column',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'center',
+                                                        opacity: isOutOfStock ? 0.5 : 1,
+                                                        position: 'relative'
+                                                    }}
+                                                >
+                                                    <span style={{ fontSize: '13px' }}>{size}</span>
+                                                    <span style={{ fontSize: '9px', fontWeight: '500', marginTop: '2px', color: isSelected ? '#2e7d32' : (isOutOfStock ? 'var(--error)' : 'var(--text-muted)') }}>
+                                                        {isOutOfStock ? 'Agotado' : `${sizeStock} u.`}
+                                                    </span>
+                                                </button>
+                                            )
+                                        })}
+                                    </div>
+                                </div>
+                            )
+                        })()}
                         
                         <button
                             onClick={() => addToCart(sizeModalProduct, selectedSizeForModal)}

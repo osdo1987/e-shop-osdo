@@ -31,6 +31,7 @@ class ProductService:
             description=data.get('description'),
             price=data['price'],
             promo_price=data.get('promo_price'),
+            purchase_price=data.get('purchase_price'),
             image_url=data.get('image_url'),
             stock=data.get('stock', 0),
             sizes=data.get('sizes'),
@@ -56,6 +57,8 @@ class ProductService:
             product.price = data['price']
         if 'promo_price' in data:
             product.promo_price = data['promo_price']
+        if 'purchase_price' in data:
+            product.purchase_price = data['purchase_price']
         if 'image_url' in data:
             product.image_url = data['image_url']
         if 'stock' in data:

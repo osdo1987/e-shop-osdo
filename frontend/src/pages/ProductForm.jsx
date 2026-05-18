@@ -15,6 +15,7 @@ function ProductForm({ user }) {
         description: '',
         price: '',
         promo_price: '',
+        purchase_price: '',
         stock: '',
         category_id: '',
         image_url: '',
@@ -22,6 +23,8 @@ function ProductForm({ user }) {
     })
     const [error, setError] = useState('')
     const [saving, setSaving] = useState(false)
+    const [sizeStockMap, setSizeStockMap] = useState({})
+    const [customSize, setCustomSize] = useState('')
 
     useEffect(() => {
         const fetchCategories = async () => {
@@ -51,11 +54,29 @@ function ProductForm({ user }) {
                         description: product.description || '',
                         price: product.price?.toString() || '',
                         promo_price: product.promo_price?.toString() || '',
+                        purchase_price: product.purchase_price?.toString() || '',
                         stock: product.stock?.toString() || '',
                         category_id: product.category_id?.toString() || '',
                         image_url: product.image_url || '',
                         sizes: product.sizes || ''
                     })
+                    
+                    let parsedSizes = {}
+                    if (product.sizes) {
+                        try {
+                            if (product.sizes.startsWith('{')) {
+                                parsedSizes = JSON.parse(product.sizes)
+                            } else {
+                                product.sizes.split(',').forEach(s => {
+                                    const cleanS = s.trim()
+                                    if (cleanS) parsedSizes[cleanS] = 10
+                                })
+                            }
+                        } catch (e) {
+                            console.error("Error parsing sizes:", e)
+                        }
+                    }
+                    setSizeStockMap(parsedSizes)
                 } else {
                     setError('Error al cargar el producto')
                 }
@@ -75,29 +96,31 @@ function ProductForm({ user }) {
     const [hasSizes, setHasSizes] = useState(false)
 
     useEffect(() => {
-        if (form.sizes) {
+        if (Object.keys(sizeStockMap).length > 0) {
             setHasSizes(true)
         }
-    }, [form.sizes])
+    }, [sizeStockMap])
 
     const presetClothing = ['S', 'M', 'L', 'XL', 'XXL']
     const presetShoes = ['36', '37', '38', '39', '40', '41', '42', '43']
 
-    const selectedSizes = form.sizes ? form.sizes.split(',').map(s => s.trim()).filter(Boolean) : []
+    const selectedSizes = Object.keys(sizeStockMap)
 
     const handleToggleSize = (size) => {
-        let newSizes
-        if (selectedSizes.includes(size)) {
-            newSizes = selectedSizes.filter(s => s !== size)
-        } else {
-            newSizes = [...selectedSizes, size]
-        }
-        setForm({ ...form, sizes: newSizes.join(',') })
+        setSizeStockMap(prev => {
+            const next = { ...prev }
+            if (next.hasOwnProperty(size)) {
+                delete next[size]
+            } else {
+                next[size] = 10
+            }
+            return next
+        })
     }
 
     const handleToggleHasSizes = () => {
         if (hasSizes) {
-            setForm({ ...form, sizes: '' })
+            setSizeStockMap({})
         }
         setHasSizes(!hasSizes)
     }
@@ -116,6 +139,10 @@ function ProductForm({ user }) {
             const url = isEditing ? `/api/products/${id}` : '/api/products'
             const method = isEditing ? 'PUT' : 'POST'
 
+            const finalStock = hasSizes
+                ? Object.values(sizeStockMap).reduce((a, b) => a + b, 0)
+                : parseInt(form.stock)
+
             const res = await fetch(url, {
                 method,
                 headers: {
@@ -126,7 +153,9 @@ function ProductForm({ user }) {
                     ...form,
                     price: parseFloat(form.price),
                     promo_price: form.promo_price ? parseFloat(form.promo_price) : null,
-                    stock: parseInt(form.stock),
+                    purchase_price: form.purchase_price ? parseFloat(form.purchase_price) : null,
+                    stock: finalStock,
+                    sizes: hasSizes ? JSON.stringify(sizeStockMap) : '',
                     category_id: parseInt(form.category_id),
                     store_id: user.storeId
                 })
@@ -180,9 +209,9 @@ function ProductForm({ user }) {
                             placeholder="Descripción del producto..."
                         />
                     </div>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>
                         <div className="input-group">
-                            <label>Precio</label>
+                            <label>Precio de Venta</label>
                             <input
                                 type="number"
                                 name="price"
@@ -206,18 +235,32 @@ function ProductForm({ user }) {
                                 placeholder="35000"
                             />
                         </div>
+                        <div className="input-group">
+                            <label>Precio de Compra (Costo)</label>
+                            <input
+                                type="number"
+                                name="purchase_price"
+                                value={form.purchase_price}
+                                onChange={handleChange}
+                                min="0"
+                                step="0.01"
+                                placeholder="25000"
+                            />
+                        </div>
                     </div>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                         <div className="input-group">
-                            <label>Stock</label>
+                            <label>Stock {hasSizes && <span style={{ fontSize: '11px', color: 'var(--primary-color)' }}>(Calculado de las tallas)</span>}</label>
                             <input
                                 type="number"
                                 name="stock"
-                                value={form.stock}
+                                value={hasSizes ? Object.values(sizeStockMap).reduce((a, b) => a + b, 0) : form.stock}
                                 onChange={handleChange}
                                 required
+                                disabled={hasSizes}
                                 min="0"
                                 placeholder="50"
+                                style={hasSizes ? { opacity: 0.7, cursor: 'not-allowed', background: 'var(--border)' } : {}}
                             />
                         </div>
                         <div className="input-group">
@@ -273,7 +316,7 @@ function ProductForm({ user }) {
                                     </div>
                                 </div>
 
-                                <div style={{ marginBottom: '12px' }}>
+                                <div style={{ marginBottom: '16px' }}>
                                     <label style={{ fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '6px', display: 'block', fontWeight: '600' }}>Tallas de Calzado Comunes</label>
                                     <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                                         {presetShoes.map(size => (
@@ -290,17 +333,72 @@ function ProductForm({ user }) {
                                     </div>
                                 </div>
 
-                                <div className="input-group" style={{ margin: 0 }}>
-                                    <label style={{ fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '4px', fontWeight: '600' }}>Tallas seleccionadas (puedes escribir variantes personalizadas separadas por comas)</label>
-                                    <input
-                                        type="text"
-                                        name="sizes"
-                                        value={form.sizes}
-                                        onChange={handleChange}
-                                        placeholder="Ej: S,M,L o 38,39,40 (separadas por comas)"
-                                        style={{ width: '100%', padding: '8px 12px', fontSize: '14px', borderRadius: '6px', border: '1px solid var(--border)' }}
-                                    />
+                                {/* Custom Size tag input */}
+                                <div style={{ marginBottom: '20px', display: 'flex', gap: '8px', alignItems: 'flex-end' }}>
+                                    <div style={{ flex: 1 }}>
+                                        <label style={{ fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '4px', display: 'block', fontWeight: '600' }}>Agregar Talla Personalizada</label>
+                                        <input
+                                            type="text"
+                                            value={customSize}
+                                            onChange={(e) => setCustomSize(e.target.value)}
+                                            placeholder="Ej: XXL, 44, Única"
+                                            style={{ width: '100%', padding: '8px 12px', fontSize: '14px', borderRadius: '6px', border: '1px solid var(--border)' }}
+                                        />
+                                    </div>
+                                    <button
+                                        type="button"
+                                        className="btn btn-primary"
+                                        style={{ padding: '8px 16px', height: '38px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                                        onClick={() => {
+                                            const cleanSize = customSize.trim().toUpperCase()
+                                            if (cleanSize && !sizeStockMap.hasOwnProperty(cleanSize)) {
+                                                setSizeStockMap(prev => ({ ...prev, [cleanSize]: 10 }))
+                                                setCustomSize('')
+                                            }
+                                        }}
+                                    >
+                                        + Agregar
+                                    </button>
                                 </div>
+
+                                {/* Quantities Config list */}
+                                {selectedSizes.length > 0 && (
+                                    <div style={{ borderTop: '1px solid var(--border)', paddingTop: '16px' }}>
+                                        <label style={{ fontSize: '13px', fontWeight: '700', color: 'var(--text-primary)', marginBottom: '10px', display: 'block' }}>Configurar Unidades por Talla</label>
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                            {selectedSizes.map(size => (
+                                                <div key={size} style={{ display: 'flex', alignItems: 'center', gap: '12px', background: 'rgba(255, 255, 255, 0.03)', padding: '8px 12px', borderRadius: '6px', border: '1px solid var(--border)' }}>
+                                                    <span style={{ fontWeight: '700', fontSize: '14px', minWidth: '40px' }}>{size}</span>
+                                                    <input
+                                                        type="number"
+                                                        min="0"
+                                                        value={sizeStockMap[size] ?? 10}
+                                                        onChange={(e) => {
+                                                            const val = parseInt(e.target.value) || 0
+                                                            setSizeStockMap(prev => ({ ...prev, [size]: val }))
+                                                        }}
+                                                        style={{ width: '80px', padding: '6px 10px', fontSize: '13px', borderRadius: '4px', border: '1px solid var(--border)' }}
+                                                        required
+                                                    />
+                                                    <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>unidades</span>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => {
+                                                            setSizeStockMap(prev => {
+                                                                const next = { ...prev }
+                                                                delete next[size]
+                                                                return next
+                                                            })
+                                                        }}
+                                                        style={{ marginLeft: 'auto', background: 'none', border: 'none', color: 'var(--error)', cursor: 'pointer', fontSize: '13px', fontWeight: '600' }}
+                                                    >
+                                                        🗑️ Eliminar
+                                                    </button>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         )}
                     </div>
