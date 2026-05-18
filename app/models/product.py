@@ -11,6 +11,7 @@ class Product(db.Model):
     promo_price = db.Column(db.Float, nullable=True)
     image_url = db.Column(db.String(500), nullable=True)
     stock = db.Column(db.Integer, default=0)
+    sizes = db.Column(db.String(500), nullable=True)
     
     category_id = db.Column(db.Integer, db.ForeignKey('categories.id'), nullable=False)
     

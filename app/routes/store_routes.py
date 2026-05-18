@@ -3,7 +3,7 @@ from app.services.store_service import StoreService
 from app.services.category_service import CategoryService
 from app.services.product_service import ProductService
 from app.schemas.store_schema import StoreSchema
-from flask_jwt_extended import jwt_required, get_jwt_identity
+from flask_jwt_extended import jwt_required, get_jwt_identity, get_jwt
 from app.models.user import User
 
 store_bp = Blueprint('stores', __name__)
@@ -158,20 +158,20 @@ def update_store(store_id):
       404:
         description: Store not found
     """
-    current_user_id = get_jwt_identity()
-    current_user = User.query.get(current_user_id)
-    
-    if not current_user:
-        return jsonify({'error': 'No autorizado'}), 403
+    claims = get_jwt()
+    user_role = claims.get('role', '')
+    user_store_id = claims.get('storeId')
     
     # SUPERADMIN can update any store
     # SELLER can only update their own store's WhatsApp
-    if current_user.role != 'SUPERADMIN':
-        if current_user.role != 'SELLER' or current_user.store_id != store_id:
-            return jsonify({'error': 'No autorizado'}), 403
+    if user_role != 'SUPERADMIN':
+        if user_role != 'SELLER':
+            return jsonify({'error': 'No autorizado: rol inválido'}), 403
+        if user_store_id is None or user_store_id != store_id:
+            return jsonify({'error': 'No autorizado: no tienes permiso para esta tienda'}), 403
+        
         # Sellers can only update whatsapp field
         data = request.get_json()
-        # Only allow whatsapp update for sellers
         allowed_data = {'whatsapp': data.get('whatsapp')}
         store, error = StoreService.update_store(store_id, allowed_data)
     else:
@@ -179,7 +179,7 @@ def update_store(store_id):
         store, error = StoreService.update_store(store_id, data)
     
     if error:
-        return jsonify({'error': error}), 404
+        return jsonify({'error': error}), 400
     
     return jsonify(store), 200
 

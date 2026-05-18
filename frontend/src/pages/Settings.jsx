@@ -43,8 +43,6 @@ function Settings({ user, onLogout, darkMode, setDarkMode }) {
                     'Authorization': `Bearer ${token}`
                 },
                 body: JSON.stringify({
-                    name: store?.name,
-                    slug: store?.slug,
                     whatsapp: whatsapp
                 })
             })

@@ -184,7 +184,12 @@
     padding: 28px 24px;
     background: #f8f9fa;
     border-right: 1px solid var(--border);
-    transition: background 0.3s ease;
+    transition: background 0.3s ease, border-color 0.3s ease;
+}
+
+[data-theme="dark"] .catalog-sidebar {
+    background: var(--surface);
+    border-right-color: var(--border);
 }
 
 /* ── Search input con ícono ── */
@@ -216,6 +221,11 @@
     color: var(--text-primary);
     transition: all 0.25s ease;
     outline: none;
+}
+
+[data-theme="dark"] .search-wrapper input {
+    background: var(--surface-alt);
+    border-color: var(--border);
 }
 
 .search-wrapper input:focus {
@@ -264,6 +274,11 @@
     transform: translateX(4px);
 }
 
+[data-theme="dark"] .category-item:hover {
+    background: #064E3B;
+    color: #6EE7B7;
+}
+
 .category-item.active {
     background: #4caf50;
     color: white;
@@ -275,6 +290,14 @@
     background: #43a047;
     color: white;
     transform: translateX(4px);
+}
+
+[data-theme="dark"] .category-item.active {
+    background: #059669;
+}
+
+[data-theme="dark"] .category-item.active:hover {
+    background: #047857;
 }
 
 /* ── Category count badge ── */
@@ -294,9 +317,19 @@
     transition: all 0.25s ease;
 }
 
+[data-theme="dark"] .count-badge {
+    background: #374151;
+    color: #CBD5E1;
+}
+
 .category-item:hover .count-badge {
     background: #a5d6a7;
     color: #1b5e20;
+}
+
+[data-theme="dark"] .category-item:hover .count-badge {
+    background: #065F46;
+    color: #6EE7B7;
 }
 
 .category-item.active .count-badge {
@@ -335,6 +368,10 @@
     pointer-events: none;
 }
 
+[data-theme="dark"] .price-slider-wrapper::before {
+    background: #374151;
+}
+
 /* Green fill for the selected range */
 .price-track-fill {
     position: absolute;
@@ -344,6 +381,10 @@
     pointer-events: none;
     z-index: 1;
     transition: left 0.1s ease, width 0.1s ease;
+}
+
+[data-theme="dark"] .price-track-fill {
+    background: #34D399;
 }
 
 .price-slider {
@@ -409,6 +450,11 @@
     color: var(--text-primary);
 }
 
+[data-theme="dark"] .price-label-value {
+    background: var(--surface-alt);
+    border-color: var(--border-light);
+}
+
 .price-label-sep {
     color: var(--text-muted);
     font-size: 12px;
@@ -427,6 +473,11 @@
     transition: all 0.25s ease;
 }
 
+[data-theme="dark"] .switch-container {
+    background: var(--surface-alt);
+    border-color: var(--border);
+}
+
 .switch-container:hover {
     border-color: #4caf50;
 }
@@ -434,6 +485,11 @@
 .switch-container.active {
     background: #e8f5e9;
     border-color: #4caf50;
+}
+
+[data-theme="dark"] .switch-container.active {
+    background: #064E3B;
+    border-color: #34D399;
 }
 
 .switch-label {
@@ -509,6 +565,10 @@
     flex: 1;
     padding: 24px;
     background: #ffffff;
+}
+
+[data-theme="dark"] .catalog-content {
+    background: var(--background);
 }
 
 .content-header {
@@ -902,5 +962,67 @@
 @media (max-width: 600px) {
     .stats-grid {
         grid-template-columns: repeat(2, 1fr) !important;
+    }
+}
+
+/* Premium Shopping Cart & Favorites micro-animations */
+.fav-btn:hover {
+    transform: scale(1.15) !important;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2) !important;
+}
+
+.fav-btn:active {
+    transform: scale(0.9) !important;
+}
+
+.fav-btn svg {
+    transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.fav-btn:hover svg {
+    transform: scale(1.2);
+}
+
+.floating-cart {
+    animation: cart-bounce 2s infinite ease-in-out;
+}
+
+.floating-cart:hover {
+    animation: none; /* Disable bounce on hover to allow manual translateY */
+    transform: scale(1.1) translateY(-5px) !important;
+    box-shadow: 0 6px 24px rgba(76, 175, 80, 0.4) !important;
+}
+
+.floating-cart:active {
+    transform: scale(0.95) !important;
+}
+
+@keyframes cart-bounce {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-8px);
+    }
+}
+
+/* Modal and responsive styles for Drawer */
+@media (max-width: 480px) {
+    .floating-cart {
+        bottom: 16px !important;
+        right: 16px !important;
+        width: 50px !important;
+        height: 50px !important;
+    }
+    
+    .floating-cart svg {
+        width: 22px !important;
+        height: 22px !important;
+    }
+    
+    .floating-cart span {
+        width: 20px !important;
+        height: 20px !important;
+        font-size: 10px !important;
     }
 }

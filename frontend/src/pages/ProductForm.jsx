@@ -17,7 +17,8 @@ function ProductForm({ user }) {
         promo_price: '',
         stock: '',
         category_id: '',
-        image_url: ''
+        image_url: '',
+        sizes: ''
     })
     const [error, setError] = useState('')
     const [saving, setSaving] = useState(false)
@@ -52,7 +53,8 @@ function ProductForm({ user }) {
                         promo_price: product.promo_price?.toString() || '',
                         stock: product.stock?.toString() || '',
                         category_id: product.category_id?.toString() || '',
-                        image_url: product.image_url || ''
+                        image_url: product.image_url || '',
+                        sizes: product.sizes || ''
                     })
                 } else {
                     setError('Error al cargar el producto')
@@ -69,6 +71,36 @@ function ProductForm({ user }) {
             fetchProduct()
         }
     }, [id])
+
+    const [hasSizes, setHasSizes] = useState(false)
+
+    useEffect(() => {
+        if (form.sizes) {
+            setHasSizes(true)
+        }
+    }, [form.sizes])
+
+    const presetClothing = ['S', 'M', 'L', 'XL', 'XXL']
+    const presetShoes = ['36', '37', '38', '39', '40', '41', '42', '43']
+
+    const selectedSizes = form.sizes ? form.sizes.split(',').map(s => s.trim()).filter(Boolean) : []
+
+    const handleToggleSize = (size) => {
+        let newSizes
+        if (selectedSizes.includes(size)) {
+            newSizes = selectedSizes.filter(s => s !== size)
+        } else {
+            newSizes = [...selectedSizes, size]
+        }
+        setForm({ ...form, sizes: newSizes.join(',') })
+    }
+
+    const handleToggleHasSizes = () => {
+        if (hasSizes) {
+            setForm({ ...form, sizes: '' })
+        }
+        setHasSizes(!hasSizes)
+    }
 
     const handleChange = (e) => {
         setForm({ ...form, [e.target.name]: e.target.value })
@@ -203,6 +235,76 @@ function ProductForm({ user }) {
                             </select>
                         </div>
                     </div>
+
+                    {/* Tallas y Variantes */}
+                    <div className="input-group" style={{ marginBottom: '20px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', userSelect: 'none' }} onClick={handleToggleHasSizes}>
+                            <input
+                                type="checkbox"
+                                checked={hasSizes}
+                                onChange={() => {}} // Manejado por click en div
+                                style={{ width: '18px', height: '18px', cursor: 'pointer' }}
+                            />
+                            <strong style={{ fontSize: '14px', color: 'var(--text-primary)' }}>¿Este producto tiene tallas o variantes?</strong>
+                        </div>
+                        
+                        {hasSizes && (
+                            <div style={{
+                                marginTop: '12px',
+                                padding: '16px',
+                                background: 'var(--background)',
+                                borderRadius: '8px',
+                                border: '1px solid var(--border)'
+                            }}>
+                                <div style={{ marginBottom: '12px' }}>
+                                    <label style={{ fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '6px', display: 'block', fontWeight: '600' }}>Tallas de Ropa Comunes</label>
+                                    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                                        {presetClothing.map(size => (
+                                            <button
+                                                key={size}
+                                                type="button"
+                                                className={`btn ${selectedSizes.includes(size) ? 'btn-primary' : 'btn-secondary'}`}
+                                                style={{ padding: '4px 12px', fontSize: '12px', borderRadius: '20px' }}
+                                                onClick={() => handleToggleSize(size)}
+                                            >
+                                                {size}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                <div style={{ marginBottom: '12px' }}>
+                                    <label style={{ fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '6px', display: 'block', fontWeight: '600' }}>Tallas de Calzado Comunes</label>
+                                    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                                        {presetShoes.map(size => (
+                                            <button
+                                                key={size}
+                                                type="button"
+                                                className={`btn ${selectedSizes.includes(size) ? 'btn-primary' : 'btn-secondary'}`}
+                                                style={{ padding: '4px 12px', fontSize: '12px', borderRadius: '20px' }}
+                                                onClick={() => handleToggleSize(size)}
+                                            >
+                                                {size}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                <div className="input-group" style={{ margin: 0 }}>
+                                    <label style={{ fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '4px', fontWeight: '600' }}>Tallas seleccionadas (puedes escribir variantes personalizadas separadas por comas)</label>
+                                    <input
+                                        type="text"
+                                        name="sizes"
+                                        value={form.sizes}
+                                        onChange={handleChange}
+                                        placeholder="Ej: S,M,L o 38,39,40 (separadas por comas)"
+                                        style={{ width: '100%', padding: '8px 12px', fontSize: '14px', borderRadius: '6px', border: '1px solid var(--border)' }}
+                                    />
+                                </div>
+                            </div>
+                        )}
+                    </div>
+
                     <div className="input-group">
                         <label>URL de Imagen (opcional)</label>
                         <input
