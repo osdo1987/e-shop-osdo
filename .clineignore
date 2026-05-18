@@ -1,0 +1,28 @@
+# Evitar que Cline indexe dependencias masivas y carpetas de compilación
+node_modules/
+frontend/node_modules/
+.next/
+dist/
+build/
+__pycache__/
+
+# Evitar que la IA lea variables de entorno y secretos de producción
+.env
+.env.local
+.env.*.local
+
+# Archivos binarios, multimedia u objetos pesados
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.ico
+*.pdf
+*.zip
+*.tar.gz
+
+# Archivos de Git internos
+.git/
+.gitignore
+.gitattributes
+.gitmodules
