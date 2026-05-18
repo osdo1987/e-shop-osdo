@@ -11,8 +11,7 @@ function Catalog() {
     const [loading, setLoading] = useState(true)
 
     const [selectedCategory, setSelectedCategory] = useState('all')
-    const [minPrice, setMinPrice] = useState('')
-    const [maxPrice, setMaxPrice] = useState('')
+    const [priceRange, setPriceRange] = useState([0, 1000000])
     const [onlyPromo, setOnlyPromo] = useState(false)
     const [searchTerm, setSearchTerm] = useState('')
     const [sidebarOpen, setSidebarOpen] = useState(false)
@@ -47,12 +46,22 @@ function Catalog() {
         return counts
     }, [products])
 
+    // Dynamic price bounds based on actual products
+    const priceBounds = useMemo(() => {
+        if (products.length === 0) return { min: 0, max: 1000000 }
+        const prices = products.flatMap(p => [p.price, p.promo_price].filter(Boolean))
+        return {
+            min: Math.min(...prices),
+            max: Math.max(...prices)
+        }
+    }, [products])
+
     const filteredProducts = useMemo(() => {
         return products.filter(p => {
             const matchCategory = selectedCategory === 'all' || p.category_id === parseInt(selectedCategory)
             const currentPrice = p.promo_price || p.price
-            const priceMin = minPrice === '' || currentPrice >= parseFloat(minPrice)
-            const priceMax = maxPrice === '' || currentPrice <= parseFloat(maxPrice)
+            const priceMin = currentPrice >= priceRange[0]
+            const priceMax = currentPrice <= priceRange[1]
             const promoOnly = !onlyPromo || p.promo_price !== null
             const matchSearch = !debouncedSearch ||
                 p.name.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
@@ -60,17 +69,23 @@ function Catalog() {
 
             return matchCategory && priceMin && priceMax && promoOnly && matchSearch
         })
-    }, [products, selectedCategory, minPrice, maxPrice, onlyPromo, debouncedSearch])
+    }, [products, selectedCategory, priceRange, onlyPromo, debouncedSearch])
+
+    // Reset price range when products load
+    useEffect(() => {
+        if (products.length > 0) {
+            setPriceRange([priceBounds.min, priceBounds.max])
+        }
+    }, [products])
 
     const clearFilters = () => {
         setSelectedCategory('all')
-        setMinPrice('')
-        setMaxPrice('')
+        setPriceRange([priceBounds.min, priceBounds.max])
         setOnlyPromo(false)
         setSearchTerm('')
     }
 
-    const hasActiveFilters = selectedCategory !== 'all' || minPrice || maxPrice || onlyPromo || searchTerm
+    const hasActiveFilters = selectedCategory !== 'all' || priceRange[0] !== priceBounds.min || priceRange[1] !== priceBounds.max || onlyPromo || searchTerm
 
     if (loading) {
         return (
@@ -150,21 +165,17 @@ function Catalog() {
                     {/* Search */}
                     <div className="filter-group">
                         <h3 className="filter-title">Buscar</h3>
-                        <input
-                            type="text"
-                            placeholder="Buscar productos..."
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            style={{
-                                width: '100%',
-                                padding: '8px 12px',
-                                border: '1px solid var(--border)',
-                                borderRadius: '6px',
-                                fontSize: '14px',
-                                background: 'var(--surface)',
-                                color: 'var(--text-primary)'
-                            }}
-                        />
+                        <div className="search-wrapper">
+                            <svg className="search-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+                            </svg>
+                            <input
+                                type="text"
+                                placeholder="Buscar productos..."
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                            />
+                        </div>
                     </div>
 
                     <div className="filter-group">
@@ -175,7 +186,7 @@ function Catalog() {
                                 onClick={() => { setSelectedCategory('all'); setSidebarOpen(false) }}
                             >
                                 <span>Todos</span>
-                                <span className="count">{categoryCounts.all}</span>
+                                <span className="count-badge">{categoryCounts.all}</span>
                             </div>
                             {categories.map(cat => (
                                 <div
@@ -183,56 +194,72 @@ function Catalog() {
                                     className={`category-item ${selectedCategory === cat.id.toString() ? 'active' : ''}`}
                                     onClick={() => { setSelectedCategory(cat.id.toString()); setSidebarOpen(false) }}
                                 >
-                                    <span>{cat.name}</span>
-                                    <span className="count">{categoryCounts[cat.id] || 0}</span>
+                                <span>{cat.name}</span>
+                                <span className="count-badge">{categoryCounts[cat.id] || 0}</span>
                                 </div>
                             ))}
                         </div>
                     </div>
 
+                    {/* Price Range – Modern Slider with filled track */}
                     <div className="filter-group">
                         <h3 className="filter-title">Precio</h3>
-                        <div className="price-inputs">
-                            <input
-                                type="number"
-                                placeholder="Min"
-                                value={minPrice}
-                                onChange={(e) => setMinPrice(e.target.value)}
-                            />
-                            <input
-                                type="number"
-                                placeholder="Máx"
-                                value={maxPrice}
-                                onChange={(e) => setMaxPrice(e.target.value)}
-                            />
+                        <div className="price-range-container">
+                            <div className="price-slider-wrapper">
+                                {/* Custom track background that fills only the selected range */}
+                                <div
+                                    className="price-track-fill"
+                                    style={{
+                                        left: `${((priceRange[0] - priceBounds.min) / (priceBounds.max - priceBounds.min)) * 100}%`,
+                                        width: `${((priceRange[1] - priceRange[0]) / (priceBounds.max - priceBounds.min)) * 100}%`,
+                                    }}
+                                />
+                                <input
+                                    type="range"
+                                    className="price-slider"
+                                    min={priceBounds.min}
+                                    max={priceBounds.max}
+                                    step={1}
+                                    value={priceRange[0]}
+                                    onChange={(e) => {
+                                        const val = Math.min(Number(e.target.value), priceRange[1] - 1)
+                                        setPriceRange([val, priceRange[1]])
+                                    }}
+                                />
+                                <input
+                                    type="range"
+                                    className="price-slider"
+                                    min={priceBounds.min}
+                                    max={priceBounds.max}
+                                    step={1}
+                                    value={priceRange[1]}
+                                    onChange={(e) => {
+                                        const val = Math.max(Number(e.target.value), priceRange[0] + 1)
+                                        setPriceRange([priceRange[0], val])
+                                    }}
+                                />
+                            </div>
+                            <div className="price-labels">
+                                <span className="price-label-value">${priceRange[0].toLocaleString()}</span>
+                                <span className="price-label-sep">—</span>
+                                <span className="price-label-value">${priceRange[1].toLocaleString()}</span>
+                            </div>
                         </div>
                     </div>
 
+                    {/* Promotions Switch – Improved */}
                     <div className="filter-group">
                         <h3 className="filter-title">Ofertas</h3>
                         <div
                             className={`switch-container ${onlyPromo ? 'active' : ''}`}
                             onClick={() => setOnlyPromo(!onlyPromo)}
                         >
-                            <span>Solo en promoción</span>
-                            <div style={{
-                                width: '34px',
-                                height: '18px',
-                                background: onlyPromo ? 'var(--primary-color)' : '#ccc',
-                                borderRadius: '20px',
-                                position: 'relative',
-                                transition: '0.3s'
-                            }}>
-                                <div style={{
-                                    width: '14px',
-                                    height: '14px',
-                                    background: 'white',
-                                    borderRadius: '50%',
-                                    position: 'absolute',
-                                    top: '2px',
-                                    left: onlyPromo ? '18px' : '2px',
-                                    transition: '0.3s'
-                                }} />
+                            <span className="switch-label">
+                                <span className="switch-icon">{onlyPromo ? '🏷️' : '📋'}</span>
+                                Solo en promoción
+                            </span>
+                            <div className={`switch-track ${onlyPromo ? 'active' : ''}`}>
+                                <div className={`switch-thumb ${onlyPromo ? 'active' : ''}`} />
                             </div>
                         </div>
                     </div>
