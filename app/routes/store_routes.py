@@ -161,11 +161,22 @@ def update_store(store_id):
     current_user_id = get_jwt_identity()
     current_user = User.query.get(current_user_id)
     
-    if not current_user or current_user.role != 'SUPERADMIN':
+    if not current_user:
         return jsonify({'error': 'No autorizado'}), 403
     
-    data = request.get_json()
-    store, error = StoreService.update_store(store_id, data)
+    # SUPERADMIN can update any store
+    # SELLER can only update their own store's WhatsApp
+    if current_user.role != 'SUPERADMIN':
+        if current_user.role != 'SELLER' or current_user.store_id != store_id:
+            return jsonify({'error': 'No autorizado'}), 403
+        # Sellers can only update whatsapp field
+        data = request.get_json()
+        # Only allow whatsapp update for sellers
+        allowed_data = {'whatsapp': data.get('whatsapp')}
+        store, error = StoreService.update_store(store_id, allowed_data)
+    else:
+        data = request.get_json()
+        store, error = StoreService.update_store(store_id, data)
     
     if error:
         return jsonify({'error': error}), 404

@@ -1,5 +1,11 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { Link } from 'react-router-dom'
+import AdminLayout from '../components/AdminLayout'
+import StatCard from '../components/StatCard'
+import ConfirmModal from '../components/ConfirmModal'
+import Pagination from '../components/Pagination'
+import { TableSkeleton } from '../components/Skeleton'
+import { useToast } from '../components/Toast'
 
 function Dashboard({ user, onLogout }) {
     const [categories, setCategories] = useState([])
@@ -7,6 +13,10 @@ function Dashboard({ user, onLogout }) {
     const [loading, setLoading] = useState(true)
     const [selectedCategory, setSelectedCategory] = useState('')
     const [searchTerm, setSearchTerm] = useState('')
+    const [deleteTarget, setDeleteTarget] = useState(null)
+    const [currentPage, setCurrentPage] = useState(1)
+    const itemsPerPage = 10
+    const toast = useToast()
 
     useEffect(() => {
         fetchDashboardData()
@@ -29,84 +39,127 @@ function Dashboard({ user, onLogout }) {
                 setProducts(await productsRes.json())
             }
         } catch (error) {
-            console.error('Error fetching dashboard data:', error)
+            toast.error('Error al cargar datos del dashboard')
         } finally {
             setLoading(false)
         }
     }
 
-    const handleDelete = async (productId, productName) => {
-        if (!confirm(`¿Estás seguro de eliminar el producto "${productName}"?`)) {
-            return
-        }
+    const handleDelete = async () => {
+        if (!deleteTarget) return
 
         try {
             const token = localStorage.getItem('token')
             const headers = { 'Authorization': `Bearer ${token}` }
 
-            const res = await fetch(`/api/products/${productId}`, {
+            const res = await fetch(`/api/products/${deleteTarget.id}`, {
                 method: 'DELETE',
                 headers
             })
 
             if (res.ok) {
+                toast.success(`Producto "${deleteTarget.name}" eliminado exitosamente`)
+                setDeleteTarget(null)
                 fetchDashboardData()
             } else {
                 const data = await res.json()
-                alert(data.error || 'Error al eliminar el producto')
+                toast.error(data.error || 'Error al eliminar el producto')
             }
         } catch (error) {
-            console.error('Error deleting product:', error)
-            alert('Error de conexión')
+            toast.error('Error de conexión')
         }
     }
 
-    const handleLogout = () => {
-        onLogout()
-    }
+    // Stats
+    const stats = useMemo(() => {
+        const lowStock = products.filter(p => p.stock > 0 && p.stock < 5)
+        const outOfStock = products.filter(p => p.stock <= 0)
+        return {
+            total: products.length,
+            lowStock: lowStock.length,
+            outOfStock: outOfStock.length,
+            categories: categories.length
+        }
+    }, [products, categories])
 
-    // Filter products by category and search term
-    const filteredProducts = products.filter(product => {
-        const matchCategory = !selectedCategory || product.category_id === parseInt(selectedCategory)
-        const matchSearch = !searchTerm || 
-            product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            (product.description && product.description.toLowerCase().includes(searchTerm.toLowerCase()))
-        return matchCategory && matchSearch
-    })
+    // Filter products
+    const filteredProducts = useMemo(() => {
+        return products.filter(product => {
+            const matchCategory = !selectedCategory || product.category_id === parseInt(selectedCategory)
+            const matchSearch = !searchTerm ||
+                product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                (product.description && product.description.toLowerCase().includes(searchTerm.toLowerCase()))
+            return matchCategory && matchSearch
+        })
+    }, [products, selectedCategory, searchTerm])
 
-    if (loading) {
-        return <div className="dashboard-content"><p>Cargando...</p></div>
+    // Pagination
+    const totalPages = Math.ceil(filteredProducts.length / itemsPerPage)
+    const paginatedProducts = useMemo(() => {
+        const start = (currentPage - 1) * itemsPerPage
+        return filteredProducts.slice(start, start + itemsPerPage)
+    }, [filteredProducts, currentPage])
+
+    // Reset page when filters change
+    useEffect(() => {
+        setCurrentPage(1)
+    }, [selectedCategory, searchTerm])
+
+    const getStockBadge = (stock) => {
+        if (stock <= 0) return { color: 'var(--error)', label: 'Agotado' }
+        if (stock < 5) return { color: 'var(--warning)', label: 'Stock bajo' }
+        return { color: 'var(--success)', label: 'Disponible' }
     }
 
     return (
-        <div className="dashboard-layout">
-            <aside className="sidebar">
-                <h2>E-Shop</h2>
-                <nav>
-                    <Link to="/admin" className="active">Productos</Link>
-                    <Link to="/admin/categories">Categorías</Link>
-                    <Link to="/admin/settings">Configuración</Link>
-                    <button onClick={handleLogout} className="btn btn-secondary" style={{ width: '100%', marginTop: '20px' }}>
-                        Cerrar Sesión
-                    </button>
-                </nav>
-            </aside>
-
-            <main className="dashboard-content">
-                <div className="dashboard-header">
-                    <h1>Mi Tienda</h1>
-                    <div>
-                        <span style={{ marginRight: '16px' }}>{user?.email}</span>
-                        <Link to="/admin/products/new" className="btn btn-primary">
-                            Nuevo Producto
-                        </Link>
+        <>
+            <AdminLayout title="Mi Tienda" user={user} onLogout={onLogout}>
+                {/* Stats Cards */}
+                {!loading && (
+                    <div className="stats-grid" style={{
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                        gap: '16px',
+                        marginBottom: '24px'
+                    }}>
+                        <StatCard
+                            title="Productos"
+                            value={stats.total}
+                            icon="📦"
+                            color="var(--primary-color)"
+                        />
+                        <StatCard
+                            title="Categorías"
+                            value={stats.categories}
+                            icon="📂"
+                            color="var(--warning)"
+                        />
+                        <StatCard
+                            title="Stock Bajo"
+                            value={stats.lowStock}
+                            icon="⚠"
+                            color="var(--warning)"
+                            subtitle={stats.lowStock > 0 ? 'Menos de 5 unidades' : 'Todo en orden'}
+                        />
+                        <StatCard
+                            title="Agotados"
+                            value={stats.outOfStock}
+                            icon="🚫"
+                            color="var(--error)"
+                            subtitle={stats.outOfStock > 0 ? 'Requieren reposición' : 'Sin novedades'}
+                        />
                     </div>
-                </div>
+                )}
 
                 {/* Filters */}
                 <div className="card" style={{ marginBottom: '24px' }}>
-                    <div style={{ display: 'flex', gap: '16px', alignItems: 'center', flexWrap: 'wrap' }}>
-                        <div style={{ flex: 1, minWidth: '200px' }}>
+                    <div className="filters-row" style={{
+                        display: 'flex',
+                        gap: '16px',
+                        alignItems: 'center',
+                        flexWrap: 'wrap'
+                    }}>
+                        <div style={{ flex: 2, minWidth: '200px' }}>
                             <label style={{ fontSize: '13px', fontWeight: '600', display: 'block', marginBottom: '4px' }}>
                                 Buscar producto
                             </label>
@@ -115,30 +168,15 @@ function Dashboard({ user, onLogout }) {
                                 placeholder="Buscar por nombre o descripción..."
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
-                                style={{
-                                    width: '100%',
-                                    padding: '8px 12px',
-                                    border: '1px solid var(--border)',
-                                    borderRadius: '6px',
-                                    fontSize: '14px'
-                                }}
                             />
                         </div>
-                        <div style={{ minWidth: '200px' }}>
+                        <div style={{ flex: 1, minWidth: '160px' }}>
                             <label style={{ fontSize: '13px', fontWeight: '600', display: 'block', marginBottom: '4px' }}>
                                 Filtrar por categoría
                             </label>
                             <select
                                 value={selectedCategory}
                                 onChange={(e) => setSelectedCategory(e.target.value)}
-                                style={{
-                                    width: '100%',
-                                    padding: '8px 12px',
-                                    border: '1px solid var(--border)',
-                                    borderRadius: '6px',
-                                    fontSize: '14px',
-                                    background: 'white'
-                                }}
                             >
                                 <option value="">Todas las categorías</option>
                                 {categories.map(cat => (
@@ -158,68 +196,145 @@ function Dashboard({ user, onLogout }) {
                     </div>
                 </div>
 
+                {/* Products Table */}
                 <div className="card">
-                    <h2 style={{ marginBottom: '16px' }}>
-                        Productos ({filteredProducts.length})
-                        {selectedCategory && <span style={{ fontSize: '14px', fontWeight: 'normal', color: 'var(--text-muted)', marginLeft: '8px' }}>
-                            en {categories.find(c => c.id === parseInt(selectedCategory))?.name}
-                        </span>}
-                    </h2>
-                    {filteredProducts.length === 0 ? (
-                        <p>{products.length === 0 ? 'No hay productos registrados.' : 'No se encontraron productos con los filtros aplicados.'}</p>
+                    <div style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        marginBottom: '16px',
+                        flexWrap: 'wrap',
+                        gap: '8px'
+                    }}>
+                        <h2>
+                            Productos ({filteredProducts.length})
+                            {selectedCategory && (
+                                <span style={{
+                                    fontSize: '14px',
+                                    fontWeight: 'normal',
+                                    color: 'var(--text-muted)',
+                                    marginLeft: '8px'
+                                }}>
+                                    en {categories.find(c => c.id === parseInt(selectedCategory))?.name}
+                                </span>
+                            )}
+                        </h2>
+                        <Link to="/admin/products/new" className="btn btn-primary" style={{ fontSize: '13px' }}>
+                            + Nuevo Producto
+                        </Link>
+                    </div>
+
+                    {loading ? (
+                        <TableSkeleton rows={5} cols={5} />
+                    ) : filteredProducts.length === 0 ? (
+                        <p style={{ color: 'var(--text-secondary)', textAlign: 'center', padding: '40px 0' }}>
+                            {products.length === 0
+                                ? 'No hay productos registrados. Crea tu primer producto.'
+                                : 'No se encontraron productos con los filtros aplicados.'}
+                        </p>
                     ) : (
-                        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                            <thead>
-                                <tr style={{ textAlign: 'left', borderBottom: '2px solid var(--border)' }}>
-                                    <th style={{ padding: '8px' }}>Nombre</th>
-                                    <th style={{ padding: '8px' }}>Precio</th>
-                                    <th style={{ padding: '8px' }}>Stock</th>
-                                    <th style={{ padding: '8px' }}>Categoría</th>
-                                    <th style={{ padding: '8px' }}>Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {filteredProducts.map(product => (
-                                    <tr key={product.id} style={{ borderBottom: '1px solid var(--border)' }}>
-                                        <td style={{ padding: '12px 8px' }}>{product.name}</td>
-                                        <td style={{ padding: '12px 8px' }}>
-                                            ${product.promo_price || product.price}
-                                            {product.promo_price && (
-                                                <span style={{ textDecoration: 'line-through', color: 'var(--text-muted)', marginLeft: '8px' }}>
-                                                    ${product.price}
-                                                </span>
-                                            )}
-                                        </td>
-                                        <td style={{ padding: '12px 8px' }}>{product.stock}</td>
-                                        <td style={{ padding: '12px 8px' }}>
-                                            {categories.find(c => c.id === product.category_id)?.name || 'Sin categoría'}
-                                        </td>
-                                        <td style={{ padding: '12px 8px' }}>
-                                            <div style={{ display: 'flex', gap: '6px' }}>
-                                                <Link
-                                                    to={`/admin/products/edit/${product.id}`}
-                                                    className="btn btn-secondary"
-                                                    style={{ padding: '4px 10px', fontSize: '12px', textDecoration: 'none' }}
-                                                >
-                                                    ✏️ Editar
-                                                </Link>
-                                                <button
-                                                    className="btn btn-secondary"
-                                                    style={{ padding: '4px 10px', fontSize: '12px', background: 'var(--error)', color: 'white' }}
-                                                    onClick={() => handleDelete(product.id, product.name)}
-                                                >
-                                                    🗑️ Eliminar
-                                                </button>
+                        <>
+                            {/* Desktop Table */}
+                            <div className="table-wrapper">
+                                <table className="data-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Nombre</th>
+                                            <th>Precio</th>
+                                            <th>Stock</th>
+                                            <th>Categoría</th>
+                                            <th>Acciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {paginatedProducts.map(product => {
+                                            const badge = getStockBadge(product.stock)
+                                            return (
+                                                <tr key={product.id}>
+                                                    <td className="cell-name">{product.name}</td>
+                                                    <td>
+                                                        ${product.promo_price || product.price}
+                                                        {product.promo_price && (
+                                                            <span className="old-price-inline">${product.price}</span>
+                                                        )}
+                                                    </td>
+                                                    <td>
+                                                        <span className="stock-badge" style={{ background: badge.color + '20', color: badge.color }}>
+                                                            <span className="stock-dot" style={{ background: badge.color }} />
+                                                            {badge.label} {product.stock > 0 && `(${product.stock})`}
+                                                        </span>
+                                                    </td>
+                                                    <td>{categories.find(c => c.id === product.category_id)?.name || 'Sin categoría'}</td>
+                                                    <td>
+                                                        <div className="action-buttons">
+                                                            <Link
+                                                                to={`/admin/products/edit/${product.id}`}
+                                                                className="btn btn-secondary"
+                                                            >
+                                                                ✏️ Editar
+                                                            </Link>
+                                                            <button
+                                                                className="btn btn-danger"
+                                                                onClick={() => setDeleteTarget(product)}
+                                                            >
+                                                                🗑️ Eliminar
+                                                            </button>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            )
+                                        })}
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            {/* Mobile Cards */}
+                            <div className="mobile-cards">
+                                {paginatedProducts.map(product => {
+                                    const badge = getStockBadge(product.stock)
+                                    return (
+                                        <div key={product.id} className="mobile-product-card">
+                                            <div className="mobile-product-header">
+                                                <span className="mobile-product-name">{product.name}</span>
+                                                <span className="mobile-product-price">${product.promo_price || product.price}</span>
                                             </div>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                                            <div className="mobile-product-meta">
+                                                <span className="stock-badge" style={{ background: badge.color + '20', color: badge.color }}>
+                                                    <span className="stock-dot" style={{ background: badge.color }} />
+                                                    {badge.label}
+                                                </span>
+                                                <span>Categoría: {categories.find(c => c.id === product.category_id)?.name || 'Sin categoría'}</span>
+                                            </div>
+                                            <div className="mobile-product-actions">
+                                                <Link to={`/admin/products/edit/${product.id}`} className="btn btn-secondary">✏️ Editar</Link>
+                                                <button className="btn btn-danger" onClick={() => setDeleteTarget(product)}>🗑️ Eliminar</button>
+                                            </div>
+                                        </div>
+                                    )
+                                })}
+                            </div>
+
+                            <Pagination
+                                currentPage={currentPage}
+                                totalPages={totalPages}
+                                onPageChange={setCurrentPage}
+                            />
+                        </>
                     )}
                 </div>
-            </main>
-        </div>
+            </AdminLayout>
+
+            <ConfirmModal
+                isOpen={!!deleteTarget}
+                title="Eliminar Producto"
+                message={`¿Estás seguro de eliminar el producto "${deleteTarget?.name}"? Esta acción no se puede deshacer.`}
+                confirmText="Eliminar"
+                cancelText="Cancelar"
+                danger
+                onConfirm={handleDelete}
+                onCancel={() => setDeleteTarget(null)}
+            />
+        </>
     )
 }
 

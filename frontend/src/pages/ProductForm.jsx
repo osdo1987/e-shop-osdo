@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
+import AdminLayout from '../components/AdminLayout'
+import { useToast } from '../components/Toast'
 
 function ProductForm({ user }) {
     const navigate = useNavigate()
@@ -7,6 +9,7 @@ function ProductForm({ user }) {
     const isEditing = Boolean(id)
     const [categories, setCategories] = useState([])
     const [loading, setLoading] = useState(isEditing)
+    const toast = useToast()
     const [form, setForm] = useState({
         name: '',
         description: '',
@@ -98,6 +101,7 @@ function ProductForm({ user }) {
             })
 
             if (res.ok) {
+                toast.success(isEditing ? 'Producto actualizado exitosamente' : 'Producto creado exitosamente')
                 navigate('/admin')
             } else {
                 const data = await res.json()
@@ -112,139 +116,166 @@ function ProductForm({ user }) {
 
     if (loading) {
         return (
-            <div className="dashboard-layout">
-                <aside className="sidebar">
-                    <h2>E-Shop</h2>
-                    <nav>
-                        <Link to="/admin">Productos</Link>
-                        <Link to="/admin/categories">Categorías</Link>
-                        <Link to="/admin/settings">Configuración</Link>
-                    </nav>
-                </aside>
-                <main className="dashboard-content">
-                    <p>Cargando producto...</p>
-                </main>
-            </div>
+            <AdminLayout title="Cargando..." user={user}>
+                <p style={{ color: 'var(--text-secondary)', textAlign: 'center', padding: '40px' }}>Cargando producto...</p>
+            </AdminLayout>
         )
     }
 
     return (
-        <div className="dashboard-layout">
-            <aside className="sidebar">
-                <h2>E-Shop</h2>
-                <nav>
-                    <Link to="/admin">Productos</Link>
-                    <Link to="/admin/categories">Categorías</Link>
-                    <Link to="/admin/settings">Configuración</Link>
-                </nav>
-            </aside>
-            <main className="dashboard-content">
-                <div className="dashboard-header">
-                    <h1>{isEditing ? 'Editar Producto' : 'Nuevo Producto'}</h1>
-                    <Link to="/admin" className="btn btn-secondary">Volver</Link>
-                </div>
-
-                <div className="card">
-                    {error && <div className="error-message">{error}</div>}
-                    <form onSubmit={handleSubmit}>
+        <AdminLayout title={isEditing ? 'Editar Producto' : 'Nuevo Producto'} user={user} showBack>
+            <div className="card" style={{ maxWidth: '700px' }}>
+                {error && <div className="error-message">{error}</div>}
+                <form onSubmit={handleSubmit}>
+                    <div className="input-group">
+                        <label>Nombre del Producto</label>
+                        <input
+                            type="text"
+                            name="name"
+                            value={form.name}
+                            onChange={handleChange}
+                            required
+                            placeholder="Ej: Camiseta Algodón Premium"
+                        />
+                    </div>
+                    <div className="input-group">
+                        <label>Descripción</label>
+                        <textarea
+                            name="description"
+                            value={form.description}
+                            onChange={handleChange}
+                            rows="3"
+                            placeholder="Descripción del producto..."
+                        />
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                         <div className="input-group">
-                            <label>Nombre del Producto</label>
+                            <label>Precio</label>
                             <input
-                                type="text"
-                                name="name"
-                                value={form.name}
+                                type="number"
+                                name="price"
+                                value={form.price}
                                 onChange={handleChange}
                                 required
-                                placeholder="Ej: Camiseta Algodón Premium"
+                                min="0"
+                                step="0.01"
+                                placeholder="45000"
                             />
                         </div>
                         <div className="input-group">
-                            <label>Descripción</label>
-                            <textarea
-                                name="description"
-                                value={form.description}
-                                onChange={handleChange}
-                                rows="3"
-                                placeholder="Descripción del producto..."
-                            />
-                        </div>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-                            <div className="input-group">
-                                <label>Precio</label>
-                                <input
-                                    type="number"
-                                    name="price"
-                                    value={form.price}
-                                    onChange={handleChange}
-                                    required
-                                    min="0"
-                                    step="0.01"
-                                    placeholder="45000"
-                                />
-                            </div>
-                            <div className="input-group">
-                                <label>Precio Promocional</label>
-                                <input
-                                    type="number"
-                                    name="promo_price"
-                                    value={form.promo_price}
-                                    onChange={handleChange}
-                                    min="0"
-                                    step="0.01"
-                                    placeholder="35000"
-                                />
-                            </div>
-                        </div>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-                            <div className="input-group">
-                                <label>Stock</label>
-                                <input
-                                    type="number"
-                                    name="stock"
-                                    value={form.stock}
-                                    onChange={handleChange}
-                                    required
-                                    min="0"
-                                    placeholder="50"
-                                />
-                            </div>
-                            <div className="input-group">
-                                <label>Categoría</label>
-                                <select
-                                    name="category_id"
-                                    value={form.category_id}
-                                    onChange={handleChange}
-                                    required
-                                >
-                                    <option value="">Seleccionar categoría</option>
-                                    {categories.map(cat => (
-                                        <option key={cat.id} value={cat.id}>{cat.name}</option>
-                                    ))}
-                                </select>
-                            </div>
-                        </div>
-                        <div className="input-group">
-                            <label>URL de Imagen (opcional)</label>
+                            <label>Precio Promocional</label>
                             <input
-                                type="url"
-                                name="image_url"
-                                value={form.image_url}
+                                type="number"
+                                name="promo_price"
+                                value={form.promo_price}
                                 onChange={handleChange}
-                                placeholder="https://ejemplo.com/imagen.jpg"
+                                min="0"
+                                step="0.01"
+                                placeholder="35000"
                             />
                         </div>
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                        <div className="input-group">
+                            <label>Stock</label>
+                            <input
+                                type="number"
+                                name="stock"
+                                value={form.stock}
+                                onChange={handleChange}
+                                required
+                                min="0"
+                                placeholder="50"
+                            />
+                        </div>
+                        <div className="input-group">
+                            <label>Categoría</label>
+                            <select
+                                name="category_id"
+                                value={form.category_id}
+                                onChange={handleChange}
+                                required
+                            >
+                                <option value="">Seleccionar categoría</option>
+                                {categories.map(cat => (
+                                    <option key={cat.id} value={cat.id}>{cat.name}</option>
+                                ))}
+                            </select>
+                        </div>
+                    </div>
+                    <div className="input-group">
+                        <label>URL de Imagen (opcional)</label>
+                        <input
+                            type="url"
+                            name="image_url"
+                            value={form.image_url}
+                            onChange={handleChange}
+                            placeholder="https://ejemplo.com/imagen.jpg"
+                        />
+                    </div>
+
+                    {/* Image Upload */}
+                    <div className="input-group">
+                        <label>O subir imagen</label>
+                        <div className="image-upload-zone" style={{
+                            border: '2px dashed var(--border)',
+                            borderRadius: '8px',
+                            padding: '24px',
+                            textAlign: 'center',
+                            color: 'var(--text-muted)',
+                            fontSize: '14px',
+                            cursor: 'pointer',
+                            transition: 'all 0.2s',
+                            background: 'var(--background)'
+                        }}>
+                            📸 Arrastra una imagen aquí o haz clic para seleccionar
+                            <input
+                                type="file"
+                                accept="image/*"
+                                style={{ display: 'none' }}
+                                onChange={(e) => {
+                                    const file = e.target.files[0]
+                                    if (file) {
+                                        const reader = new FileReader()
+                                        reader.onload = (ev) => {
+                                            setForm({ ...form, image_url: ev.target.result })
+                                        }
+                                        reader.readAsDataURL(file)
+                                    }
+                                }}
+                            />
+                        </div>
+                        {form.image_url && (
+                            <div style={{ marginTop: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <img src={form.image_url} alt="Preview" style={{ width: '60px', height: '60px', objectFit: 'cover', borderRadius: '4px' }} />
+                                <button
+                                    type="button"
+                                    className="btn btn-secondary"
+                                    style={{ padding: '4px 8px', fontSize: '12px' }}
+                                    onClick={() => setForm({ ...form, image_url: '' })}
+                                >
+                                    Quitar imagen
+                                </button>
+                            </div>
+                        )}
+                    </div>
+
+                    <div style={{ display: 'flex', gap: '12px', marginTop: '16px' }}>
                         <button
                             type="submit"
                             className="btn btn-primary"
-                            style={{ marginTop: '16px' }}
+                            style={{ flex: 1 }}
                             disabled={saving}
                         >
                             {saving ? 'Guardando...' : (isEditing ? 'Actualizar Producto' : 'Guardar Producto')}
                         </button>
-                    </form>
-                </div>
-            </main>
-        </div>
+                        <Link to="/admin" className="btn btn-secondary" style={{ flex: 1, textAlign: 'center', textDecoration: 'none' }}>
+                            Cancelar
+                        </Link>
+                    </div>
+                </form>
+            </div>
+        </AdminLayout>
     )
 }
 

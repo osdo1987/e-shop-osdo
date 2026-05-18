@@ -1,11 +1,14 @@
 import { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
+import AdminLayout from '../components/AdminLayout'
+import ConfirmModal from '../components/ConfirmModal'
+import { useToast } from '../components/Toast'
 
 function Categories({ user }) {
     const [categories, setCategories] = useState([])
     const [loading, setLoading] = useState(true)
     const [newCategoryName, setNewCategoryName] = useState('')
-    const [error, setError] = useState('')
+    const [deleteTarget, setDeleteTarget] = useState(null)
+    const toast = useToast()
 
     const fetchCategories = async () => {
         try {
@@ -17,7 +20,7 @@ function Categories({ user }) {
                 setCategories(await res.json())
             }
         } catch (error) {
-            console.error('Error fetching categories:', error)
+            toast.error('Error al cargar categorías')
         } finally {
             setLoading(false)
         }
@@ -29,7 +32,6 @@ function Categories({ user }) {
 
     const handleCreate = async (e) => {
         e.preventDefault()
-        setError('')
         const token = localStorage.getItem('token')
         try {
             const res = await fetch('/api/categories', {
@@ -44,61 +46,53 @@ function Categories({ user }) {
                 })
             })
             if (res.ok) {
+                toast.success(`Categoría "${newCategoryName}" creada exitosamente`)
                 setNewCategoryName('')
                 fetchCategories()
             } else {
                 const data = await res.json()
-                setError(data.error || 'Error al crear categoría')
+                toast.error(data.error || 'Error al crear categoría')
             }
         } catch (err) {
-            setError('Error de conexión')
+            toast.error('Error de conexión')
         }
     }
 
-    const handleDelete = async (id) => {
-        if (!confirm('¿Eliminar esta categoría?')) return
+    const handleDelete = async () => {
+        if (!deleteTarget) return
+
         const token = localStorage.getItem('token')
         try {
-            const res = await fetch(`/api/categories/${id}`, {
+            const res = await fetch(`/api/categories/${deleteTarget.id}`, {
                 method: 'DELETE',
                 headers: { 'Authorization': `Bearer ${token}` }
             })
             if (res.ok) {
+                toast.success(`Categoría "${deleteTarget.name}" eliminada`)
+                setDeleteTarget(null)
                 fetchCategories()
+            } else {
+                const data = await res.json()
+                toast.error(data.error || 'Error al eliminar categoría')
             }
         } catch (error) {
-            console.error('Error deleting category:', error)
+            toast.error('Error de conexión')
         }
     }
 
-    if (loading) return <div className="dashboard-content"><p>Cargando...</p></div>
-
     return (
-        <div className="dashboard-layout">
-            <aside className="sidebar">
-                <h2>E-Shop</h2>
-                <nav>
-                    <Link to="/admin">Productos</Link>
-                    <Link to="/admin/categories" className="active">Categorías</Link>
-                    <Link to="/admin/settings">Configuración</Link>
-                </nav>
-            </aside>
-            <main className="dashboard-content">
-                <div className="dashboard-header">
-                    <h1>Categorías</h1>
-                </div>
-
+        <>
+            <AdminLayout title="Categorías" user={user}>
                 <div className="card" style={{ marginBottom: '24px' }}>
-                    <h3>Nueva Categoría</h3>
-                    {error && <div className="error-message">{error}</div>}
-                    <form onSubmit={handleCreate} style={{ display: 'flex', gap: '12px', marginTop: '12px' }}>
+                    <h3 style={{ marginBottom: '16px' }}>Nueva Categoría</h3>
+                    <form onSubmit={handleCreate} style={{ display: 'flex', gap: '12px' }}>
                         <input
                             type="text"
                             value={newCategoryName}
                             onChange={(e) => setNewCategoryName(e.target.value)}
                             placeholder="Nombre de la categoría"
                             required
-                            style={{ flex: 1, padding: '8px 12px', borderRadius: '6px', border: '1px solid var(--border)' }}
+                            style={{ flex: 1 }}
                         />
                         <button type="submit" className="btn btn-primary">Crear</button>
                     </form>
@@ -106,37 +100,73 @@ function Categories({ user }) {
 
                 <div className="card">
                     <h3 style={{ marginBottom: '16px' }}>Lista de Categorías ({categories.length})</h3>
-                    {categories.length === 0 ? (
-                        <p>No hay categorías.</p>
+                    {loading ? (
+                        <p style={{ color: 'var(--text-secondary)' }}>Cargando...</p>
+                    ) : categories.length === 0 ? (
+                        <p style={{ color: 'var(--text-secondary)' }}>No hay categorías. Crea la primera.</p>
                     ) : (
-                        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                            <thead>
-                                <tr style={{ textAlign: 'left', borderBottom: '2px solid var(--border)' }}>
-                                    <th style={{ padding: '8px' }}>Nombre</th>
-                                    <th style={{ padding: '8px' }}>Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody>
+                        <>
+                            {/* Desktop Table */}
+                            <div className="table-wrapper">
+                                <table className="data-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Nombre</th>
+                                            <th>Acciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {categories.map(cat => (
+                                            <tr key={cat.id}>
+                                                <td>{cat.name}</td>
+                                                <td>
+                                                    <button
+                                                        className="btn btn-danger"
+                                                        style={{ padding: '4px 10px', fontSize: '12px' }}
+                                                        onClick={() => setDeleteTarget(cat)}
+                                                    >
+                                                        🗑️ Eliminar
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            {/* Mobile Cards */}
+                            <div className="mobile-cards">
                                 {categories.map(cat => (
-                                    <tr key={cat.id} style={{ borderBottom: '1px solid var(--border)' }}>
-                                        <td style={{ padding: '12px 8px' }}>{cat.name}</td>
-                                        <td style={{ padding: '12px 8px' }}>
+                                    <div key={cat.id} className="mobile-product-card">
+                                        <div className="mobile-product-header">
+                                            <span className="mobile-product-name">{cat.name}</span>
                                             <button
-                                                className="btn btn-secondary"
-                                                style={{ padding: '4px 8px', background: 'var(--error)', color: 'white' }}
-                                                onClick={() => handleDelete(cat.id)}
+                                                className="btn btn-danger"
+                                                style={{ padding: '4px 10px', fontSize: '12px' }}
+                                                onClick={() => setDeleteTarget(cat)}
                                             >
-                                                Eliminar
+                                                🗑️ Eliminar
                                             </button>
-                                        </td>
-                                    </tr>
+                                        </div>
+                                    </div>
                                 ))}
-                            </tbody>
-                        </table>
+                            </div>
+                        </>
                     )}
                 </div>
-            </main>
-        </div>
+            </AdminLayout>
+
+            <ConfirmModal
+                isOpen={!!deleteTarget}
+                title="Eliminar Categoría"
+                message={`¿Estás seguro de eliminar la categoría "${deleteTarget?.name}"? Los productos asociados quedarán sin categoría.`}
+                confirmText="Eliminar"
+                cancelText="Cancelar"
+                danger
+                onConfirm={handleDelete}
+                onCancel={() => setDeleteTarget(null)}
+            />
+        </>
     )
 }
 

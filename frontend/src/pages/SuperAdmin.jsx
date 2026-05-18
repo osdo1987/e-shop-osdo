@@ -1,11 +1,16 @@
 import { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
+import AdminLayout from '../components/AdminLayout'
+import StatCard from '../components/StatCard'
+import ConfirmModal from '../components/ConfirmModal'
+import { useToast } from '../components/Toast'
 
 function SuperAdmin({ user, onLogout }) {
     const [stores, setStores] = useState([])
     const [loading, setLoading] = useState(true)
+    const [searchTerm, setSearchTerm] = useState('')
     const [showCreateModal, setShowCreateModal] = useState(false)
     const [showEditModal, setShowEditModal] = useState(false)
+    const [deleteTarget, setDeleteTarget] = useState(null)
     const [editingStore, setEditingStore] = useState(null)
     const [newStore, setNewStore] = useState({
         storeName: '',
@@ -19,8 +24,8 @@ function SuperAdmin({ user, onLogout }) {
         slug: '',
         whatsapp: ''
     })
-    const [error, setError] = useState('')
-    const [success, setSuccess] = useState('')
+    const [modalError, setModalError] = useState('')
+    const toast = useToast()
 
     useEffect(() => {
         fetchStores()
@@ -37,7 +42,7 @@ function SuperAdmin({ user, onLogout }) {
                 setStores(data)
             }
         } catch (error) {
-            console.error('Error fetching stores:', error)
+            toast.error('Error al cargar tiendas')
         } finally {
             setLoading(false)
         }
@@ -45,34 +50,34 @@ function SuperAdmin({ user, onLogout }) {
 
     const handleCreateStore = async (e) => {
         e.preventDefault()
-        setError('')
-        setSuccess('')
+        setModalError('')
+        setLoading(true)
 
         try {
             const token = localStorage.getItem('token')
-            const headers = {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            }
-
             const res = await fetch('/api/auth/register-seller', {
                 method: 'POST',
-                headers,
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
                 body: JSON.stringify(newStore)
             })
 
             const data = await res.json()
 
             if (res.ok) {
-                setSuccess('Tienda y vendedor creados exitosamente')
+                toast.success('Tienda y vendedor creados exitosamente')
                 setShowCreateModal(false)
                 setNewStore({ storeName: '', slug: '', whatsapp: '', email: '', password: '' })
                 fetchStores()
             } else {
-                setError(data.error || 'Error al crear la tienda')
+                setModalError(data.error || 'Error al crear la tienda')
             }
         } catch (error) {
-            setError('Error de conexión')
+            setModalError('Error de conexión')
+        } finally {
+            setLoading(false)
         }
     }
 
@@ -83,322 +88,369 @@ function SuperAdmin({ user, onLogout }) {
             slug: store.slug,
             whatsapp: store.whatsapp || ''
         })
-        setError('')
-        setSuccess('')
+        setModalError('')
         setShowEditModal(true)
     }
 
     const handleEditStore = async (e) => {
         e.preventDefault()
-        setError('')
-        setSuccess('')
+        setModalError('')
+        setLoading(true)
 
         try {
             const token = localStorage.getItem('token')
-            const headers = {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            }
-
             const res = await fetch(`/api/stores/${editingStore.id}`, {
                 method: 'PUT',
-                headers,
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
                 body: JSON.stringify(editForm)
             })
 
             const data = await res.json()
 
             if (res.ok) {
-                setSuccess('Tienda actualizada exitosamente')
+                toast.success('Tienda actualizada exitosamente')
                 setShowEditModal(false)
                 setEditingStore(null)
                 fetchStores()
             } else {
-                setError(data.error || 'Error al actualizar la tienda')
+                setModalError(data.error || 'Error al actualizar la tienda')
             }
         } catch (error) {
-            setError('Error de conexión')
+            setModalError('Error de conexión')
+        } finally {
+            setLoading(false)
         }
     }
 
-    const handleDeleteStore = async (storeId, storeName) => {
-        if (!confirm(`¿Estás seguro de eliminar la tienda "${storeName}"? Esta acción eliminará todos los productos, categorías y el vendedor asociado.`)) {
-            return
-        }
-
-        setError('')
-        setSuccess('')
+    const handleDeleteStore = async () => {
+        if (!deleteTarget) return
 
         try {
             const token = localStorage.getItem('token')
-            const headers = {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            }
-
-            const res = await fetch(`/api/stores/${storeId}`, {
+            const res = await fetch(`/api/stores/${deleteTarget.id}`, {
                 method: 'DELETE',
-                headers
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
             })
 
             if (res.ok) {
-                setSuccess(`Tienda "${storeName}" eliminada exitosamente`)
+                toast.success(`Tienda "${deleteTarget.name}" eliminada exitosamente`)
+                setDeleteTarget(null)
                 fetchStores()
             } else {
                 const data = await res.json()
-                setError(data.error || 'Error al eliminar la tienda')
+                toast.error(data.error || 'Error al eliminar la tienda')
             }
         } catch (error) {
-            setError('Error de conexión')
+            toast.error('Error de conexión')
         }
     }
 
-    const handleLogout = () => {
-        onLogout()
-    }
+    const filteredStores = stores.filter(store =>
+        !searchTerm ||
+        store.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        store.slug.toLowerCase().includes(searchTerm.toLowerCase())
+    )
 
-    if (loading) {
-        return <div className="dashboard-content"><p>Cargando...</p></div>
+    const stats = {
+        total: stores.length,
+        withWhatsapp: stores.filter(s => s.whatsapp).length,
+        totalProducts: stores.reduce((sum, s) => sum + (s.productCount || 0), 0)
     }
 
     return (
-        <div className="dashboard-layout">
-            <aside className="sidebar">
-                <h2>Super Admin</h2>
-                <nav>
-                    <Link to="/admin/super" className="active">Tiendas</Link>
-                    <button onClick={handleLogout} className="btn btn-secondary" style={{ width: '100%', marginTop: '20px' }}>
-                        Cerrar Sesión
-                    </button>
-                </nav>
-            </aside>
+        <>
+            <AdminLayout title="Gestión de Tiendas" user={user} onLogout={onLogout} superadmin>
+                {/* Stats */}
+                {!loading && (
+                    <div className="stats-grid" style={{
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                        gap: '16px',
+                        marginBottom: '24px'
+                    }}>
+                        <StatCard title="Tiendas" value={stats.total} icon="🏪" color="var(--primary-color)" />
+                        <StatCard title="Con WhatsApp" value={stats.withWhatsapp} icon="💬" color="var(--success)" />
+                        <StatCard title="Productos" value={stats.totalProducts} icon="📦" color="var(--warning)" />
+                    </div>
+                )}
 
-            <main className="dashboard-content">
-                <div className="dashboard-header">
-                    <h1>Gestión de Tiendas</h1>
-                    <div>
-                        <span style={{ marginRight: '16px' }}>{user?.email}</span>
-                        <button
-                            className="btn btn-primary"
-                            onClick={() => setShowCreateModal(true)}
-                        >
-                            Nueva Tienda
-                        </button>
+                {/* Search & Actions */}
+                <div className="card" style={{ marginBottom: '24px' }}>
+                    <div style={{
+                        display: 'flex',
+                        gap: '16px',
+                        alignItems: 'center',
+                        flexWrap: 'wrap',
+                        justifyContent: 'space-between'
+                    }}>
+                        <div style={{ flex: 2, minWidth: '200px' }}>
+                            <label style={{ fontSize: '13px', fontWeight: '600', display: 'block', marginBottom: '4px' }}>
+                                Buscar tienda
+                            </label>
+                            <input
+                                type="text"
+                                placeholder="Buscar por nombre o slug..."
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                            />
+                        </div>
+                        <div style={{ alignSelf: 'flex-end' }}>
+                            <button
+                                className="btn btn-primary"
+                                onClick={() => setShowCreateModal(true)}
+                                style={{ whiteSpace: 'nowrap' }}
+                            >
+                                + Nueva Tienda
+                            </button>
+                        </div>
                     </div>
                 </div>
 
-                {error && <div className="error-message">{error}</div>}
-                {success && <div className="success-message">{success}</div>}
-
+                {/* Stores Table */}
                 <div className="card">
-                    <h2 style={{ marginBottom: '16px' }}>Tiendas ({stores.length})</h2>
-                    {stores.length === 0 ? (
-                        <p>No hay tiendas registradas.</p>
+                    <h2 style={{ marginBottom: '16px' }}>Tiendas ({filteredStores.length})</h2>
+                    {loading ? (
+                        <p style={{ color: 'var(--text-secondary)' }}>Cargando...</p>
+                    ) : filteredStores.length === 0 ? (
+                        <p style={{ color: 'var(--text-secondary)', textAlign: 'center', padding: '40px' }}>
+                            {stores.length === 0
+                                ? 'No hay tiendas registradas.'
+                                : 'No se encontraron tiendas con ese filtro.'}
+                        </p>
                     ) : (
-                        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                            <thead>
-                                <tr style={{ textAlign: 'left', borderBottom: '2px solid var(--border)' }}>
-                                    <th style={{ padding: '8px' }}>Nombre</th>
-                                    <th style={{ padding: '8px' }}>Slug/URL</th>
-                                    <th style={{ padding: '8px' }}>WhatsApp</th>
-                                    <th style={{ padding: '8px' }}>Vendedor</th>
-                                    <th style={{ padding: '8px' }}>Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {stores.map(store => (
-                                    <tr key={store.id} style={{ borderBottom: '1px solid var(--border)' }}>
-                                        <td style={{ padding: '12px 8px' }}>{store.name}</td>
-                                        <td style={{ padding: '12px 8px' }}>
-                                            <a href={`/${store.slug}`} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--primary-color)' }}>
-                                                /{store.slug}
+                        <>
+                            {/* Desktop Table */}
+                            <div className="table-wrapper">
+                                <table className="data-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Nombre</th>
+                                            <th>Slug/URL</th>
+                                            <th>WhatsApp</th>
+                                            <th>Vendedor</th>
+                                            <th>Acciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {filteredStores.map(store => (
+                                            <tr key={store.id}>
+                                                <td className="cell-name">{store.name}</td>
+                                                <td>
+                                                    <a
+                                                        href={`/${store.slug}`}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        style={{ color: 'var(--primary-color)' }}
+                                                    >
+                                                        /{store.slug}
+                                                    </a>
+                                                </td>
+                                                <td>{store.whatsapp || <span style={{ color: 'var(--text-muted)' }}>—</span>}</td>
+                                                <td>
+                                                    {store.users?.find(u => u.role === 'SELLER')?.email || (
+                                                        <span style={{ color: 'var(--text-muted)' }}>Sin vendedor</span>
+                                                    )}
+                                                </td>
+                                                <td>
+                                                    <div className="action-buttons">
+                                                        <a
+                                                            href={`/${store.slug}`}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            className="btn btn-secondary"
+                                                            title="Ver catálogo público"
+                                                        >
+                                                            👁️ Ver
+                                                        </a>
+                                                        <button
+                                                            className="btn btn-secondary"
+                                                            onClick={() => openEditModal(store)}
+                                                        >
+                                                            ✏️ Editar
+                                                        </button>
+                                                        <button
+                                                            className="btn btn-danger"
+                                                            onClick={() => setDeleteTarget(store)}
+                                                        >
+                                                            🗑️ Eliminar
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            {/* Mobile Cards */}
+                            <div className="mobile-cards">
+                                {filteredStores.map(store => (
+                                    <div key={store.id} className="mobile-product-card">
+                                        <div className="mobile-product-header">
+                                            <span className="mobile-product-name">{store.name}</span>
+                                            <a href={`/${store.slug}`} target="_blank" rel="noopener noreferrer" className="btn btn-secondary" style={{ padding: '4px 8px', fontSize: '11px' }}>
+                                                👁️ Ver
                                             </a>
-                                        </td>
-                                        <td style={{ padding: '12px 8px' }}>{store.whatsapp || 'Sin WhatsApp'}</td>
-                                        <td style={{ padding: '12px 8px' }}>
-                                            {store.users?.find(u => u.role === 'SELLER')?.email || 'Sin vendedor'}
-                                        </td>
-                                        <td style={{ padding: '12px 8px' }}>
-                                            <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', alignItems: 'center' }}>
-                                                <a
-                                                    href={`/${store.slug}`}
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
-                                                    className="btn btn-secondary"
-                                                    style={{ padding: '4px 10px', fontSize: '12px', textDecoration: 'none' }}
-                                                    title="Ver catálogo público"
-                                                >
-                                                    👁️ Ver Tienda
-                                                </a>
-                                                <button
-                                                    className="btn btn-secondary"
-                                                    style={{ padding: '4px 10px', fontSize: '12px' }}
-                                                    onClick={() => openEditModal(store)}
-                                                >
-                                                    ✏️ Editar
-                                                </button>
-                                                <button
-                                                    className="btn btn-secondary"
-                                                    style={{ padding: '4px 10px', fontSize: '12px', background: 'var(--error)', color: 'white' }}
-                                                    onClick={() => handleDeleteStore(store.id, store.name)}
-                                                >
-                                                    🗑️ Eliminar
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
+                                        </div>
+                                        <div className="mobile-product-meta">
+                                            <span>/{store.slug}</span>
+                                            <span>{store.whatsapp || 'Sin WhatsApp'}</span>
+                                        </div>
+                                        <div className="mobile-product-actions">
+                                            <button className="btn btn-secondary" onClick={() => openEditModal(store)}>✏️ Editar</button>
+                                            <button className="btn btn-danger" onClick={() => setDeleteTarget(store)}>🗑️ Eliminar</button>
+                                        </div>
+                                    </div>
                                 ))}
-                            </tbody>
-                        </table>
+                            </div>
+                        </>
                     )}
                 </div>
+            </AdminLayout>
 
-                {/* Create Store Modal */}
-                {showCreateModal && (
-                    <div style={{
-                        position: 'fixed',
-                        top: 0,
-                        left: 0,
-                        right: 0,
-                        bottom: 0,
-                        background: 'rgba(0,0,0,0.5)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        zIndex: 1000
-                    }}>
-                        <div className="card" style={{ width: '100%', maxWidth: '500px' }}>
-                            <h2 style={{ marginBottom: '24px' }}>Crear Nueva Tienda</h2>
-                            <form onSubmit={handleCreateStore}>
-                                <div className="input-group">
-                                    <label>Nombre de la Tienda</label>
-                                    <input
-                                        type="text"
-                                        value={newStore.storeName}
-                                        onChange={(e) => setNewStore({ ...newStore, storeName: e.target.value })}
-                                        required
-                                    />
-                                </div>
-                                <div className="input-group">
-                                    <label>URL/Slug</label>
-                                    <input
-                                        type="text"
-                                        value={newStore.slug}
-                                        onChange={(e) => setNewStore({ ...newStore, slug: e.target.value.toLowerCase().replace(/\s+/g, '-') })}
-                                        required
-                                        placeholder="mi-tienda"
-                                    />
-                                </div>
-                                <div className="input-group">
-                                    <label>WhatsApp (opcional)</label>
-                                    <input
-                                        type="text"
-                                        value={newStore.whatsapp}
-                                        onChange={(e) => setNewStore({ ...newStore, whatsapp: e.target.value })}
-                                        placeholder="+573001234567"
-                                    />
-                                </div>
-                                <div className="input-group">
-                                    <label>Email del Vendedor</label>
-                                    <input
-                                        type="email"
-                                        value={newStore.email}
-                                        onChange={(e) => setNewStore({ ...newStore, email: e.target.value })}
-                                        required
-                                    />
-                                </div>
-                                <div className="input-group">
-                                    <label>Contraseña</label>
-                                    <input
-                                        type="password"
-                                        value={newStore.password}
-                                        onChange={(e) => setNewStore({ ...newStore, password: e.target.value })}
-                                        required
-                                        minLength="6"
-                                    />
-                                </div>
-                                <div style={{ display: 'flex', gap: '12px', marginTop: '24px' }}>
-                                    <button type="submit" className="btn btn-primary" style={{ flex: 1 }}>
-                                        Crear Tienda
-                                    </button>
-                                    <button
-                                        type="button"
-                                        className="btn btn-secondary"
-                                        onClick={() => { setShowCreateModal(false); setError(''); }}
-                                        style={{ flex: 1 }}
-                                    >
-                                        Cancelar
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
+            {/* Create Store Modal */}
+            {showCreateModal && (
+                <div className="modal-overlay" onClick={() => { setShowCreateModal(false); setModalError('') }}>
+                    <div className="modal-card card" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '500px', width: '100%' }}>
+                        <h2 style={{ marginBottom: '24px' }}>Crear Nueva Tienda</h2>
+                        {modalError && <div className="error-message">{modalError}</div>}
+                        <form onSubmit={handleCreateStore}>
+                            <div className="input-group">
+                                <label>Nombre de la Tienda</label>
+                                <input
+                                    type="text"
+                                    value={newStore.storeName}
+                                    onChange={(e) => setNewStore({ ...newStore, storeName: e.target.value })}
+                                    required
+                                />
+                            </div>
+                            <div className="input-group">
+                                <label>URL/Slug</label>
+                                <input
+                                    type="text"
+                                    value={newStore.slug}
+                                    onChange={(e) => setNewStore({ ...newStore, slug: e.target.value.toLowerCase().replace(/\s+/g, '-') })}
+                                    required
+                                    placeholder="mi-tienda"
+                                />
+                            </div>
+                            <div className="input-group">
+                                <label>WhatsApp (opcional)</label>
+                                <input
+                                    type="text"
+                                    value={newStore.whatsapp}
+                                    onChange={(e) => setNewStore({ ...newStore, whatsapp: e.target.value })}
+                                    placeholder="+573001234567"
+                                />
+                            </div>
+                            <div className="input-group">
+                                <label>Email del Vendedor</label>
+                                <input
+                                    type="email"
+                                    value={newStore.email}
+                                    onChange={(e) => setNewStore({ ...newStore, email: e.target.value })}
+                                    required
+                                />
+                            </div>
+                            <div className="input-group">
+                                <label>Contraseña</label>
+                                <input
+                                    type="password"
+                                    value={newStore.password}
+                                    onChange={(e) => setNewStore({ ...newStore, password: e.target.value })}
+                                    required
+                                    minLength="6"
+                                />
+                            </div>
+                            <div style={{ display: 'flex', gap: '12px', marginTop: '24px' }}>
+                                <button type="submit" className="btn btn-primary" style={{ flex: 1 }} disabled={loading}>
+                                    {loading ? 'Creando...' : 'Crear Tienda'}
+                                </button>
+                                <button
+                                    type="button"
+                                    className="btn btn-secondary"
+                                    onClick={() => { setShowCreateModal(false); setModalError('') }}
+                                    style={{ flex: 1 }}
+                                >
+                                    Cancelar
+                                </button>
+                            </div>
+                        </form>
                     </div>
-                )}
+                </div>
+            )}
 
-                {/* Edit Store Modal */}
-                {showEditModal && editingStore && (
-                    <div style={{
-                        position: 'fixed',
-                        top: 0,
-                        left: 0,
-                        right: 0,
-                        bottom: 0,
-                        background: 'rgba(0,0,0,0.5)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        zIndex: 1000
-                    }}>
-                        <div className="card" style={{ width: '100%', maxWidth: '500px' }}>
-                            <h2 style={{ marginBottom: '24px' }}>Editar Tienda: {editingStore.name}</h2>
-                            <form onSubmit={handleEditStore}>
-                                <div className="input-group">
-                                    <label>Nombre de la Tienda</label>
-                                    <input
-                                        type="text"
-                                        value={editForm.name}
-                                        onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
-                                        required
-                                    />
-                                </div>
-                                <div className="input-group">
-                                    <label>URL/Slug</label>
-                                    <input
-                                        type="text"
-                                        value={editForm.slug}
-                                        onChange={(e) => setEditForm({ ...editForm, slug: e.target.value.toLowerCase().replace(/\s+/g, '-') })}
-                                        required
-                                        placeholder="mi-tienda"
-                                    />
-                                </div>
-                                <div className="input-group">
-                                    <label>WhatsApp</label>
-                                    <input
-                                        type="text"
-                                        value={editForm.whatsapp}
-                                        onChange={(e) => setEditForm({ ...editForm, whatsapp: e.target.value })}
-                                        placeholder="+573001234567"
-                                    />
-                                </div>
-                                <div style={{ display: 'flex', gap: '12px', marginTop: '24px' }}>
-                                    <button type="submit" className="btn btn-primary" style={{ flex: 1 }}>
-                                        Guardar Cambios
-                                    </button>
-                                    <button
-                                        type="button"
-                                        className="btn btn-secondary"
-                                        onClick={() => { setShowEditModal(false); setEditingStore(null); setError(''); }}
-                                        style={{ flex: 1 }}
-                                    >
-                                        Cancelar
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
+            {/* Edit Store Modal */}
+            {showEditModal && editingStore && (
+                <div className="modal-overlay" onClick={() => { setShowEditModal(false); setEditingStore(null); setModalError('') }}>
+                    <div className="modal-card card" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '500px', width: '100%' }}>
+                        <h2 style={{ marginBottom: '24px' }}>Editar Tienda: {editingStore.name}</h2>
+                        {modalError && <div className="error-message">{modalError}</div>}
+                        <form onSubmit={handleEditStore}>
+                            <div className="input-group">
+                                <label>Nombre de la Tienda</label>
+                                <input
+                                    type="text"
+                                    value={editForm.name}
+                                    onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+                                    required
+                                />
+                            </div>
+                            <div className="input-group">
+                                <label>URL/Slug</label>
+                                <input
+                                    type="text"
+                                    value={editForm.slug}
+                                    onChange={(e) => setEditForm({ ...editForm, slug: e.target.value.toLowerCase().replace(/\s+/g, '-') })}
+                                    required
+                                    placeholder="mi-tienda"
+                                />
+                            </div>
+                            <div className="input-group">
+                                <label>WhatsApp</label>
+                                <input
+                                    type="text"
+                                    value={editForm.whatsapp}
+                                    onChange={(e) => setEditForm({ ...editForm, whatsapp: e.target.value })}
+                                    placeholder="+573001234567"
+                                />
+                            </div>
+                            <div style={{ display: 'flex', gap: '12px', marginTop: '24px' }}>
+                                <button type="submit" className="btn btn-primary" style={{ flex: 1 }} disabled={loading}>
+                                    {loading ? 'Guardando...' : 'Guardar Cambios'}
+                                </button>
+                                <button
+                                    type="button"
+                                    className="btn btn-secondary"
+                                    onClick={() => { setShowEditModal(false); setEditingStore(null); setModalError('') }}
+                                    style={{ flex: 1 }}
+                                >
+                                    Cancelar
+                                </button>
+                            </div>
+                        </form>
                     </div>
-                )}
-            </main>
-        </div>
+                </div>
+            )}
+
+            {/* Delete Confirmation */}
+            <ConfirmModal
+                isOpen={!!deleteTarget}
+                title="Eliminar Tienda"
+                message={`¿Estás seguro de eliminar la tienda "${deleteTarget?.name}"? Esta acción eliminará todos los productos, categorías y el vendedor asociado.`}
+                confirmText="Eliminar Tienda"
+                cancelText="Cancelar"
+                danger
+                onConfirm={handleDeleteStore}
+                onCancel={() => setDeleteTarget(null)}
+            />
+        </>
     )
 }
 

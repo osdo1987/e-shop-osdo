@@ -13,6 +13,21 @@
     --warning: #F59E0B;
 }
 
+[data-theme="dark"] {
+    --primary-color: #25D366;
+    --primary-dark: #34D399;
+    --primary-light: #1A2E2A;
+    --text-primary: #F9FAFB;
+    --text-secondary: #D1D5DB;
+    --text-muted: #9CA3AF;
+    --background: #0F172A;
+    --surface: #1E293B;
+    --border: #334155;
+    --error: #F87171;
+    --success: #4ADE80;
+    --warning: #FBBF24;
+}
+
 * {
     margin: 0;
     padding: 0;
@@ -24,6 +39,7 @@ body {
     background-color: var(--background);
     color: var(--text-primary);
     line-height: 1.5;
+    transition: background-color 0.3s, color 0.3s;
 }
 
 a {
@@ -59,6 +75,7 @@ select {
     padding: 24px;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     border: 1px solid var(--border);
+    transition: background-color 0.3s, border-color 0.3s;
 }
 
 .btn {
@@ -91,6 +108,10 @@ select {
     background: #D1D5DB;
 }
 
+[data-theme="dark"] .btn-secondary:hover {
+    background: #475569;
+}
+
 .input-group {
     margin-bottom: 16px;
 }
@@ -111,6 +132,8 @@ select {
     border-radius: 6px;
     font-size: 14px;
     transition: border-color 0.2s;
+    background: var(--surface);
+    color: var(--text-primary);
 }
 
 .input-group input:focus,
@@ -130,6 +153,10 @@ select {
     font-size: 14px;
 }
 
+[data-theme="dark"] .error-message {
+    background: #2D1B1B;
+}
+
 .success-message {
     background: #F0FDF4;
     color: var(--success);
@@ -137,4 +164,66 @@ select {
     border-radius: 6px;
     margin-bottom: 16px;
     font-size: 14px;
+}
+
+[data-theme="dark"] .success-message {
+    background: #1A2E1A;
+}
+
+/* Toggle Switch */
+.toggle-switch {
+    position: relative;
+    width: 44px;
+    height: 24px;
+    cursor: pointer;
+}
+
+.toggle-switch input {
+    display: none;
+}
+
+.toggle-slider {
+    position: absolute;
+    inset: 0;
+    background: var(--border);
+    border-radius: 12px;
+    transition: 0.3s;
+}
+
+.toggle-slider::before {
+    content: '';
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    background: white;
+    border-radius: 50%;
+    top: 2px;
+    left: 2px;
+    transition: 0.3s;
+}
+
+.toggle-switch input:checked + .toggle-slider {
+    background: var(--primary-color);
+}
+
+.toggle-switch input:checked + .toggle-slider::before {
+    transform: translateX(20px);
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--background);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--text-muted);
 }

@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
+import AdminLayout from '../components/AdminLayout'
+import { useToast } from '../components/Toast'
 
-function Settings({ user, onLogout }) {
+function Settings({ user, onLogout, darkMode, setDarkMode }) {
     const [store, setStore] = useState(null)
     const [whatsapp, setWhatsapp] = useState('')
     const [saving, setSaving] = useState(false)
-    const [error, setError] = useState('')
-    const [success, setSuccess] = useState('')
+    const toast = useToast()
 
     useEffect(() => {
         fetchStoreData()
@@ -32,8 +32,6 @@ function Settings({ user, onLogout }) {
 
     const handleSaveWhatsApp = async (e) => {
         e.preventDefault()
-        setError('')
-        setSuccess('')
         setSaving(true)
 
         try {
@@ -52,85 +50,86 @@ function Settings({ user, onLogout }) {
             })
 
             if (res.ok) {
-                setSuccess('Número de WhatsApp actualizado exitosamente')
+                toast.success('Número de WhatsApp actualizado exitosamente')
                 fetchStoreData()
             } else {
                 const data = await res.json()
-                setError(data.error || 'Error al actualizar WhatsApp')
+                toast.error(data.error || 'Error al actualizar WhatsApp')
             }
         } catch (err) {
-            setError('Error de conexión')
+            toast.error('Error de conexión')
         } finally {
             setSaving(false)
         }
     }
 
-    const handleLogout = () => {
-        onLogout()
-    }
-
     return (
-        <div className="dashboard-layout">
-            <aside className="sidebar">
-                <h2>E-Shop</h2>
-                <nav>
-                    <Link to="/admin">Productos</Link>
-                    <Link to="/admin/categories">Categorías</Link>
-                    <Link to="/admin/settings" className="active">Configuración</Link>
-                    <button
-                        onClick={handleLogout}
-                        className="btn btn-secondary"
-                        style={{ width: '100%', marginTop: '20px' }}
-                    >
-                        Cerrar Sesión
-                    </button>
-                </nav>
-            </aside>
-            <main className="dashboard-content">
-                <div className="dashboard-header">
-                    <h1>Configuración</h1>
+        <AdminLayout title="Configuración" user={user} onLogout={onLogout}>
+            {store && (
+                <div className="card" style={{ marginBottom: '24px' }}>
+                    <h3 style={{ marginBottom: '16px' }}>WhatsApp de la Tienda</h3>
+                    <p style={{ fontSize: '14px', color: 'var(--text-secondary)', marginBottom: '16px' }}>
+                        Este número recibirá los pedidos que los clientes realicen desde el catálogo público.
+                        {store.slug && (
+                            <span style={{ display: 'block', marginTop: '4px' }}>
+                                Catálogo: <a href={`/${store.slug}`} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--primary-color)' }}>
+                                    /{store.slug}
+                                </a>
+                            </span>
+                        )}
+                    </p>
+                    <form onSubmit={handleSaveWhatsApp} style={{ display: 'flex', gap: '12px', alignItems: 'flex-end' }}>
+                        <div className="input-group" style={{ flex: 1, marginBottom: 0 }}>
+                            <label>Número de WhatsApp</label>
+                            <input
+                                type="text"
+                                value={whatsapp}
+                                onChange={(e) => setWhatsapp(e.target.value)}
+                                placeholder="+573001234567"
+                                required
+                            />
+                        </div>
+                        <button
+                            type="submit"
+                            className="btn btn-primary"
+                            disabled={saving}
+                            style={{ whiteSpace: 'nowrap' }}
+                        >
+                            {saving ? 'Guardando...' : 'Guardar WhatsApp'}
+                        </button>
+                    </form>
                 </div>
+            )}
 
-                {store && (
-                    <div className="card" style={{ marginBottom: '24px' }}>
-                        <h3 style={{ marginBottom: '16px' }}>WhatsApp de la Tienda</h3>
-                        <p style={{ fontSize: '14px', color: 'var(--text-muted)', marginBottom: '16px' }}>
-                            Este número recibirá los pedidos que los clientes realicen desde el catálogo público.
-                            {store.slug && (
-                                <span style={{ display: 'block', marginTop: '4px' }}>
-                                    Catálogo: <a href={`/${store.slug}`} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--primary-color)' }}>
-                                        /{store.slug}
-                                    </a>
-                                </span>
-                            )}
+            {/* Dark Mode Toggle */}
+            <div className="card" style={{ marginBottom: '24px' }}>
+                <h3 style={{ marginBottom: '16px' }}>Apariencia</h3>
+                <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    padding: '12px 0'
+                }}>
+                    <div>
+                        <p style={{ fontWeight: '500' }}>Modo Oscuro</p>
+                        <p style={{ fontSize: '13px', color: 'var(--text-muted)' }}>
+                            Activa el modo oscuro para reducir la fatiga visual
                         </p>
-                        {error && <div className="error-message">{error}</div>}
-                        {success && <div className="success-message">{success}</div>}
-                        <form onSubmit={handleSaveWhatsApp} style={{ display: 'flex', gap: '12px', alignItems: 'flex-end' }}>
-                            <div className="input-group" style={{ flex: 1, marginBottom: 0 }}>
-                                <label>Número de WhatsApp</label>
-                                <input
-                                    type="text"
-                                    value={whatsapp}
-                                    onChange={(e) => setWhatsapp(e.target.value)}
-                                    placeholder="+573001234567"
-                                    required
-                                />
-                            </div>
-                            <button
-                                type="submit"
-                                className="btn btn-primary"
-                                disabled={saving}
-                                style={{ whiteSpace: 'nowrap' }}
-                            >
-                                {saving ? 'Guardando...' : 'Guardar WhatsApp'}
-                            </button>
-                        </form>
                     </div>
-                )}
+                    <label className="toggle-switch">
+                        <input
+                            type="checkbox"
+                            checked={darkMode}
+                            onChange={() => setDarkMode(!darkMode)}
+                        />
+                        <span className="toggle-slider" />
+                    </label>
+                </div>
+            </div>
 
-                <div className="card">
-                    <h3 style={{ marginBottom: '16px' }}>Información de la Cuenta</h3>
+            <div className="card">
+                <h3 style={{ marginBottom: '16px' }}>Información de la Cuenta</h3>
+                <div style={{ display: 'grid', gap: '8px' }}>
                     <p><strong>Email:</strong> {user?.email}</p>
                     <p><strong>Rol:</strong> {user?.role === 'SUPERADMIN' ? 'Super Administrador' : 'Vendedor'}</p>
                     <p><strong>ID de Tienda:</strong> {user?.storeId || 'N/A'}</p>
@@ -142,8 +141,8 @@ function Settings({ user, onLogout }) {
                         </>
                     )}
                 </div>
-            </main>
-        </div>
+            </div>
+        </AdminLayout>
     )
 }
 

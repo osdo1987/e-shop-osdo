@@ -1,5 +1,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useParams } from 'react-router-dom'
+import useDebounce from '../hooks/useDebounce'
+import { GridSkeleton } from '../components/Skeleton'
 
 function Catalog() {
     const { slug } = useParams()
@@ -12,6 +14,10 @@ function Catalog() {
     const [minPrice, setMinPrice] = useState('')
     const [maxPrice, setMaxPrice] = useState('')
     const [onlyPromo, setOnlyPromo] = useState(false)
+    const [searchTerm, setSearchTerm] = useState('')
+    const [sidebarOpen, setSidebarOpen] = useState(false)
+
+    const debouncedSearch = useDebounce(searchTerm, 300)
 
     useEffect(() => {
         fetchStoreData()
@@ -48,31 +54,50 @@ function Catalog() {
             const priceMin = minPrice === '' || currentPrice >= parseFloat(minPrice)
             const priceMax = maxPrice === '' || currentPrice <= parseFloat(maxPrice)
             const promoOnly = !onlyPromo || p.promo_price !== null
+            const matchSearch = !debouncedSearch ||
+                p.name.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+                (p.description && p.description.toLowerCase().includes(debouncedSearch.toLowerCase()))
 
-            return matchCategory && priceMin && priceMax && promoOnly
+            return matchCategory && priceMin && priceMax && promoOnly && matchSearch
         })
-    }, [products, selectedCategory, minPrice, maxPrice, onlyPromo])
+    }, [products, selectedCategory, minPrice, maxPrice, onlyPromo, debouncedSearch])
 
     const clearFilters = () => {
         setSelectedCategory('all')
         setMinPrice('')
         setMaxPrice('')
         setOnlyPromo(false)
+        setSearchTerm('')
     }
 
+    const hasActiveFilters = selectedCategory !== 'all' || minPrice || maxPrice || onlyPromo || searchTerm
+
     if (loading) {
-        return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
-            <p>Cargando catálogo...</p>
-        </div>
+        return (
+            <div className="catalog-wrapper">
+                <header className="catalog-top-bar">
+                    <div className="logo-container">
+                        <div className="logo-icon">🏪</div>
+                        <div className="logo-text">Cargando<span>.</span></div>
+                    </div>
+                </header>
+                <main className="catalog-main-layout">
+                    <section className="catalog-content">
+                        <GridSkeleton count={8} />
+                    </section>
+                </main>
+            </div>
+        )
     }
 
     if (!store) {
-        return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
-            <div className="card">
-                <h2>Tienda no encontrada</h2>
-                <p>El catálogo que buscas no existe o fue eliminado.</p>
+        return (
+            <div className="home-container">
+                <div style={{ fontSize: '64px', marginBottom: '16px' }}>🔍</div>
+                <h2 style={{ fontSize: '24px', marginBottom: '12px' }}>Tienda no encontrada</h2>
+                <p style={{ color: 'var(--text-secondary)' }}>El catálogo que buscas no existe o fue eliminado.</p>
             </div>
-        </div>
+        )
     }
 
     return (
@@ -86,20 +111,68 @@ function Catalog() {
                     </div>
                     <div className="logo-text">{store.name}<span>.</span></div>
                 </div>
-                <div className="top-bar-stats">
+                <div className="top-bar-stats" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    {/* Mobile filter toggle */}
+                    <button
+                        className="btn btn-secondary"
+                        style={{ display: 'none', padding: '6px 10px', fontSize: '13px' }}
+                        onClick={() => setSidebarOpen(!sidebarOpen)}
+                        id="mobile-filter-btn"
+                    >
+                        Filtros {hasActiveFilters ? '✓' : ''}
+                    </button>
                     <span className="pulse-dot" style={{ display: 'inline-block', width: '8px', height: '8px', borderRadius: '50%', background: 'var(--success)', marginRight: '8px' }}></span>
                     {filteredProducts.length} resultados
                 </div>
             </header>
 
             <main className="catalog-main-layout">
-                <aside className="catalog-sidebar">
+                {/* Mobile sidebar overlay */}
+                {sidebarOpen && (
+                    <div
+                        style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 998 }}
+                        onClick={() => setSidebarOpen(false)}
+                    />
+                )}
+
+                <aside className={`catalog-sidebar ${sidebarOpen ? 'catalog-sidebar-open' : ''}`}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                        <h3 className="filter-title" style={{ margin: 0 }}>Filtros</h3>
+                        <button
+                            style={{ display: 'none', background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: 'var(--text-secondary)' }}
+                            onClick={() => setSidebarOpen(false)}
+                            id="sidebar-close-btn"
+                        >
+                            ×
+                        </button>
+                    </div>
+
+                    {/* Search */}
+                    <div className="filter-group">
+                        <h3 className="filter-title">Buscar</h3>
+                        <input
+                            type="text"
+                            placeholder="Buscar productos..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            style={{
+                                width: '100%',
+                                padding: '8px 12px',
+                                border: '1px solid var(--border)',
+                                borderRadius: '6px',
+                                fontSize: '14px',
+                                background: 'var(--surface)',
+                                color: 'var(--text-primary)'
+                            }}
+                        />
+                    </div>
+
                     <div className="filter-group">
                         <h3 className="filter-title">Categorías</h3>
                         <div className="category-list">
                             <div
                                 className={`category-item ${selectedCategory === 'all' ? 'active' : ''}`}
-                                onClick={() => setSelectedCategory('all')}
+                                onClick={() => { setSelectedCategory('all'); setSidebarOpen(false) }}
                             >
                                 <span>Todos</span>
                                 <span className="count">{categoryCounts.all}</span>
@@ -108,7 +181,7 @@ function Catalog() {
                                 <div
                                     key={cat.id}
                                     className={`category-item ${selectedCategory === cat.id.toString() ? 'active' : ''}`}
-                                    onClick={() => setSelectedCategory(cat.id.toString())}
+                                    onClick={() => { setSelectedCategory(cat.id.toString()); setSidebarOpen(false) }}
                                 >
                                     <span>{cat.name}</span>
                                     <span className="count">{categoryCounts[cat.id] || 0}</span>
@@ -172,7 +245,15 @@ function Catalog() {
                 <section className="catalog-content">
                     <div className="content-header">
                         <div style={{ fontWeight: '700' }}>{filteredProducts.length} productos</div>
-                        <div style={{ fontSize: '13px', color: 'var(--text-muted)' }}>
+                        <div style={{ fontSize: '13px', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <button
+                                className="btn btn-secondary"
+                                style={{ display: 'none', padding: '6px 10px', fontSize: '13px' }}
+                                onClick={() => setSidebarOpen(true)}
+                                id="mobile-filter-btn-2"
+                            >
+                                Filtrar {hasActiveFilters ? '✓' : ''}
+                            </button>
                             Ordenar: <select style={{ border: 'none', background: 'none', fontWeight: '700' }}><option>Destacados</option></select>
                         </div>
                     </div>
@@ -189,7 +270,7 @@ function Catalog() {
                                     {isSoldOut ? (
                                         <div className="badge" style={{ background: 'var(--error)' }}>Agotado</div>
                                     ) : (
-                                        product.promo_price && <div className="badge">Nuevo</div>
+                                        product.promo_price && <div className="badge">Oferta</div>
                                     )}
                                     <div className="img-wrapper" style={{ filter: isSoldOut ? 'grayscale(100%)' : 'none' }}>
                                         {product.image_url ? (
@@ -199,7 +280,10 @@ function Catalog() {
                                         )}
                                     </div>
                                     <div className="item-cat">{categories.find(c => c.id === product.category_id)?.name}</div>
-                                    <h4 className="item-name" style={{ textDecoration: isSoldOut ? 'line-through' : 'none', color: isSoldOut ? 'var(--text-muted)' : 'var(--text-primary)' }}>{product.name}</h4>
+                                    <h4 className="item-name" style={{
+                                        textDecoration: isSoldOut ? 'line-through' : 'none',
+                                        color: isSoldOut ? 'var(--text-muted)' : 'var(--text-primary)'
+                                    }}>{product.name}</h4>
 
                                     <div className="price-line">
                                         <span className="curr-price">${(product.promo_price || product.price).toLocaleString()}</span>
@@ -211,8 +295,21 @@ function Catalog() {
                                         )}
                                     </div>
 
-                                    <div style={{ fontSize: '12px', color: isSoldOut ? 'var(--error)' : 'var(--text-muted)', marginBottom: '15px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                        <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: isSoldOut ? 'var(--error)' : (product.stock < 5 ? 'var(--warning)' : 'var(--success)') }}></span>
+                                    <div style={{
+                                        fontSize: '12px',
+                                        color: isSoldOut ? 'var(--error)' : 'var(--text-muted)',
+                                        marginBottom: '15px',
+                                        fontWeight: '600',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '4px'
+                                    }}>
+                                        <span style={{
+                                            width: '8px',
+                                            height: '8px',
+                                            borderRadius: '50%',
+                                            background: isSoldOut ? 'var(--error)' : (product.stock < 5 ? 'var(--warning)' : 'var(--success)')
+                                        }}></span>
                                         {isSoldOut ? 'Producto Agotado' : `Disponibles: ${product.stock} unidades`}
                                     </div>
 
@@ -232,7 +329,13 @@ function Catalog() {
 
                     {filteredProducts.length === 0 && (
                         <div style={{ textAlign: 'center', padding: '100px 0', color: 'var(--text-muted)' }}>
-                            No se encontraron productos con estos filtros.
+                            <div style={{ fontSize: '48px', marginBottom: '16px' }}>📭</div>
+                            <p style={{ fontSize: '16px' }}>No se encontraron productos con estos filtros.</p>
+                            {hasActiveFilters && (
+                                <button className="btn btn-secondary" onClick={clearFilters} style={{ marginTop: '16px' }}>
+                                    Limpiar filtros
+                                </button>
+                            )}
                         </div>
                     )}
                 </section>
