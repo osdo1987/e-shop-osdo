@@ -18,3 +18,14 @@ class UserSchema(ma.SQLAlchemyAutoSchema):
 class LoginSchema(ma.Schema):
     email = fields.Email(required=True)
     password = fields.String(required=True, validate=validate.Length(min=6))
+
+class ForgotPasswordSchema(ma.Schema):
+    email = fields.Email(required=True)
+
+class ResetPasswordSchema(ma.Schema):
+    token = fields.String(required=True, validate=validate.Length(min=1))
+    password = fields.String(required=True, validate=validate.Length(min=6))
+
+class ChangePasswordSchema(ma.Schema):
+    currentPassword = fields.String(required=True, validate=validate.Length(min=1))
+    newPassword = fields.String(required=True, validate=validate.Length(min=6))

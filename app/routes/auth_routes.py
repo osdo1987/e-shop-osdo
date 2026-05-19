@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 from app.services.auth_service import AuthService
-from app.schemas.user_schema import LoginSchema, UserSchema
+from app.schemas.user_schema import LoginSchema, UserSchema, ForgotPasswordSchema, ResetPasswordSchema, ChangePasswordSchema
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from app.extensions import db
 from app.models.user import User
@@ -9,6 +9,9 @@ auth_bp = Blueprint('auth', __name__)
 login_schema = LoginSchema()
 user_schema = UserSchema()
 users_schema = UserSchema(many=True)
+forgot_password_schema = ForgotPasswordSchema()
+reset_password_schema = ResetPasswordSchema()
+change_password_schema = ChangePasswordSchema()
 
 @auth_bp.route('/login', methods=['POST'])
 def login():
@@ -130,3 +133,110 @@ def get_current_user():
         return jsonify({'error': 'Usuario no encontrado'}), 404
     
     return jsonify(user_schema.dump(user)), 200
+
+@auth_bp.route('/forgot-password', methods=['POST'])
+def forgot_password():
+    """
+    Request password reset
+    ---
+    tags:
+      - Auth
+    parameters:
+      - name: body
+        in: body
+        required: true
+        schema:
+          type: object
+          properties:
+            email:
+              type: string
+              example: "vendedor@tienda.com"
+    responses:
+      200:
+        description: Reset instructions sent (or would be sent)
+      400:
+        description: Validation error
+    """
+    data = request.get_json()
+    errors = forgot_password_schema.validate(data)
+    if errors:
+        return jsonify(errors), 400
+    
+    result, status = AuthService.forgot_password(data['email'])
+    return jsonify(result), status
+
+@auth_bp.route('/reset-password', methods=['POST'])
+def reset_password():
+    """
+    Reset password using token
+    ---
+    tags:
+      - Auth
+    parameters:
+      - name: body
+        in: body
+        required: true
+        schema:
+          type: object
+          properties:
+            token:
+              type: string
+              example: "abc123..."
+            password:
+              type: string
+              example: "newPassword456"
+    responses:
+      200:
+        description: Password reset successfully
+      400:
+        description: Invalid or expired token
+    """
+    data = request.get_json()
+    errors = reset_password_schema.validate(data)
+    if errors:
+        return jsonify(errors), 400
+    
+    result, status = AuthService.reset_password(data['token'], data['password'])
+    return jsonify(result), status
+
+@auth_bp.route('/change-password', methods=['POST'])
+@jwt_required()
+def change_password():
+    """
+    Change password for authenticated user
+    ---
+    tags:
+      - Auth
+    parameters:
+      - name: body
+        in: body
+        required: true
+        schema:
+          type: object
+          properties:
+            currentPassword:
+              type: string
+              example: "oldPassword123"
+            newPassword:
+              type: string
+              example: "newPassword456"
+    responses:
+      200:
+        description: Password changed successfully
+      400:
+        description: Validation error
+      401:
+        description: Current password is incorrect
+    """
+    current_user_id = get_jwt_identity()
+    data = request.get_json()
+    errors = change_password_schema.validate(data)
+    if errors:
+        return jsonify(errors), 400
+    
+    result, status = AuthService.change_password(
+        current_user_id,
+        data['currentPassword'],
+        data['newPassword']
+    )
+    return jsonify(result), status

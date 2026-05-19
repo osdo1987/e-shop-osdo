@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { Link } from 'react-router-dom'
 import AdminLayout from '../components/AdminLayout'
 import { useToast } from '../components/Toast'
 
@@ -122,6 +123,27 @@ function Settings({ user, onLogout, darkMode, setDarkMode }) {
                         />
                         <span className="toggle-slider" />
                     </label>
+                </div>
+            </div>
+
+            {/* Change Password */}
+            <div className="card" style={{ marginBottom: '24px' }}>
+                <h3 style={{ marginBottom: '16px' }}>Seguridad</h3>
+                <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    padding: '12px 0'
+                }}>
+                    <div>
+                        <p style={{ fontWeight: '500' }}>Contraseña</p>
+                        <p style={{ fontSize: '13px', color: 'var(--text-muted)' }}>
+                            Cambia tu contraseña de acceso al panel
+                        </p>
+                    </div>
+                    <Link to="/admin/change-password" className="btn btn-secondary" style={{ textDecoration: 'none' }}>
+                        Cambiar Contraseña
+                    </Link>
                 </div>
             </div>
 

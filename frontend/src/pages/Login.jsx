@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 
 function Login({ onLogin }) {
     const [email, setEmail] = useState('')
@@ -82,6 +82,12 @@ function Login({ onLogin }) {
                         {loading ? 'Ingresando...' : 'Ingresar'}
                     </button>
                 </form>
+
+                <div style={{ textAlign: 'center', marginTop: '16px' }}>
+                    <Link to="/forgot-password" style={{ fontSize: '14px', color: 'var(--primary-dark)' }}>
+                        ¿Olvidaste tu contraseña?
+                    </Link>
+                </div>
             </div>
         </div>
     )

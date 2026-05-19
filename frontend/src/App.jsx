@@ -2,6 +2,9 @@ import { Routes, Route, Navigate } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 import { ToastProvider } from './components/Toast'
 import Login from './pages/Login'
+import ForgotPassword from './pages/ForgotPassword'
+import ResetPassword from './pages/ResetPassword'
+import ChangePassword from './pages/ChangePassword'
 import Home from './pages/Home'
 import Dashboard from './pages/Dashboard'
 import Categories from './pages/Categories'
@@ -48,6 +51,11 @@ function App() {
                 <Route path="/" element={<Home />} />
                 <Route path="/login" element={
                     user ? (user.role === 'SUPERADMIN' ? <Navigate to="/admin/super" /> : <Navigate to="/admin" />) : <Login onLogin={handleLogin} />
+                } />
+                <Route path="/forgot-password" element={<ForgotPassword />} />
+                <Route path="/reset-password" element={<ResetPassword />} />
+                <Route path="/admin/change-password" element={
+                    user ? <ChangePassword user={user} onLogout={handleLogout} /> : <Navigate to="/login" />
                 } />
                 <Route path="/admin" element={
                     user ? <Dashboard user={user} onLogout={handleLogout} /> : <Navigate to="/login" />
