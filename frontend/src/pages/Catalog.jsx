@@ -67,6 +67,12 @@ function Catalog() {
         fetchStoreData()
     }, [slug])
 
+    useEffect(() => {
+        if (store) {
+            document.title = `${store.name} - Catálogo`
+        }
+    }, [store])
+
     const fetchStoreData = async () => {
         try {
             const res = await fetch(`/api/stores/public/${slug}`)

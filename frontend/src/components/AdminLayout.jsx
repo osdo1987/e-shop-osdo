@@ -1,9 +1,21 @@
 import { Link, useLocation } from 'react-router-dom'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import './AdminLayout.css'
 
 function AdminLayout({ title, children, user, onLogout, superadmin = false, showBack = false }) {
+    const displayName = superadmin ? 'Super Admin' : (user?.storeName || 'Mi Tienda')
+    const headerLabel = superadmin ? 'Super Admin' : (user?.storeName ? `Vendedor - ${user.storeName}` : 'Vendedor')
     const location = useLocation()
+
+    useEffect(() => {
+        if (superadmin) {
+            document.title = 'Super Admin - Panel'
+        } else if (user?.storeName) {
+            document.title = `${user.storeName} - Panel`
+        } else {
+            document.title = 'Mi Tienda - Panel'
+        }
+    }, [user, superadmin])
     const [sidebarOpen, setSidebarOpen] = useState(false)
 
     const navItems = superadmin
@@ -23,7 +35,7 @@ function AdminLayout({ title, children, user, onLogout, superadmin = false, show
 
             <aside className={`sidebar ${sidebarOpen ? 'sidebar-open' : ''}`}>
                 <div className="sidebar-header">
-                    <h2>{superadmin ? 'Super Admin' : 'E-Shop'}</h2>
+                    <h2>{displayName}</h2>
                     <button className="sidebar-close" onClick={() => setSidebarOpen(false)}>×</button>
                 </div>
                 <nav>
@@ -54,7 +66,10 @@ function AdminLayout({ title, children, user, onLogout, superadmin = false, show
                         <h1>{title}</h1>
                     </div>
                     <div className="dashboard-header-right">
-                        <span className="user-email">{user?.email}</span>
+                        <div className="user-info">
+                            <span className="user-role-label">{headerLabel}</span>
+                            <span className="user-email">{user?.email}</span>
+                        </div>
                         {showBack && (
                             <Link to="/admin" className="btn btn-secondary">Volver</Link>
                         )}

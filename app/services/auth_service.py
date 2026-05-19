@@ -36,7 +36,8 @@ class AuthService:
                 'id': user.id,
                 'email': user.email,
                 'role': user.role,
-                'storeId': user.store_id
+                'storeId': user.store_id,
+                'storeName': user.store.name if user.store else None
             }
         }, 200
     
