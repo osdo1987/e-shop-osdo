@@ -73,35 +73,35 @@ def seed_licores():
         # 4. Crear Productos (24 productos)
         # ========================================
 
-        # --- WHISKY (4 productos) ---
         productos = [
+            # --- WHISKY (4 productos) ---
             Product(
                 name='Johnnie Walker Black Label 750ml',
                 price=185000, promo_price=159900, stock=20,
                 category_id=cat_whisky.id, store_id=licor_store.id,
                 description='Whisky escocés blend añejado 12 años. Notas de vainilla, miel y roble.',
-                image_url='https://images.unsplash.com/photo-1569529465841-dfecdab7503b?w=400&h=400&fit=crop',
+                image_url='https://images.unsplash.com/photo-1527061011665-3652c757a4d4?w=500&auto=format&fit=crop&q=80',
             ),
             Product(
                 name='Jack Daniel\'s Old No. 7 750ml',
                 price=145000, promo_price=129900, stock=25,
                 category_id=cat_whisky.id, store_id=licor_store.id,
                 description='Tennessee Whiskey caramelizado con carbón de arce. Sabor suave y dulce.',
-                image_url='https://images.unsplash.com/photo-1569529465841-dfecdab7503b?w=400&h=400&fit=crop',
+                image_url='https://images.unsplash.com/photo-1592751823555-59109033807d?w=500&auto=format&fit=crop&q=80',
             ),
             Product(
                 name='Buchanan\'s Master 750ml',
                 price=220000, promo_price=189900, stock=15,
                 category_id=cat_whisky.id, store_id=licor_store.id,
                 description='Whisky escocés de lujo, añejado 12 años. Sabor ahumado con toques de fruta.',
-                image_url='https://images.unsplash.com/photo-1569529465841-dfecdab7503b?w=400&h=400&fit=crop',
+                image_url='https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=500&auto=format&fit=crop&q=80',
             ),
             Product(
                 name='Jameson Irish Whiskey 750ml',
                 price=135000, stock=30,
                 category_id=cat_whisky.id, store_id=licor_store.id,
                 description='Whisky irlandés triple destilado. Suave, con notas de vainilla y nuez.',
-                image_url='https://images.unsplash.com/photo-1569529465841-dfecdab7503b?w=400&h=400&fit=crop',
+                image_url='https://images.unsplash.com/photo-1508256906707-c104ca84a82d?w=500&auto=format&fit=crop&q=80',
             ),
 
             # --- RON (3 productos) ---
@@ -110,21 +110,21 @@ def seed_licores():
                 price=85000, promo_price=74900, stock=40,
                 category_id=cat_ron.id, store_id=licor_store.id,
                 description='Ron blanco premium. Ideal para mojitos y cócteles tropicales.',
-                image_url='https://images.unsplash.com/photo-1578911595541-64bee29b82de?w=400&h=400&fit=crop',
+                image_url='https://images.unsplash.com/photo-1614313511387-14fe6c4f0cfe?w=500&auto=format&fit=crop&q=80',
             ),
             Product(
                 name='Havana Club Añejo 7 Años 750ml',
                 price=165000, promo_price=149900, stock=18,
                 category_id=cat_ron.id, store_id=licor_store.id,
                 description='Ron cubano añejado 7 años. Sabor complejo con notas de roble y caramelo.',
-                image_url='https://images.unsplash.com/photo-1578911595541-64bee29b82de?w=400&h=400&fit=crop',
+                image_url='https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=500&auto=format&fit=crop&q=80',
             ),
             Product(
                 name='Captain Morgan Spiced Gold 750ml',
                 price=95000, stock=35,
                 category_id=cat_ron.id, store_id=licor_store.id,
                 description='Ron especiado con sabor a vainilla, canela y nuez moscada.',
-                image_url='https://images.unsplash.com/photo-1578911595541-64bee29b82de?w=400&h=400&fit=crop',
+                image_url='https://images.unsplash.com/photo-1502819126416-d387f86d47a1?w=500&auto=format&fit=crop&q=80',
             ),
 
             # --- VODKA (3 productos) ---
@@ -133,21 +133,21 @@ def seed_licores():
                 price=90000, promo_price=79900, stock=50,
                 category_id=cat_vodka.id, store_id=licor_store.id,
                 description='Vodka sueco premium. Destilado con trigo de invierno. Sabor puro y limpio.',
-                image_url='https://images.unsplash.com/photo-1582819509237-d3f6e9e4c39d?w=400&h=400&fit=crop',
+                image_url='https://images.unsplash.com/photo-1550989460-0adf9ea622e2?w=500&auto=format&fit=crop&q=80',
             ),
             Product(
                 name='Smirnoff Red No. 21 750ml',
                 price=65000, stock=60,
                 category_id=cat_vodka.id, store_id=licor_store.id,
                 description='Vodka americano triple destilado. Suave y versátil para cócteles.',
-                image_url='https://images.unsplash.com/photo-1582819509237-d3f6e9e4c39d?w=400&h=400&fit=crop',
+                image_url='https://images.unsplash.com/photo-1600728613344-933e144a83b4?w=500&auto=format&fit=crop&q=80',
             ),
             Product(
                 name='Grey Goose L\'Orange 750ml',
                 price=210000, promo_price=189900, stock=10,
                 category_id=cat_vodka.id, store_id=licor_store.id,
                 description='Vodka premium francés sabor naranja. Elegante y sofisticado.',
-                image_url='https://images.unsplash.com/photo-1582819509237-d3f6e9e4c39d?w=400&h=400&fit=crop',
+                image_url='https://images.unsplash.com/photo-1560512823-829485b8bf24?w=500&auto=format&fit=crop&q=80',
             ),
 
             # --- CERVEZA (3 productos) ---
@@ -156,21 +156,21 @@ def seed_licores():
                 price=45000, promo_price=39900, stock=100,
                 category_id=cat_cerveza.id, store_id=licor_store.id,
                 description='Cerveza mexicana suave y refrescante. Ideal con limón.',
-                image_url='https://images.unsplash.com/photo-1586999768265-24af89630739?w=400&h=400&fit=crop',
+                image_url='https://images.unsplash.com/photo-1608270586620-248524c67de9?w=500&auto=format&fit=crop&q=80',
             ),
             Product(
                 name='Heineken 6 Pack 330ml',
                 price=48000, stock=80,
                 category_id=cat_cerveza.id, store_id=licor_store.id,
                 description='Cerveza lager holandesa. Sabor equilibrado con toque amargo.',
-                image_url='https://images.unsplash.com/photo-1586999768265-24af89630739?w=400&h=400&fit=crop',
+                image_url='https://images.unsplash.com/photo-1532634922-8fe0b757fb13?w=500&auto=format&fit=crop&q=80',
             ),
             Product(
                 name='Stella Artois 6 Pack 330ml',
                 price=55000, promo_price=49900, stock=60,
                 category_id=cat_cerveza.id, store_id=licor_store.id,
                 description='Cerveza belga tipo lager premium. Notas de malta y lúpulo.',
-                image_url='https://images.unsplash.com/photo-1586999768265-24af89630739?w=400&h=400&fit=crop',
+                image_url='https://images.unsplash.com/photo-1600788886242-5c96aabe3757?w=500&auto=format&fit=crop&q=80',
             ),
 
             # --- VINO (3 productos) ---
@@ -179,21 +179,21 @@ def seed_licores():
                 price=55000, promo_price=47900, stock=30,
                 category_id=cat_vino.id, store_id=licor_store.id,
                 description='Vino tinto chileno. Cuerpo medio con notas de cereza y roble.',
-                image_url='https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?w=400&h=400&fit=crop',
+                image_url='https://images.unsplash.com/photo-1506377247377-2a5b3b417ebb?w=500&auto=format&fit=crop&q=80',
             ),
             Product(
                 name='Santa Rita 120 Sauvignon Blanc 750ml',
                 price=45000, stock=35,
                 category_id=cat_vino.id, store_id=licor_store.id,
                 description='Vino blanco chileno fresco y cítrico. Notas de maracuyá y lima.',
-                image_url='https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?w=400&h=400&fit=crop',
+                image_url='https://images.unsplash.com/photo-1584916201218-f4242ceb4809?w=500&auto=format&fit=crop&q=80',
             ),
             Product(
                 name='Navarro Correa Finca el Origen Malbec 750ml',
                 price=75000, promo_price=64900, stock=25,
                 category_id=cat_vino.id, store_id=licor_store.id,
                 description='Vino tinto argentino. Crianza en barricas de roble. Sabor intenso.',
-                image_url='https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?w=400&h=400&fit=crop',
+                image_url='https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?w=500&auto=format&fit=crop&q=80',
             ),
 
             # --- TEQUILA (2 productos) ---
@@ -202,14 +202,14 @@ def seed_licores():
                 price=115000, promo_price=99900, stock=20,
                 category_id=cat_tequila.id, store_id=licor_store.id,
                 description='Tequila reposado mexicano. Añejado en barricas de roble.',
-                image_url='https://images.unsplash.com/photo-1586816001966-79b736744398?w=400&h=400&fit=crop',
+                image_url='https://images.unsplash.com/photo-1516535794938-6063878f08cc?w=500&auto=format&fit=crop&q=80',
             ),
             Product(
                 name='Patrón Silver 750ml',
                 price=280000, promo_price=249900, stock=12,
                 category_id=cat_tequila.id, store_id=licor_store.id,
                 description='Tequila premium 100% agave azul. Sabor suave con notas de agave.',
-                image_url='https://images.unsplash.com/photo-1586816001966-79b736744398?w=400&h=400&fit=crop',
+                image_url='https://images.unsplash.com/photo-1608897013039-887f21d8c804?w=500&auto=format&fit=crop&q=80',
             ),
 
             # --- LICORES (3 productos) ---
@@ -218,21 +218,21 @@ def seed_licores():
                 price=110000, promo_price=97900, stock=25,
                 category_id=cat_licores.id, store_id=licor_store.id,
                 description='Crema de whisky irlandés con notas de chocolate y vainilla.',
-                image_url='https://images.unsplash.com/photo-1578911595541-64bee29b82de?w=400&h=400&fit=crop',
+                image_url='https://images.unsplash.com/photo-1595981267035-7b04ca84a82d?w=500&auto=format&fit=crop&q=80',
             ),
             Product(
                 name='Jägermeister 700ml',
                 price=95000, stock=30,
                 category_id=cat_licores.id, store_id=licor_store.id,
                 description='Licor de hierbas alemán con 56 ingredientes naturales.',
-                image_url='https://images.unsplash.com/photo-1578911595541-64bee29b82de?w=400&h=400&fit=crop',
+                image_url='https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?w=500&auto=format&fit=crop&q=80',
             ),
             Product(
                 name='Campari 750ml',
                 price=78000, stock=20,
                 category_id=cat_licores.id, store_id=licor_store.id,
                 description='Aperitivo italiano con sabor amaro. Ideal para Negroni y cócteles.',
-                image_url='https://images.unsplash.com/photo-1578911595541-64bee29b82de?w=400&h=400&fit=crop',
+                image_url='https://images.unsplash.com/photo-1551538827-9c037cb4f32a?w=500&auto=format&fit=crop&q=80',
             ),
 
             # --- SIN ALCOHOL (3 productos) ---
@@ -241,21 +241,21 @@ def seed_licores():
                 price=32000, stock=90,
                 category_id=cat_sin_alcohol.id, store_id=licor_store.id,
                 description='Cerveza sin alcohol con todo el sabor de Club Colombia.',
-                image_url='https://images.unsplash.com/photo-1586999768265-24af89630739?w=400&h=400&fit=crop',
+                image_url='https://images.unsplash.com/photo-1527960656366-ee2a999e32e6?w=500&auto=format&fit=crop&q=80',
             ),
             Product(
                 name='Agua Tónica Canada Dry 1.5L',
                 price=8500, stock=150,
                 category_id=cat_sin_alcohol.id, store_id=licor_store.id,
                 description='Agua tónica premium para mezclar con gin o vodka.',
-                image_url='https://images.unsplash.com/photo-1586999768265-24af89630739?w=400&h=400&fit=crop',
+                image_url='https://images.unsplash.com/photo-1563245372-f21724e3856d?w=500&auto=format&fit=crop&q=80',
             ),
             Product(
                 name='Tampico Sabor Ponche 1.5L',
                 price=12000, promo_price=9900, stock=200,
                 category_id=cat_sin_alcohol.id, store_id=licor_store.id,
                 description='Refresco sabor ponche de frutas. Ideal para mezclar.',
-                image_url='https://images.unsplash.com/photo-1586999768265-24af89630739?w=400&h=400&fit=crop',
+                image_url='https://images.unsplash.com/photo-1622483767028-3f66f32aef97?w=500&auto=format&fit=crop&q=80',
             ),
         ]
 
