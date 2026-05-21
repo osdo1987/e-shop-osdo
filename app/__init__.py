@@ -1,6 +1,6 @@
 from flask import Flask, jsonify
 from app.config import Config
-from app.extensions import db, migrate, jwt, ma, bcrypt, swagger, cors
+from app.extensions import db, migrate, jwt, ma, bcrypt, swagger, cors, mail
 from flask_cors import CORS
 
 def create_app(config_class=Config):
@@ -23,6 +23,7 @@ def create_app(config_class=Config):
     ma.init_app(app)
     bcrypt.init_app(app)
     swagger.init_app(app)
+    mail.init_app(app)
 
     # Register Blueprints
     from app.routes.auth_routes import auth_bp

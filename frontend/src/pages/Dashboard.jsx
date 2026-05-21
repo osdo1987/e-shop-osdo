@@ -141,8 +141,8 @@ function Dashboard({ user, onLogout }) {
                     <div className="stats-grid" style={{
                         display: 'grid',
                         gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-                        gap: '16px',
-                        marginBottom: '24px'
+                        gap: '1.5rem',
+                        marginBottom: '1.5rem'
                     }}>
                         <StatCard
                             title="Productos"
@@ -197,17 +197,10 @@ function Dashboard({ user, onLogout }) {
                 )}
 
                 {/* Filters */}
-                <div className="card" style={{ marginBottom: '24px' }}>
-                    <div className="filters-row" style={{
-                        display: 'flex',
-                        gap: '16px',
-                        alignItems: 'center',
-                        flexWrap: 'wrap'
-                    }}>
-                        <div style={{ flex: 2, minWidth: '200px' }}>
-                            <label style={{ fontSize: '13px', fontWeight: '600', display: 'block', marginBottom: '4px' }}>
-                                Buscar producto
-                            </label>
+                <div className="card" style={{ marginBottom: '1.5rem' }}>
+                    <div className="flex-row" style={{ flexWrap: 'wrap' }}>
+                        <div className="input-group" style={{ flex: 2, minWidth: '200px', marginBottom: 0 }}>
+                            <label>Buscar producto</label>
                             <input
                                 type="text"
                                 placeholder="Buscar por nombre o descripción..."
@@ -215,10 +208,8 @@ function Dashboard({ user, onLogout }) {
                                 onChange={(e) => setSearchTerm(e.target.value)}
                             />
                         </div>
-                        <div style={{ flex: 1, minWidth: '160px' }}>
-                            <label style={{ fontSize: '13px', fontWeight: '600', display: 'block', marginBottom: '4px' }}>
-                                Filtrar por categoría
-                            </label>
+                        <div className="input-group" style={{ flex: 1, minWidth: '160px', marginBottom: 0 }}>
+                            <label>Filtrar por categoría</label>
                             <select
                                 value={selectedCategory}
                                 onChange={(e) => setSelectedCategory(e.target.value)}
@@ -229,7 +220,7 @@ function Dashboard({ user, onLogout }) {
                                 ))}
                             </select>
                         </div>
-                        <div style={{ alignSelf: 'flex-end' }}>
+                        <div style={{ alignSelf: 'flex-end', marginBottom: '4px' }}>
                             <button
                                 className="btn btn-secondary"
                                 onClick={() => { setSelectedCategory(''); setSearchTerm('') }}
@@ -243,13 +234,10 @@ function Dashboard({ user, onLogout }) {
 
                 {/* Products Table */}
                 <div className="card">
-                    <div style={{
-                        display: 'flex',
+                    <div className="flex-row" style={{
                         justifyContent: 'space-between',
-                        alignItems: 'center',
-                        marginBottom: '16px',
-                        flexWrap: 'wrap',
-                        gap: '8px'
+                        marginBottom: '1rem',
+                        flexWrap: 'wrap'
                     }}>
                         <h2>
                             Productos ({filteredProducts.length})

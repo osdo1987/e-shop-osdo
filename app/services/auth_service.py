@@ -1,5 +1,7 @@
 from flask_jwt_extended import create_access_token
-from app.extensions import db
+from app.extensions import db, mail
+from flask_mail import Message
+import os
 from app.models.user import User
 from app.models.store import Store
 from datetime import timedelta, datetime
@@ -116,12 +118,23 @@ class AuthService:
         user.reset_token_expiry = datetime.utcnow() + timedelta(minutes=60)
         db.session.commit()
         
-        # In production, send email with reset link containing raw_token
-        # For this app, we return it in the response since there's no email service
+        # Send email with reset link
+        frontend_url = os.getenv('FRONTEND_URL', 'http://localhost:5173')
+        reset_link = f"{frontend_url}/reset-password?token={raw_token}"
+        
+        try:
+            msg = Message(
+                subject='Restablecer tu contraseña - E-Shop',
+                recipients=[email],
+                body=f"Hola,\n\nHas solicitado restablecer tu contraseña. Haz clic en el siguiente enlace para crear una nueva:\n\n{reset_link}\n\nSi no solicitaste este cambio, puedes ignorar este correo.\n\nEste enlace expirará en 60 minutos."
+            )
+            mail.send(msg)
+        except Exception as e:
+            print(f"Error enviando correo: {str(e)}")
+            return {'error': 'Error interno al enviar el correo'}, 500
+        
         return {
-            'message': 'Si el correo existe, recibirás instrucciones para restablecer tu contraseña.',
-            'reset_token': raw_token,  # Only returned because no email service configured
-            'email': email
+            'message': 'Si el correo existe, recibirás instrucciones para restablecer tu contraseña.'
         }, 200
     
     @staticmethod

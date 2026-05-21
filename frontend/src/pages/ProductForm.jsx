@@ -209,7 +209,7 @@ function ProductForm({ user }) {
                             placeholder="Descripción del producto..."
                         />
                     </div>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>
+                    <div className="flex-row" style={{ alignItems: 'flex-start' }}>
                         <div className="input-group">
                             <label>Precio de Venta</label>
                             <input
@@ -248,7 +248,7 @@ function ProductForm({ user }) {
                             />
                         </div>
                     </div>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                    <div className="flex-row" style={{ alignItems: 'flex-start' }}>
                         <div className="input-group">
                             <label>Stock {hasSizes && <span style={{ fontSize: '11px', color: 'var(--primary-color)' }}>(Calculado de las tallas)</span>}</label>
                             <input
@@ -460,7 +460,7 @@ function ProductForm({ user }) {
                         )}
                     </div>
 
-                    <div style={{ display: 'flex', gap: '12px', marginTop: '16px' }}>
+                    <div className="flex-row" style={{ marginTop: '1.5rem' }}>
                         <button
                             type="submit"
                             className="btn btn-primary"

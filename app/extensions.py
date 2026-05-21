@@ -5,6 +5,7 @@ from flask_marshmallow import Marshmallow
 from flask_bcrypt import Bcrypt
 from flasgger import Swagger
 from flask_cors import CORS
+from flask_mail import Mail
 
 db = SQLAlchemy()
 migrate = Migrate()
@@ -13,3 +14,4 @@ ma = Marshmallow()
 bcrypt = Bcrypt()
 swagger = Swagger()
 cors = CORS()
+mail = Mail()

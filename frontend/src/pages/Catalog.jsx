@@ -283,6 +283,9 @@ function Catalog() {
 
     return (
         <div className="catalog-wrapper">
+            <div className="promo-banner">
+                🚀 Envío gratis en pedidos sobre $100.000
+            </div>
             <header className="catalog-top-bar">
                 <div className="logo-container">
                     <div className="logo-icon">
@@ -292,21 +295,50 @@ function Catalog() {
                     </div>
                     <div className="logo-text">{store.name}<span>.</span></div>
                 </div>
-                <div className="top-bar-stats" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    {/* Mobile filter toggle */}
+                
+                <div className="navbar-center">
+                    <div className="search-wrapper navbar-search">
+                        <svg className="search-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+                        </svg>
+                        <input
+                            type="text"
+                            placeholder="Buscar productos..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                        />
+                    </div>
+                    <div className="navbar-categories">
+                        <button className={selectedCategory === 'all' ? 'active' : ''} onClick={() => setSelectedCategory('all')}>Todos</button>
+                        {categories.slice(0, 4).map(cat => (
+                            <button key={cat.id} className={selectedCategory === cat.id.toString() ? 'active' : ''} onClick={() => setSelectedCategory(cat.id.toString())}>{cat.name}</button>
+                        ))}
+                    </div>
+                </div>
+
+                <div className="navbar-actions">
                     <button
                         className="btn btn-secondary"
-                        style={{ display: 'none', padding: '6px 12px', fontSize: '13px', alignItems: 'center', gap: '6px', borderRadius: '20px' }}
+                        style={{ display: 'none', padding: '6px 10px', fontSize: '13px', alignItems: 'center', gap: '6px', borderRadius: '20px' }}
                         onClick={() => setSidebarOpen(!sidebarOpen)}
                         id="mobile-filter-btn"
                     >
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" style={{ width: '16px', height: '16px' }}>
                             <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 6h9.75M10.5 6a1.5 1.5 0 11-3 0m3 0a1.5 1.5 0 10-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-9.75 0h9.75" />
                         </svg>
-                        Filtros {hasActiveFilters ? '✓' : ''}
                     </button>
-                    <span className="pulse-dot" style={{ display: 'inline-block', width: '8px', height: '8px', borderRadius: '50%', background: 'var(--success)', marginRight: '8px' }}></span>
-                    {filteredProducts.length} resultados
+                    <button className={`nav-icon-btn ${onlyFavorites ? 'active' : ''}`} onClick={() => setOnlyFavorites(!onlyFavorites)} title="Mis Favoritos">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill={onlyFavorites ? 'currentColor' : 'none'} viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" style={{ width: '22px', height: '22px' }}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
+                        </svg>
+                        {favorites.length > 0 && <span className="nav-badge">{favorites.length}</span>}
+                    </button>
+                    <button className="nav-icon-btn" onClick={toggleCart} title="Carrito de compras">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" style={{ width: '22px', height: '22px' }}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007zM8.625 10.5a.375.375 0 11-.75 0 .375.375 0 01.75 0zm7.5 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+                        </svg>
+                        {cartTotalItems > 0 && <span className="nav-badge">{cartTotalItems}</span>}
+                    </button>
                 </div>
             </header>
 
@@ -331,8 +363,8 @@ function Catalog() {
                         </button>
                     </div>
 
-                    {/* Search */}
-                    <div className="filter-group">
+                    {/* Mobile Search - Only visible when navbar search is hidden */}
+                    <div className="filter-group mobile-only-search">
                         <h3 className="filter-title">Buscar</h3>
                         <div className="search-wrapper">
                             <svg className="search-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
