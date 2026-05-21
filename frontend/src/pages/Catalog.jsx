@@ -31,6 +31,7 @@ function Catalog() {
     const [categories, setCategories] = useState([])
     const [products, setProducts] = useState([])
     const [loading, setLoading] = useState(true)
+    const [promoIndex, setPromoIndex] = useState(0)
 
     const [selectedCategory, setSelectedCategory] = useState('all')
     const [priceRange, setPriceRange] = useState([0, 1000000])
@@ -72,6 +73,27 @@ function Catalog() {
             document.title = `${store.name} - Catálogo`
         }
     }, [store])
+
+    // Products on promotion
+    const promoProducts = useMemo(() => {
+        return products.filter(p => p.promo_price !== null)
+    }, [products])
+
+    // Rotate promo banner every 5 seconds
+    useEffect(() => {
+        if (promoProducts.length <= 1) return
+        const interval = setInterval(() => {
+            setPromoIndex(prev => (prev + 1) % promoProducts.length)
+        }, 5000)
+        return () => clearInterval(interval)
+    }, [promoProducts.length])
+
+    // Randomize initial promo product
+    useEffect(() => {
+        if (promoProducts.length > 0) {
+            setPromoIndex(Math.floor(Math.random() * promoProducts.length))
+        }
+    }, [promoProducts.length])
 
     const fetchStoreData = async () => {
         try {
@@ -281,10 +303,30 @@ function Catalog() {
         )
     }
 
+    // Current promo product to display
+    const currentPromo = promoProducts.length > 0
+        ? promoProducts[promoIndex % promoProducts.length]
+        : null
+
     return (
         <div className="catalog-wrapper">
             <div className="promo-banner">
-                🚀 Envío gratis en pedidos sobre $100.000
+                {currentPromo ? (
+                    <span className="promo-banner-content">
+                        <span className="promo-badge">🔥 OFERTA</span>
+                        <span className="promo-name">{currentPromo.name}</span>
+                        <span className="promo-price-old">${currentPromo.price.toLocaleString()}</span>
+                        <span className="promo-price-new">${currentPromo.promo_price.toLocaleString()}</span>
+                        <span className="promo-discount">
+                            -{Math.round(((currentPromo.price - currentPromo.promo_price) / currentPromo.price) * 100)}%
+                        </span>
+                        {promoProducts.length > 1 && (
+                            <span className="promo-counter">{promoIndex + 1}/{promoProducts.length}</span>
+                        )}
+                    </span>
+                ) : (
+                    <span>🚀 Envío gratis en pedidos sobre $100.000</span>
+                )}
             </div>
             <header className="catalog-top-bar">
                 <div className="logo-container">

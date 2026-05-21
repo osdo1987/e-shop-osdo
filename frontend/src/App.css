@@ -141,11 +141,89 @@
     font-size: 13px;
     font-weight: 600;
     letter-spacing: 0.5px;
+    overflow: hidden;
 }
 
 [data-theme="dark"] .promo-banner {
     background: #3b82f6;
     color: white;
+}
+
+.promo-banner-content {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    white-space: nowrap;
+    animation: promo-slide-in 0.5s ease-out;
+}
+
+@keyframes promo-slide-in {
+    from {
+        opacity: 0;
+        transform: translateY(-100%);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.promo-banner .promo-badge {
+    display: inline-block;
+    background: #ef4444;
+    color: white;
+    padding: 1px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    animation: promo-pulse 2s infinite;
+}
+
+@keyframes promo-pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+}
+
+.promo-banner .promo-name {
+    font-weight: 700;
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.promo-banner .promo-price-old {
+    text-decoration: line-through;
+    opacity: 0.6;
+    font-size: 12px;
+}
+
+.promo-banner .promo-price-new {
+    color: #4ade80;
+    font-weight: 800;
+    font-size: 14px;
+}
+
+[data-theme="dark"] .promo-banner .promo-price-new {
+    color: #fde047;
+}
+
+.promo-banner .promo-discount {
+    display: inline-block;
+    background: rgba(239, 68, 68, 0.2);
+    color: #ef4444;
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 800;
+}
+
+.promo-banner .promo-counter {
+    font-size: 11px;
+    opacity: 0.5;
+    margin-left: 4px;
 }
 
 .catalog-top-bar {
