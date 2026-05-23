@@ -6,6 +6,7 @@ import { useToast } from '../components/Toast'
 function Settings({ user, onLogout, darkMode, setDarkMode }) {
     const [store, setStore] = useState(null)
     const [whatsapp, setWhatsapp] = useState('')
+    const [logoUrl, setLogoUrl] = useState('')
     const [saving, setSaving] = useState(false)
     const toast = useToast()
 
@@ -25,13 +26,14 @@ function Settings({ user, onLogout, darkMode, setDarkMode }) {
                 const data = await res.json()
                 setStore(data)
                 setWhatsapp(data.whatsapp || '')
+                setLogoUrl(data.logo_url || '')
             }
         } catch (error) {
             console.error('Error fetching store:', error)
         }
     }
 
-    const handleSaveWhatsApp = async (e) => {
+    const handleSaveStoreInfo = async (e) => {
         e.preventDefault()
         setSaving(true)
 
@@ -44,16 +46,17 @@ function Settings({ user, onLogout, darkMode, setDarkMode }) {
                     'Authorization': `Bearer ${token}`
                 },
                 body: JSON.stringify({
-                    whatsapp: whatsapp
+                    whatsapp: whatsapp,
+                    logo_url: logoUrl
                 })
             })
 
             if (res.ok) {
-                toast.success('Número de WhatsApp actualizado exitosamente')
+                toast.success('Información de la tienda actualizada exitosamente')
                 fetchStoreData()
             } else {
                 const data = await res.json()
-                toast.error(data.error || 'Error al actualizar WhatsApp')
+                toast.error(data.error || 'Error al actualizar información')
             }
         } catch (err) {
             toast.error('Error de conexión')
@@ -66,9 +69,9 @@ function Settings({ user, onLogout, darkMode, setDarkMode }) {
         <AdminLayout title="Configuración" user={user} onLogout={onLogout}>
             {store && (
                 <div className="card" style={{ marginBottom: '24px' }}>
-                    <h3 style={{ marginBottom: '16px' }}>WhatsApp de la Tienda</h3>
+                    <h3 style={{ marginBottom: '16px' }}>Información Pública de la Tienda</h3>
                     <p style={{ fontSize: '14px', color: 'var(--text-secondary)', marginBottom: '16px' }}>
-                        Este número recibirá los pedidos que los clientes realicen desde el catálogo público.
+                        Configura el WhatsApp para recibir pedidos y el logo que se mostrará en el catálogo.
                         {store.slug && (
                             <span style={{ display: 'block', marginTop: '4px' }}>
                                 Catálogo: <a href={`/${store.slug}`} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--primary-color)' }}>
@@ -77,8 +80,8 @@ function Settings({ user, onLogout, darkMode, setDarkMode }) {
                             </span>
                         )}
                     </p>
-                    <form onSubmit={handleSaveWhatsApp} style={{ display: 'flex', gap: '12px', alignItems: 'flex-end' }}>
-                        <div className="input-group" style={{ flex: 1, marginBottom: 0 }}>
+                    <form onSubmit={handleSaveStoreInfo} style={{ display: 'flex', gap: '12px', alignItems: 'flex-end', flexWrap: 'wrap' }}>
+                        <div className="input-group" style={{ flex: 1, minWidth: '200px', marginBottom: 0 }}>
                             <label>Número de WhatsApp</label>
                             <input
                                 type="text"
@@ -88,13 +91,22 @@ function Settings({ user, onLogout, darkMode, setDarkMode }) {
                                 required
                             />
                         </div>
+                        <div className="input-group" style={{ flex: 1, minWidth: '200px', marginBottom: 0 }}>
+                            <label>URL del Logo</label>
+                            <input
+                                type="url"
+                                value={logoUrl}
+                                onChange={(e) => setLogoUrl(e.target.value)}
+                                placeholder="https://ejemplo.com/logo.png"
+                            />
+                        </div>
                         <button
                             type="submit"
                             className="btn btn-primary"
                             disabled={saving}
                             style={{ whiteSpace: 'nowrap' }}
                         >
-                            {saving ? 'Guardando...' : 'Guardar WhatsApp'}
+                            {saving ? 'Guardando...' : 'Guardar Cambios'}
                         </button>
                     </form>
                 </div>

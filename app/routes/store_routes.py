@@ -170,9 +170,12 @@ def update_store(store_id):
         if user_store_id is None or user_store_id != store_id:
             return jsonify({'error': 'No autorizado: no tienes permiso para esta tienda'}), 403
         
-        # Sellers can only update whatsapp field
+        # Sellers can only update whatsapp and logo_url fields
         data = request.get_json()
-        allowed_data = {'whatsapp': data.get('whatsapp')}
+        allowed_data = {
+            'whatsapp': data.get('whatsapp'),
+            'logo_url': data.get('logo_url')
+        }
         store, error = StoreService.update_store(store_id, allowed_data)
     else:
         data = request.get_json()

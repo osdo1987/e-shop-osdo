@@ -140,7 +140,7 @@ function Dashboard({ user, onLogout }) {
                 {!loading && (
                     <div className="stats-grid" style={{
                         display: 'grid',
-                        gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+                        gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
                         gap: '1.5rem',
                         marginBottom: '1.5rem'
                     }}>

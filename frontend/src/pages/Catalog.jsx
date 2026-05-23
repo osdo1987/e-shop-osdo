@@ -331,9 +331,13 @@ function Catalog() {
             <header className="catalog-top-bar">
                 <div className="logo-container">
                     <div className="logo-icon">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" style={{ width: '20px', height: '20px' }}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 21v-7.5a.75.75 0 01.75-.75h3a.75.75 0 01.75.75V21m-4.5 0H2.36m11.14 0H18m0 0h3.64m-1.39 0V9.809c0-.816-.31-1.597-.86-2.176l-3.32-3.483A3.013 3.013 0 0015.36 3.25h-6.72c-.8 0-1.564.316-2.128.878L3.192 7.61a3 3 0 00-.86 2.122V21m15.66 0h-3.66m-1.34 0v-7.5a.75.75 0 00-.75-.75h-3a.75.75 0 00-.75.75V21M3.66 21H2.34m0 0v-7.5a.75.75 0 01.75-.75h3a.75.75 0 01.75.75V21" />
-                        </svg>
+                        {store.logo_url ? (
+                            <img src={store.logo_url} alt={`${store.name} logo`} style={{ width: '100%', height: '100%', objectFit: 'contain', borderRadius: '4px' }} />
+                        ) : (
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" style={{ width: '20px', height: '20px' }}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 21v-7.5a.75.75 0 01.75-.75h3a.75.75 0 01.75.75V21m-4.5 0H2.36m11.14 0H18m0 0h3.64m-1.39 0V9.809c0-.816-.31-1.597-.86-2.176l-3.32-3.483A3.013 3.013 0 0015.36 3.25h-6.72c-.8 0-1.564.316-2.128.878L3.192 7.61a3 3 0 00-.86 2.122V21m15.66 0h-3.66m-1.34 0v-7.5a.75.75 0 00-.75-.75h-3a.75.75 0 00-.75.75V21M3.66 21H2.34m0 0v-7.5a.75.75 0 01.75-.75h3a.75.75 0 01.75.75V21" />
+                            </svg>
+                        )}
                     </div>
                     <div className="logo-text">{store.name}<span>.</span></div>
                 </div>

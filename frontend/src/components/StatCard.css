@@ -1,51 +1,84 @@
 .stat-card {
     background: var(--surface);
     border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 20px;
+    border-radius: 16px;
+    padding: 24px;
     display: flex;
     align-items: center;
-    gap: 16px;
-    transition: all 0.3s ease;
+    gap: 20px;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+    position: relative;
+    overflow: hidden;
+}
+
+.stat-card::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: var(--card-color, var(--primary-color));
+    opacity: 0.7;
+    transition: width 0.3s ease, opacity 0.3s ease;
 }
 
 .stat-card:hover {
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-    transform: translateY(-2px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08);
+    transform: translateY(-4px);
+    border-color: transparent;
+}
+
+.stat-card:hover::after {
+    width: 8px;
+    opacity: 1;
 }
 
 .stat-card-icon {
-    width: 48px;
-    height: 48px;
-    border-radius: 12px;
+    width: 56px;
+    height: 56px;
+    border-radius: 14px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 22px;
+    font-size: 26px;
     flex-shrink: 0;
+    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.stat-card:hover .stat-card-icon {
+    transform: scale(1.15) rotate(5deg);
 }
 
 .stat-card-info {
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: 4px;
+    z-index: 1;
+    min-width: 0;
+    flex: 1;
 }
 
 .stat-card-value {
-    font-size: 28px;
-    font-weight: 700;
+    font-size: clamp(20px, 1.8vw, 26px);
+    font-weight: 800;
     color: var(--text-primary);
     line-height: 1.2;
+    letter-spacing: -0.5px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .stat-card-title {
     font-size: 14px;
     color: var(--text-secondary);
-    font-weight: 500;
+    font-weight: 600;
 }
 
 .stat-card-subtitle {
     font-size: 12px;
     color: var(--text-muted);
-    margin-top: 2px;
+    font-weight: 500;
 }

@@ -2,7 +2,7 @@ import './StatCard.css'
 
 function StatCard({ title, value, icon, color = 'var(--primary-color)', subtitle }) {
     return (
-        <div className="stat-card">
+        <div className="stat-card" style={{ '--card-color': color }}>
             <div className="stat-card-icon" style={{ background: color + '15', color: color }}>
                 {icon}
             </div>

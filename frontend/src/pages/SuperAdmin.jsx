@@ -16,13 +16,15 @@ function SuperAdmin({ user, onLogout }) {
         storeName: '',
         slug: '',
         whatsapp: '',
+        logo_url: '',
         email: '',
         password: ''
     })
     const [editForm, setEditForm] = useState({
         name: '',
         slug: '',
-        whatsapp: ''
+        whatsapp: '',
+        logo_url: ''
     })
     const [modalError, setModalError] = useState('')
     const toast = useToast()
@@ -69,7 +71,7 @@ function SuperAdmin({ user, onLogout }) {
             if (res.ok) {
                 toast.success('Tienda y vendedor creados exitosamente')
                 setShowCreateModal(false)
-                setNewStore({ storeName: '', slug: '', whatsapp: '', email: '', password: '' })
+                setNewStore({ storeName: '', slug: '', whatsapp: '', logo_url: '', email: '', password: '' })
                 fetchStores()
             } else {
                 setModalError(data.error || 'Error al crear la tienda')
@@ -86,7 +88,8 @@ function SuperAdmin({ user, onLogout }) {
         setEditForm({
             name: store.name,
             slug: store.slug,
-            whatsapp: store.whatsapp || ''
+            whatsapp: store.whatsapp || '',
+            logo_url: store.logo_url || ''
         })
         setModalError('')
         setShowEditModal(true)
@@ -346,7 +349,16 @@ function SuperAdmin({ user, onLogout }) {
                                     type="text"
                                     value={newStore.whatsapp}
                                     onChange={(e) => setNewStore({ ...newStore, whatsapp: e.target.value })}
-                                    placeholder="+573001234567"
+                                    placeholder="+1234567890"
+                                />
+                            </div>
+                            <div className="form-group">
+                                <label>URL del Logo (opcional)</label>
+                                <input
+                                    type="url"
+                                    value={newStore.logo_url}
+                                    onChange={(e) => setNewStore({ ...newStore, logo_url: e.target.value })}
+                                    placeholder="https://ejemplo.com/logo.png"
                                 />
                             </div>
                             <div className="input-group">
@@ -418,7 +430,16 @@ function SuperAdmin({ user, onLogout }) {
                                     type="text"
                                     value={editForm.whatsapp}
                                     onChange={(e) => setEditForm({ ...editForm, whatsapp: e.target.value })}
-                                    placeholder="+573001234567"
+                                    placeholder="+1234567890"
+                                />
+                            </div>
+                            <div className="form-group">
+                                <label>URL del Logo</label>
+                                <input
+                                    type="url"
+                                    value={editForm.logo_url}
+                                    onChange={(e) => setEditForm({ ...editForm, logo_url: e.target.value })}
+                                    placeholder="https://ejemplo.com/logo.png"
                                 />
                             </div>
                             <div style={{ display: 'flex', gap: '12px', marginTop: '24px' }}>
