@@ -92,13 +92,59 @@ function Settings({ user, onLogout, darkMode, setDarkMode }) {
                             />
                         </div>
                         <div className="input-group" style={{ flex: 1, minWidth: '200px', marginBottom: 0 }}>
-                            <label>URL del Logo</label>
+                            <label>Logo de la Tienda</label>
+                            <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '8px' }}>
+                                Puedes pegar una URL o subir una imagen desde tu computador
+                            </p>
                             <input
                                 type="url"
                                 value={logoUrl}
                                 onChange={(e) => setLogoUrl(e.target.value)}
                                 placeholder="https://ejemplo.com/logo.png"
+                                style={{ marginBottom: '8px' }}
                             />
+                            <label className="image-upload-zone" style={{
+                                border: '2px dashed var(--border)',
+                                borderRadius: '8px',
+                                padding: '16px',
+                                textAlign: 'center',
+                                color: 'var(--text-muted)',
+                                fontSize: '13px',
+                                cursor: 'pointer',
+                                transition: 'all 0.2s',
+                                background: 'var(--background)',
+                                display: 'block'
+                            }}>
+                                📸 Arrastra una imagen aquí o haz clic para seleccionar
+                                <input
+                                    type="file"
+                                    accept="image/*"
+                                    style={{ display: 'none' }}
+                                    onChange={(e) => {
+                                        const file = e.target.files[0]
+                                        if (file) {
+                                            const reader = new FileReader()
+                                            reader.onload = (ev) => {
+                                                setLogoUrl(ev.target.result)
+                                            }
+                                            reader.readAsDataURL(file)
+                                        }
+                                    }}
+                                />
+                            </label>
+                            {logoUrl && (
+                                <div style={{ marginTop: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                    <img src={logoUrl} alt="Preview logo" style={{ width: '60px', height: '60px', objectFit: 'cover', borderRadius: '4px' }} />
+                                    <button
+                                        type="button"
+                                        className="btn btn-secondary"
+                                        style={{ padding: '4px 8px', fontSize: '12px' }}
+                                        onClick={() => setLogoUrl('')}
+                                    >
+                                        Quitar imagen
+                                    </button>
+                                </div>
+                            )}
                         </div>
                         <button
                             type="submit"

@@ -8,7 +8,7 @@ class Store(db.Model):
     slug = db.Column(db.String(100), unique=True, nullable=False)
     name = db.Column(db.String(200), nullable=False)
     whatsapp = db.Column(db.String(20), nullable=True)
-    logo_url = db.Column(db.String(500), nullable=True)
+    logo_url = db.Column(db.Text, nullable=True)
     
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)

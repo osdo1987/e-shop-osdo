@@ -65,7 +65,8 @@ class AuthService:
             store = Store(
                 name=store_data['name'],
                 slug=store_data['slug'],
-                whatsapp=store_data.get('whatsapp')
+                whatsapp=store_data.get('whatsapp'),
+                logo_url=store_data.get('logo_url')
             )
             db.session.add(store)
             db.session.flush()  # Get store.id

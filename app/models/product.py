@@ -10,7 +10,7 @@ class Product(db.Model):
     price = db.Column(db.Float, nullable=False)
     promo_price = db.Column(db.Float, nullable=True)
     purchase_price = db.Column(db.Float, nullable=True)
-    image_url = db.Column(db.String(500), nullable=True)
+    image_url = db.Column(db.Text, nullable=True)
     stock = db.Column(db.Integer, default=0)
     sizes = db.Column(db.String(500), nullable=True)
     

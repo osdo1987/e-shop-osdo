@@ -47,7 +47,8 @@ class StoreService:
         store = Store(
             name=data['name'],
             slug=data['slug'],
-            whatsapp=data.get('whatsapp')
+            whatsapp=data.get('whatsapp'),
+            logo_url=data.get('logo_url')
         )
         db.session.add(store)
         db.session.commit()
@@ -70,6 +71,8 @@ class StoreService:
             store.slug = data['slug']
         if 'whatsapp' in data:
             store.whatsapp = data['whatsapp']
+        if 'logo_url' in data:
+            store.logo_url = data['logo_url']
         
         db.session.commit()
         return store_schema.dump(store), None

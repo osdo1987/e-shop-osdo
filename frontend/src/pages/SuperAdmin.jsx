@@ -352,14 +352,60 @@ function SuperAdmin({ user, onLogout }) {
                                     placeholder="+1234567890"
                                 />
                             </div>
-                            <div className="form-group">
-                                <label>URL del Logo (opcional)</label>
+                            <div className="input-group">
+                                <label>Logo de la Tienda (opcional)</label>
+                                <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '8px' }}>
+                                    Puedes pegar una URL o subir una imagen desde tu computador
+                                </p>
                                 <input
                                     type="url"
                                     value={newStore.logo_url}
                                     onChange={(e) => setNewStore({ ...newStore, logo_url: e.target.value })}
                                     placeholder="https://ejemplo.com/logo.png"
+                                    style={{ marginBottom: '8px' }}
                                 />
+                                <label className="image-upload-zone" style={{
+                                    border: '2px dashed var(--border)',
+                                    borderRadius: '8px',
+                                    padding: '20px',
+                                    textAlign: 'center',
+                                    color: 'var(--text-muted)',
+                                    fontSize: '13px',
+                                    cursor: 'pointer',
+                                    transition: 'all 0.2s',
+                                    background: 'var(--background)',
+                                    display: 'block'
+                                }}>
+                                    📸 Arrastra una imagen aquí o haz clic para seleccionar
+                                    <input
+                                        type="file"
+                                        accept="image/*"
+                                        style={{ display: 'none' }}
+                                        onChange={(e) => {
+                                            const file = e.target.files[0]
+                                            if (file) {
+                                                const reader = new FileReader()
+                                                reader.onload = (ev) => {
+                                                    setNewStore({ ...newStore, logo_url: ev.target.result })
+                                                }
+                                                reader.readAsDataURL(file)
+                                            }
+                                        }}
+                                    />
+                                </label>
+                                {newStore.logo_url && (
+                                    <div style={{ marginTop: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                        <img src={newStore.logo_url} alt="Preview logo" style={{ width: '60px', height: '60px', objectFit: 'cover', borderRadius: '4px' }} />
+                                        <button
+                                            type="button"
+                                            className="btn btn-secondary"
+                                            style={{ padding: '4px 8px', fontSize: '12px' }}
+                                            onClick={() => setNewStore({ ...newStore, logo_url: '' })}
+                                        >
+                                            Quitar imagen
+                                        </button>
+                                    </div>
+                                )}
                             </div>
                             <div className="input-group">
                                 <label>Email del Vendedor</label>
@@ -433,14 +479,60 @@ function SuperAdmin({ user, onLogout }) {
                                     placeholder="+1234567890"
                                 />
                             </div>
-                            <div className="form-group">
-                                <label>URL del Logo</label>
+                            <div className="input-group">
+                                <label>Logo de la Tienda (opcional)</label>
+                                <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '8px' }}>
+                                    Puedes pegar una URL o subir una imagen desde tu computador
+                                </p>
                                 <input
                                     type="url"
                                     value={editForm.logo_url}
                                     onChange={(e) => setEditForm({ ...editForm, logo_url: e.target.value })}
                                     placeholder="https://ejemplo.com/logo.png"
+                                    style={{ marginBottom: '8px' }}
                                 />
+                                <label className="image-upload-zone" style={{
+                                    border: '2px dashed var(--border)',
+                                    borderRadius: '8px',
+                                    padding: '20px',
+                                    textAlign: 'center',
+                                    color: 'var(--text-muted)',
+                                    fontSize: '13px',
+                                    cursor: 'pointer',
+                                    transition: 'all 0.2s',
+                                    background: 'var(--background)',
+                                    display: 'block'
+                                }}>
+                                    📸 Arrastra una imagen aquí o haz clic para seleccionar
+                                    <input
+                                        type="file"
+                                        accept="image/*"
+                                        style={{ display: 'none' }}
+                                        onChange={(e) => {
+                                            const file = e.target.files[0]
+                                            if (file) {
+                                                const reader = new FileReader()
+                                                reader.onload = (ev) => {
+                                                    setEditForm({ ...editForm, logo_url: ev.target.result })
+                                                }
+                                                reader.readAsDataURL(file)
+                                            }
+                                        }}
+                                    />
+                                </label>
+                                {editForm.logo_url && (
+                                    <div style={{ marginTop: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                        <img src={editForm.logo_url} alt="Preview logo" style={{ width: '60px', height: '60px', objectFit: 'cover', borderRadius: '4px' }} />
+                                        <button
+                                            type="button"
+                                            className="btn btn-secondary"
+                                            style={{ padding: '4px 8px', fontSize: '12px' }}
+                                            onClick={() => setEditForm({ ...editForm, logo_url: '' })}
+                                        >
+                                            Quitar imagen
+                                        </button>
+                                    </div>
+                                )}
                             </div>
                             <div style={{ display: 'flex', gap: '12px', marginTop: '24px' }}>
                                 <button type="submit" className="btn btn-primary" style={{ flex: 1 }} disabled={loading}>

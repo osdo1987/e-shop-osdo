@@ -417,7 +417,7 @@ function ProductForm({ user }) {
                     {/* Image Upload */}
                     <div className="input-group">
                         <label>O subir imagen</label>
-                        <div className="image-upload-zone" style={{
+                        <label className="image-upload-zone" style={{
                             border: '2px dashed var(--border)',
                             borderRadius: '8px',
                             padding: '24px',
@@ -426,7 +426,8 @@ function ProductForm({ user }) {
                             fontSize: '14px',
                             cursor: 'pointer',
                             transition: 'all 0.2s',
-                            background: 'var(--background)'
+                            background: 'var(--background)',
+                            display: 'block'
                         }}>
                             📸 Arrastra una imagen aquí o haz clic para seleccionar
                             <input
@@ -444,7 +445,7 @@ function ProductForm({ user }) {
                                     }
                                 }}
                             />
-                        </div>
+                        </label>
                         {form.image_url && (
                             <div style={{ marginTop: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                                 <img src={form.image_url} alt="Preview" style={{ width: '60px', height: '60px', objectFit: 'cover', borderRadius: '4px' }} />
