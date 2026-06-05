@@ -13,6 +13,7 @@ import Settings from './pages/Settings'
 import Catalog from './pages/Catalog'
 import SuperAdmin from './pages/SuperAdmin'
 import NotFound from './pages/NotFound'
+import Orders from './pages/Orders'
 import './App.css'
 
 function App() {
@@ -68,6 +69,9 @@ function App() {
                 } />
                 <Route path="/admin/categories" element={
                     user ? <Categories user={user} /> : <Navigate to="/login" />
+                } />
+                <Route path="/admin/orders" element={
+                    user ? <Orders user={user} onLogout={handleLogout} /> : <Navigate to="/login" />
                 } />
                 <Route path="/admin/settings" element={
                     user ? <Settings user={user} onLogout={handleLogout} darkMode={darkMode} setDarkMode={setDarkMode} /> : <Navigate to="/login" />

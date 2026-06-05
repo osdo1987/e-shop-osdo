@@ -30,11 +30,13 @@ def create_app(config_class=Config):
     from app.routes.store_routes import store_bp
     from app.routes.category_routes import category_bp
     from app.routes.product_routes import product_bp
+    from app.routes.order_routes import order_bp
 
     app.register_blueprint(auth_bp, url_prefix='/api/auth')
     app.register_blueprint(store_bp, url_prefix='/api/stores')
     app.register_blueprint(category_bp, url_prefix='/api/categories')
     app.register_blueprint(product_bp, url_prefix='/api/products')
+    app.register_blueprint(order_bp, url_prefix='/api/orders')
 
     # Global Error Handler
     @app.errorhandler(Exception)

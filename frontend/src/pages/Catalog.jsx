@@ -53,6 +53,8 @@ function Catalog() {
     const [cartOpen, setCartOpen] = useState(false)
     const [sizeModalProduct, setSizeModalProduct] = useState(null)
     const [selectedSizeForModal, setSelectedSizeForModal] = useState('')
+    const [customerName, setCustomerName] = useState('')
+    const [customerPhone, setCustomerPhone] = useState('')
 
     useEffect(() => {
         localStorage.setItem(`favorites_${slug}`, JSON.stringify(favorites))
@@ -248,11 +250,47 @@ function Catalog() {
     const cartTotalItems = useMemo(() => {
         return cart.reduce((total, item) => total + item.quantity, 0)
     }, [cart])
-
-    const handleCheckout = () => {
+    const handleCheckout = async () => {
         if (cart.length === 0) return
 
+        if (!customerName.trim()) {
+            alert('Por favor, ingresa tu nombre para completar el pedido.')
+            return
+        }
+
+        const orderData = {
+            store_id: store.id,
+            customer_name: customerName.trim(),
+            customer_phone: customerPhone.trim(),
+            total_price: cartSubtotal,
+            items: cart.map(item => ({
+                product_id: item.id,
+                product_name: item.name,
+                quantity: item.quantity,
+                price: item.promo_price || item.price,
+                selected_size: item.selected_size
+            }))
+        }
+
+        try {
+            const res = await fetch('/api/orders/public', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(orderData)
+            })
+            if (!res.ok) {
+                console.error("Error al registrar el pedido en la base de datos")
+            }
+        } catch (error) {
+            console.error("Error de conexión al registrar el pedido:", error)
+        }
+
         let message = `🛍️ *NUEVO PEDIDO - ${store.name}*\n`
+        message += `━━━━━━━━━━━━━━━━━━━━━━━━━\n\n`
+        message += `*Cliente:* ${customerName.trim()}\n`
+        if (customerPhone.trim()) {
+            message += `*Teléfono:* ${customerPhone.trim()}\n`
+        }
         message += `━━━━━━━━━━━━━━━━━━━━━━━━━\n\n`
         message += `*Detalle de Productos:*\n`
 
@@ -273,6 +311,12 @@ function Catalog() {
         const whatsappNumber = store.whatsapp?.replace('+', '').replace(/\s+/g, '') || ''
         const waUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`
         window.open(waUrl, '_blank')
+        
+        // Limpiar carrito y datos del cliente
+        setCart([])
+        setCustomerName('')
+        setCustomerPhone('')
+        setCartOpen(false)
     }
 
     if (loading) {
@@ -865,7 +909,29 @@ function Catalog() {
                 {/* Footer / Summary */}
                 {cart.length > 0 && (
                     <div style={{ padding: '20px', borderTop: '1px solid var(--border)', background: 'var(--background)' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                        <div style={{ marginBottom: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                            <div>
+                                <label style={{ display: 'block', fontSize: '12px', fontWeight: '700', color: 'var(--text-secondary)', marginBottom: '6px' }}>Nombre completo *</label>
+                                <input 
+                                    type="text" 
+                                    placeholder="Ej. Juan Pérez" 
+                                    value={customerName} 
+                                    onChange={(e) => setCustomerName(e.target.value)} 
+                                    style={{ width: '100%', padding: '10px 12px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--text-primary)', fontSize: '13px', boxSizing: 'border-box' }}
+                                />
+                            </div>
+                            <div>
+                                <label style={{ display: 'block', fontSize: '12px', fontWeight: '700', color: 'var(--text-secondary)', marginBottom: '6px' }}>Teléfono móvil (opcional)</label>
+                                <input 
+                                    type="tel" 
+                                    placeholder="Ej. +34 600 000 000" 
+                                    value={customerPhone} 
+                                    onChange={(e) => setCustomerPhone(e.target.value)} 
+                                    style={{ width: '100%', padding: '10px 12px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--text-primary)', fontSize: '13px', boxSizing: 'border-box' }}
+                                />
+                            </div>
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', paddingTop: '10px', borderTop: '1px solid var(--border-light)' }}>
                             <span style={{ fontSize: '14px', color: 'var(--text-secondary)', fontWeight: '600' }}>Total a pagar:</span>
                             <span style={{ fontSize: '20px', fontWeight: '800', color: 'var(--primary-dark)' }}>
                                 ${cartSubtotal.toLocaleString()}
