@@ -7,6 +7,7 @@ import ResetPassword from './pages/ResetPassword'
 import ChangePassword from './pages/ChangePassword'
 import Home from './pages/Home'
 import Dashboard from './pages/Dashboard'
+import StatsDashboard from './pages/StatsDashboard'
 import Categories from './pages/Categories'
 import ProductForm from './pages/ProductForm'
 import Settings from './pages/Settings'
@@ -57,6 +58,9 @@ function App() {
                 <Route path="/reset-password" element={<ResetPassword />} />
                 <Route path="/admin/change-password" element={
                     user ? <ChangePassword user={user} onLogout={handleLogout} /> : <Navigate to="/login" />
+                } />
+                <Route path="/admin/dashboard" element={
+                    user ? <StatsDashboard user={user} /> : <Navigate to="/login" />
                 } />
                 <Route path="/admin" element={
                     user ? <Dashboard user={user} onLogout={handleLogout} /> : <Navigate to="/login" />

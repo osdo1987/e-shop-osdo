@@ -162,6 +162,7 @@
         opacity: 0;
         transform: translateY(-100%);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);
@@ -182,8 +183,15 @@
 }
 
 @keyframes promo-pulse {
-    0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.05); }
+
+    0%,
+    100% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.05);
+    }
 }
 
 .promo-banner .promo-name {
@@ -278,7 +286,8 @@
     border-radius: 6px;
 }
 
-.navbar-categories button:hover, .navbar-categories button.active {
+.navbar-categories button:hover,
+.navbar-categories button.active {
     color: var(--primary-color);
     background: var(--primary-light);
 }
@@ -304,11 +313,11 @@
 }
 
 .nav-icon-btn:hover {
-    background: rgba(0,0,0,0.05);
+    background: rgba(0, 0, 0, 0.05);
 }
 
 [data-theme="dark"] .nav-icon-btn:hover {
-    background: rgba(255,255,255,0.1);
+    background: rgba(255, 255, 255, 0.1);
 }
 
 .nav-icon-btn.active {
@@ -1165,21 +1174,113 @@
     }
 }
 
-/* Stats grid responsive */
-@media (max-width: 600px) {
+/* Stats grid — Dashboard layout */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.25rem;
+    margin-bottom: 1.5rem;
+}
+
+@media (max-width: 1100px) {
     .stats-grid {
-        grid-template-columns: repeat(2, 1fr) !important;
+        grid-template-columns: repeat(3, 1fr);
     }
 }
 
-/* Premium Shopping Cart & Favorites micro-animations */
+@media (max-width: 768px) {
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .stats-grid {
+        grid-template-columns: 1fr;
+        gap: 0.875rem;
+    }
+}
+
+/* ── Cart overlay button (Mercado Libre style) ── */
+.cart-overlay-btn {
+    position: absolute;
+    bottom: 12px;
+    right: 12px;
+    background: var(--surface);
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.18);
+    z-index: 2;
+    transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    color: var(--text-secondary);
+    opacity: 0.85;
+}
+
+.cart-overlay-btn:hover {
+    background: var(--primary-color);
+    color: white;
+    opacity: 1;
+    transform: scale(1.1);
+    box-shadow: 0 4px 14px rgba(76, 175, 80, 0.35);
+}
+
+.cart-overlay-btn:active {
+    transform: scale(0.9);
+}
+
+@media (hover: none) {
+    .cart-overlay-btn {
+        opacity: 1;
+        width: 36px;
+        height: 36px;
+        bottom: 10px;
+        right: 10px;
+    }
+
+    .cart-overlay-btn svg {
+        width: 17px;
+        height: 17px;
+    }
+}
+
+/* ── Favorite button base styles ── */
+.fav-btn {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: var(--surface);
+    border: none;
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    z-index: 3;
+    transition: all 0.2s ease;
+    color: var(--text-secondary);
+}
+
+.fav-btn.active {
+    color: #ef5350;
+}
+
 .fav-btn:hover {
-    transform: scale(1.15) !important;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.2) !important;
+    transform: scale(1.15);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 .fav-btn:active {
-    transform: scale(0.9) !important;
+    transform: scale(0.9);
 }
 
 .fav-btn svg {
@@ -1190,12 +1291,27 @@
     transform: scale(1.2);
 }
 
+@media (hover: none) {
+    .fav-btn {
+        width: 32px;
+        height: 32px;
+        top: 10px;
+        right: 10px;
+    }
+
+    .fav-btn svg {
+        width: 16px;
+        height: 16px;
+    }
+}
+
 .floating-cart {
     animation: cart-bounce 2s infinite ease-in-out;
 }
 
 .floating-cart:hover {
-    animation: none; /* Disable bounce on hover to allow manual translateY */
+    animation: none;
+    /* Disable bounce on hover to allow manual translateY */
     transform: scale(1.1) translateY(-5px) !important;
     box-shadow: 0 6px 24px rgba(76, 175, 80, 0.4) !important;
 }
@@ -1205,9 +1321,12 @@
 }
 
 @keyframes cart-bounce {
-    0%, 100% {
+
+    0%,
+    100% {
         transform: translateY(0);
     }
+
     50% {
         transform: translateY(-8px);
     }
@@ -1221,12 +1340,12 @@
         width: 50px !important;
         height: 50px !important;
     }
-    
+
     .floating-cart svg {
         width: 22px !important;
         height: 22px !important;
     }
-    
+
     .floating-cart span {
         width: 20px !important;
         height: 20px !important;
@@ -1252,8 +1371,10 @@
 
 /* Hide scrollbar for IE, Edge and Firefox */
 .mobile-category-scroll {
-    -ms-overflow-style: none;  /* IE and Edge */
-    scrollbar-width: none;  /* Firefox */
+    -ms-overflow-style: none;
+    /* IE and Edge */
+    scrollbar-width: none;
+    /* Firefox */
 }
 
 .category-chip {
@@ -1287,9 +1408,12 @@
 
 /* Float animation for Empty State */
 @keyframes float {
-    0%, 100% {
+
+    0%,
+    100% {
         transform: translateY(0);
     }
+
     50% {
         transform: translateY(-10px);
     }

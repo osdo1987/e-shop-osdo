@@ -23,6 +23,7 @@ function AdminLayout({ title, children, user, onLogout, superadmin = false, show
             { path: '/admin/super', label: 'Tiendas' }
         ]
         : [
+            { path: '/admin/dashboard', label: 'Dashboard' },
             { path: '/admin', label: 'Productos' },
             { path: '/admin/categories', label: 'Categorías' },
             { path: '/admin/orders', label: 'Pedidos' },

@@ -180,7 +180,7 @@ function Catalog() {
 
     const addToCart = (product, size = null) => {
         const parsedSizes = parseSizes(product.sizes, product.stock)
-        
+
         if (parsedSizes && !size) {
             setSizeModalProduct(product)
             const availableSizes = Object.keys(parsedSizes).filter(Boolean)
@@ -193,9 +193,9 @@ function Catalog() {
         setCart(currentCart => {
             const existingItemIndex = currentCart.findIndex(item => item.id === product.id && item.selected_size === size)
             if (existingItemIndex > -1) {
-                return currentCart.map((item, idx) => 
-                    idx === existingItemIndex 
-                        ? { ...item, quantity: Math.min(item.quantity + 1, sizeStock) } 
+                return currentCart.map((item, idx) =>
+                    idx === existingItemIndex
+                        ? { ...item, quantity: Math.min(item.quantity + 1, sizeStock) }
                         : item
                 )
             } else {
@@ -230,9 +230,9 @@ function Catalog() {
             } else if (newQty > item.stock) {
                 return currentCart
             } else {
-                return currentCart.map((it, idx) => 
-                    idx === itemIndex 
-                        ? { ...it, quantity: newQty } 
+                return currentCart.map((it, idx) =>
+                    idx === itemIndex
+                        ? { ...it, quantity: newQty }
                         : it
                 )
             }
@@ -311,7 +311,7 @@ function Catalog() {
         const whatsappNumber = store.whatsapp?.replace('+', '').replace(/\s+/g, '') || ''
         const waUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`
         window.open(waUrl, '_blank')
-        
+
         // Limpiar carrito y datos del cliente
         setCart([])
         setCustomerName('')
@@ -385,7 +385,7 @@ function Catalog() {
                     </div>
                     <div className="logo-text">{store.name}<span>.</span></div>
                 </div>
-                
+
                 <div className="navbar-center">
                     <div className="search-wrapper navbar-search">
                         <svg className="search-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
@@ -485,8 +485,8 @@ function Catalog() {
                                     className={`category-item ${selectedCategory === cat.id.toString() ? 'active' : ''}`}
                                     onClick={() => { setSelectedCategory(cat.id.toString()); setSidebarOpen(false) }}
                                 >
-                                <span>{cat.name}</span>
-                                <span className="count-badge">{categoryCounts[cat.id] || 0}</span>
+                                    <span>{cat.name}</span>
+                                    <span className="count-badge">{categoryCounts[cat.id] || 0}</span>
                                 </div>
                             ))}
                         </div>
@@ -580,7 +580,7 @@ function Catalog() {
                 <section className="catalog-content">
                     {/* Mobile Horizontal Category Chips */}
                     <div className="mobile-category-scroll">
-                        <button 
+                        <button
                             className={`category-chip ${selectedCategory === 'all' ? 'active' : ''}`}
                             onClick={() => setSelectedCategory('all')}
                         >
@@ -628,29 +628,24 @@ function Catalog() {
                                         product.promo_price && <div className="badge">Oferta</div>
                                     )}
 
+                                    {/* Botón Carrito sobre la imagen 🛒 */}
+                                    {!isSoldOut && (
+                                        <button
+                                            className="cart-overlay-btn"
+                                            onClick={(e) => { e.stopPropagation(); addToCart(product); }}
+                                            aria-label="Agregar al carrito"
+                                        >
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" style={{ width: '20px', height: '20px' }}>
+                                                <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 00-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 00-16.536-1.84M7.5 14.25L5.106 5.272M6 20.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm12.75 0a.75.75 0 11-1.5 0 .75.75 0 011.5 0z" />
+                                            </svg>
+                                        </button>
+                                    )}
+
                                     {/* Botón Favorito Floating ❤️ */}
                                     <button
                                         className={`fav-btn ${favorites.includes(product.id) ? 'active' : ''}`}
                                         onClick={(e) => toggleFavorite(product.id, e)}
                                         aria-label="Agregar a favoritos"
-                                        style={{
-                                            position: 'absolute',
-                                            top: '12px',
-                                            right: '12px',
-                                            background: 'var(--surface)',
-                                            border: 'none',
-                                            borderRadius: '50%',
-                                            width: '36px',
-                                            height: '36px',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                            cursor: 'pointer',
-                                            boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
-                                            zIndex: 2,
-                                            transition: 'all 0.2s ease',
-                                            color: favorites.includes(product.id) ? '#ef5350' : 'var(--text-secondary)'
-                                        }}
                                     >
                                         <svg xmlns="http://www.w3.org/2000/svg" fill={favorites.includes(product.id) ? '#ef5350' : 'none'} viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" style={{ width: '18px', height: '18px' }}>
                                             <path strokeLinecap="round" strokeLinejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
@@ -698,13 +693,9 @@ function Catalog() {
                                         {isSoldOut ? 'Producto Agotado' : `Disponibles: ${product.stock} unidades`}
                                     </div>
 
-                                    {isSoldOut ? (
+                                    {isSoldOut && (
                                         <button className="buy-btn" style={{ background: 'var(--border)', color: 'var(--text-muted)', cursor: 'not-allowed', boxShadow: 'none', border: 'none', width: '100%' }} disabled>
                                             Sin Stock
-                                        </button>
-                                    ) : (
-                                        <button onClick={() => addToCart(product)} className="buy-btn" style={{ border: 'none', width: '100%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
-                                            <span>🛒 Agregar al Carrito</span>
                                         </button>
                                     )}
                                 </div>
@@ -831,7 +822,7 @@ function Catalog() {
                         &times;
                     </button>
                 </div>
-                
+
                 {/* Items List */}
                 <div style={{ flex: 1, overflowY: 'auto', padding: '20px' }}>
                     {cart.length === 0 ? (
@@ -905,28 +896,28 @@ function Catalog() {
                         </div>
                     )}
                 </div>
-                
+
                 {/* Footer / Summary */}
                 {cart.length > 0 && (
                     <div style={{ padding: '20px', borderTop: '1px solid var(--border)', background: 'var(--background)' }}>
                         <div style={{ marginBottom: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
                             <div>
                                 <label style={{ display: 'block', fontSize: '12px', fontWeight: '700', color: 'var(--text-secondary)', marginBottom: '6px' }}>Nombre completo *</label>
-                                <input 
-                                    type="text" 
-                                    placeholder="Ej. Juan Pérez" 
-                                    value={customerName} 
-                                    onChange={(e) => setCustomerName(e.target.value)} 
+                                <input
+                                    type="text"
+                                    placeholder="Ej. Juan Pérez"
+                                    value={customerName}
+                                    onChange={(e) => setCustomerName(e.target.value)}
                                     style={{ width: '100%', padding: '10px 12px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--text-primary)', fontSize: '13px', boxSizing: 'border-box' }}
                                 />
                             </div>
                             <div>
                                 <label style={{ display: 'block', fontSize: '12px', fontWeight: '700', color: 'var(--text-secondary)', marginBottom: '6px' }}>Teléfono móvil (opcional)</label>
-                                <input 
-                                    type="tel" 
-                                    placeholder="Ej. +34 600 000 000" 
-                                    value={customerPhone} 
-                                    onChange={(e) => setCustomerPhone(e.target.value)} 
+                                <input
+                                    type="tel"
+                                    placeholder="Ej. +34 600 000 000"
+                                    value={customerPhone}
+                                    onChange={(e) => setCustomerPhone(e.target.value)}
                                     style={{ width: '100%', padding: '10px 12px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--text-primary)', fontSize: '13px', boxSizing: 'border-box' }}
                                 />
                             </div>
@@ -943,7 +934,7 @@ function Catalog() {
                             style={{ width: '100%', padding: '14px', fontSize: '15px', fontWeight: '700', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', background: '#25D366', borderColor: '#25D366', color: 'white', cursor: 'pointer', boxShadow: '0 4px 10px rgba(37, 211, 102, 0.3)' }}
                         >
                             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16" style={{ marginRight: '4px' }}>
-                                <path d="M13.601 2.326A7.854 7.854 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.933 7.933 0 0 0 3.79.949h.004c4.368 0 7.926-3.558 7.93-7.93a7.896 7.896 0 0 0-2.33-5.593l.04-.025zM7.994 14.521a6.573 6.573 0 0 1-3.356-.92l-.24-.144-2.494.654.666-2.433-.156-.251a6.56 6.56 0 0 1-1.007-3.505c0-3.626 2.957-6.584 6.591-6.584a6.56 6.56 0 0 1 4.66 1.931 6.557 6.557 0 0 1 1.928 4.66c-.004 3.639-2.961 6.592-6.592 6.592zm3.69-4.98c-.202-.101-1.202-.594-1.392-.66-.189-.07-.327-.101-.466.101-.138.2-.536.66-.657.798-.12.137-.24.153-.442.052-1.92-.958-3.08-2.074-3.8-3.32-.202-.349.202-.324.577-1.072.077-.153.038-.288-.019-.389-.058-.1-.466-1.121-.639-1.543-.169-.408-.34-.352-.466-.358-.121-.006-.26-.006-.399-.006-.139 0-.365.052-.556.262-.19.201-.728.712-.728 1.74 0 1.026.748 2.017.852 2.158.104.14 1.472 2.25 3.566 3.15.498.214.887.342 1.19.438.502.16 1.002.137 1.38.08.42-.064 1.202-.492 1.373-.962.17-.47.17-.872.12-.962-.05-.09-.19-.14-.39-.241z"/>
+                                <path d="M13.601 2.326A7.854 7.854 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.933 7.933 0 0 0 3.79.949h.004c4.368 0 7.926-3.558 7.93-7.93a7.896 7.896 0 0 0-2.33-5.593l.04-.025zM7.994 14.521a6.573 6.573 0 0 1-3.356-.92l-.24-.144-2.494.654.666-2.433-.156-.251a6.56 6.56 0 0 1-1.007-3.505c0-3.626 2.957-6.584 6.591-6.584a6.56 6.56 0 0 1 4.66 1.931 6.557 6.557 0 0 1 1.928 4.66c-.004 3.639-2.961 6.592-6.592 6.592zm3.69-4.98c-.202-.101-1.202-.594-1.392-.66-.189-.07-.327-.101-.466.101-.138.2-.536.66-.657.798-.12.137-.24.153-.442.052-1.92-.958-3.08-2.074-3.8-3.32-.202-.349.202-.324.577-1.072.077-.153.038-.288-.019-.389-.058-.1-.466-1.121-.639-1.543-.169-.408-.34-.352-.466-.358-.121-.006-.26-.006-.399-.006-.139 0-.365.052-.556.262-.19.201-.728.712-.728 1.74 0 1.026.748 2.017.852 2.158.104.14 1.472 2.25 3.566 3.15.498.214.887.342 1.19.438.502.16 1.002.137 1.38.08.42-.064 1.202-.492 1.373-.962.17-.47.17-.872.12-.962-.05-.09-.19-.14-.39-.241z" />
                             </svg>
                             Finalizar pedido por WhatsApp
                         </button>
@@ -996,16 +987,16 @@ function Catalog() {
                         >
                             &times;
                         </button>
-                        
+
                         <h3 style={{ margin: '0 0 8px 0', fontSize: '18px', fontWeight: '700', color: 'var(--text-primary)' }}>Seleccionar Talla</h3>
                         <p style={{ margin: '0 0 20px 0', fontSize: '14px', color: 'var(--text-secondary)' }}>
                             Elige una talla para <strong>{sizeModalProduct.name}</strong> antes de agregarlo al carrito.
                         </p>
-                        
+
                         {(() => {
                             const parsedSizes = parseSizes(sizeModalProduct.sizes, sizeModalProduct.stock) || {}
                             const sizeKeys = Object.keys(parsedSizes).filter(Boolean)
-                            
+
                             return (
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '24px' }}>
                                     <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
@@ -1013,7 +1004,7 @@ function Catalog() {
                                             const sizeStock = parsedSizes[size] ?? 0
                                             const isOutOfStock = sizeStock <= 0
                                             const isSelected = selectedSizeForModal === size
-                                            
+
                                             return (
                                                 <button
                                                     key={size}
@@ -1025,14 +1016,14 @@ function Catalog() {
                                                         height: '48px',
                                                         padding: '6px 8px',
                                                         borderRadius: '8px',
-                                                        border: isSelected 
-                                                            ? '2px solid #4caf50' 
+                                                        border: isSelected
+                                                            ? '2px solid #4caf50'
                                                             : (isOutOfStock ? '1px dashed var(--border)' : '1px solid var(--border)'),
-                                                        background: isSelected 
-                                                            ? '#e8f5e9' 
+                                                        background: isSelected
+                                                            ? '#e8f5e9'
                                                             : (isOutOfStock ? 'rgba(0,0,0,0.03)' : 'var(--surface)'),
-                                                        color: isSelected 
-                                                            ? '#2e7d32' 
+                                                        color: isSelected
+                                                            ? '#2e7d32'
                                                             : (isOutOfStock ? 'var(--text-muted)' : 'var(--text-primary)'),
                                                         fontSize: '13px',
                                                         fontWeight: '700',
@@ -1057,7 +1048,7 @@ function Catalog() {
                                 </div>
                             )
                         })()}
-                        
+
                         <button
                             onClick={() => addToCart(sizeModalProduct, selectedSizeForModal)}
                             className="btn btn-primary"

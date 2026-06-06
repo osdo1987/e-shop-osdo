@@ -1,7 +1,6 @@
 import { useState, useEffect, useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import AdminLayout from '../components/AdminLayout'
-import StatCard from '../components/StatCard'
 import ConfirmModal from '../components/ConfirmModal'
 import Pagination from '../components/Pagination'
 import { TableSkeleton } from '../components/Skeleton'
@@ -70,40 +69,6 @@ function Dashboard({ user, onLogout }) {
         }
     }
 
-    // Stats
-    const stats = useMemo(() => {
-        const lowStock = products.filter(p => p.stock > 0 && p.stock < 5)
-        const outOfStock = products.filter(p => p.stock <= 0)
-        
-        const inventoryValue = products.reduce((sum, p) => {
-            const activePrice = (p.promo_price !== null && p.promo_price !== undefined) ? p.promo_price : p.price
-            return sum + (p.stock > 0 ? activePrice * p.stock : 0)
-        }, 0)
-        
-        const inventoryCost = products.reduce((sum, p) => {
-            return sum + (p.stock > 0 ? (p.purchase_price || 0) * p.stock : 0)
-        }, 0)
-        
-        const projectedProfit = inventoryValue - inventoryCost
-        const marginPercent = inventoryValue > 0 ? (projectedProfit / inventoryValue) * 100 : 0
-        
-        const promoCount = products.filter(p => p.promo_price !== null && p.promo_price !== undefined).length
-        const totalUnits = products.reduce((sum, p) => sum + (p.stock || 0), 0)
-
-        return {
-            total: products.length,
-            lowStock: lowStock.length,
-            outOfStock: outOfStock.length,
-            categories: categories.length,
-            inventoryValue,
-            inventoryCost,
-            projectedProfit,
-            marginPercent,
-            promoCount,
-            totalUnits
-        }
-    }, [products, categories])
-
     // Filter products
     const filteredProducts = useMemo(() => {
         return products.filter(product => {
@@ -136,66 +101,6 @@ function Dashboard({ user, onLogout }) {
     return (
         <>
             <AdminLayout title="Mi Tienda" user={user} onLogout={onLogout}>
-                {/* Stats Cards */}
-                {!loading && (
-                    <div className="stats-grid" style={{
-                        display: 'grid',
-                        gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
-                        gap: '1.5rem',
-                        marginBottom: '1.5rem'
-                    }}>
-                        <StatCard
-                            title="Productos"
-                            value={stats.total}
-                            icon="📦"
-                            color="var(--primary-color)"
-                            subtitle={`${stats.totalUnits} piezas en total`}
-                        />
-                        <StatCard
-                            title="Valor Venta"
-                            value={`$${stats.inventoryValue.toLocaleString()}`}
-                            icon="💰"
-                            color="#2ecc71"
-                            subtitle="Valuado a precio activo"
-                        />
-                        <StatCard
-                            title="Costo Inventario"
-                            value={`$${stats.inventoryCost.toLocaleString()}`}
-                            icon="📉"
-                            color="#9b59b6"
-                            subtitle="Inversión total en stock"
-                        />
-                        <StatCard
-                            title="Ganancia Estimada"
-                            value={`$${stats.projectedProfit.toLocaleString()}`}
-                            icon="📈"
-                            color="#1abc9c"
-                            subtitle={`Margen: ${stats.marginPercent.toFixed(1)}%`}
-                        />
-                        <StatCard
-                            title="En Oferta"
-                            value={stats.promoCount}
-                            icon="🏷️"
-                            color="#3498db"
-                            subtitle="Con precio promo"
-                        />
-                        <StatCard
-                            title="Stock Bajo"
-                            value={stats.lowStock}
-                            icon="⚠"
-                            color="var(--warning)"
-                            subtitle={stats.lowStock > 0 ? 'Menos de 5 unidades' : 'Todo en orden'}
-                        />
-                        <StatCard
-                            title="Agotados"
-                            value={stats.outOfStock}
-                            icon="🚫"
-                            color="var(--error)"
-                            subtitle={stats.outOfStock > 0 ? 'Requieren reposición' : 'Sin novedades'}
-                        />
-                    </div>
-                )}
-
                 {/* Filters */}
                 <div className="card" style={{ marginBottom: '1.5rem' }}>
                     <div className="flex-row" style={{ flexWrap: 'wrap' }}>
@@ -285,10 +190,10 @@ function Dashboard({ user, onLogout }) {
                                         {paginatedProducts.map(product => {
                                             const badge = getStockBadge(product.stock)
                                             const activePrice = product.promo_price || product.price
-                                            const margin = product.purchase_price 
-                                                ? ((activePrice - product.purchase_price) / activePrice) * 100 
+                                            const margin = product.purchase_price
+                                                ? ((activePrice - product.purchase_price) / activePrice) * 100
                                                 : null
-                                                
+
                                             return (
                                                 <tr key={product.id}>
                                                     <td className="cell-name">{product.name}</td>
