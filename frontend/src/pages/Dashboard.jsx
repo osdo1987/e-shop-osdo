@@ -103,8 +103,8 @@ function Dashboard({ user, onLogout }) {
             <AdminLayout title="Mi Tienda" user={user} onLogout={onLogout}>
                 {/* Filters */}
                 <div className="card" style={{ marginBottom: '1.5rem' }}>
-                    <div className="flex-row" style={{ flexWrap: 'wrap' }}>
-                        <div className="input-group" style={{ flex: 2, minWidth: '200px', marginBottom: 0 }}>
+                    <div className="dashboard-filters">
+                        <div className="input-group" style={{ flex: 2, minWidth: '200px' }}>
                             <label>Buscar producto</label>
                             <input
                                 type="text"
@@ -113,7 +113,7 @@ function Dashboard({ user, onLogout }) {
                                 onChange={(e) => setSearchTerm(e.target.value)}
                             />
                         </div>
-                        <div className="input-group" style={{ flex: 1, minWidth: '160px', marginBottom: 0 }}>
+                        <div className="input-group" style={{ flex: 1, minWidth: '160px' }}>
                             <label>Filtrar por categoría</label>
                             <select
                                 value={selectedCategory}
@@ -125,7 +125,7 @@ function Dashboard({ user, onLogout }) {
                                 ))}
                             </select>
                         </div>
-                        <div style={{ alignSelf: 'flex-end', marginBottom: '4px' }}>
+                        <div className="filter-actions">
                             <button
                                 className="btn btn-secondary"
                                 onClick={() => { setSelectedCategory(''); setSearchTerm('') }}

@@ -611,7 +611,7 @@ function Catalog() {
                                 </svg>
                                 Filtrar {hasActiveFilters ? '✓' : ''}
                             </button>
-                            Ordenar: <select style={{ border: 'none', background: 'none', fontWeight: '700' }}><option>Destacados</option></select>
+                            Ordenar: <select className="sort-select"><option>Destacados</option></select>
                         </div>
                     </div>
 

@@ -36,7 +36,7 @@ function Orders({ user, onLogout }) {
     const handleUpdateStatus = async (orderId, newStatus) => {
         try {
             const token = localStorage.getItem('token')
-            const headers = { 
+            const headers = {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
             }
@@ -101,8 +101,8 @@ function Orders({ user, onLogout }) {
                     <div className="stats-grid" style={{
                         display: 'grid',
                         gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-                        gap: '1.5rem',
-                        marginBottom: '1.5rem'
+                        gap: '0.75rem',
+                        marginBottom: '1rem'
                     }}>
                         <StatCard
                             title="Total Pedidos"
@@ -142,18 +142,18 @@ function Orders({ user, onLogout }) {
                             key={status}
                             onClick={() => setStatusFilter(status)}
                             className={`btn ${statusFilter === status ? 'btn-primary' : 'btn-secondary'}`}
-                            style={{ 
-                                fontSize: '13px', 
+                            style={{
+                                fontSize: '13px',
                                 padding: '8px 16px',
                                 background: statusFilter === status ? 'var(--primary-color)' : 'var(--surface)',
                                 border: statusFilter === status ? 'none' : '1px solid var(--border)'
                             }}
                         >
                             {status === 'ALL' ? 'Todos' : getStatusStyles(status).label}
-                            <span style={{ 
-                                marginLeft: '8px', 
-                                background: 'rgba(0,0,0,0.1)', 
-                                padding: '2px 6px', 
+                            <span style={{
+                                marginLeft: '8px',
+                                background: 'rgba(0,0,0,0.1)',
+                                padding: '2px 6px',
                                 borderRadius: '10px',
                                 fontSize: '11px'
                             }}>
@@ -172,117 +172,222 @@ function Orders({ user, onLogout }) {
                             No se encontraron pedidos con este estado.
                         </p>
                     ) : (
-                        <div className="table-wrapper">
-                            <table className="data-table">
-                                <thead>
-                                    <tr>
-                                        <th>ID Pedido</th>
-                                        <th>Cliente</th>
-                                        <th>Teléfono</th>
-                                        <th>Fecha</th>
-                                        <th>Total</th>
-                                        <th>Estado</th>
-                                        <th>Acciones</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {filteredOrders.map(order => {
-                                        const badge = getStatusStyles(order.status)
-                                        const orderDate = new Date(order.created_at).toLocaleString('es-ES', {
-                                            day: '2-digit',
-                                            month: '2-digit',
-                                            year: 'numeric',
-                                            hour: '2-digit',
-                                            minute: '2-digit'
-                                        })
+                        <>
+                            {/* Desktop Table */}
+                            <div className="table-wrapper">
+                                <table className="data-table">
+                                    <thead>
+                                        <tr>
+                                            <th>ID Pedido</th>
+                                            <th>Cliente</th>
+                                            <th>Teléfono</th>
+                                            <th>Fecha</th>
+                                            <th>Total</th>
+                                            <th>Estado</th>
+                                            <th>Acciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {filteredOrders.map(order => {
+                                            const badge = getStatusStyles(order.status)
+                                            const orderDate = new Date(order.created_at).toLocaleString('es-ES', {
+                                                day: '2-digit',
+                                                month: '2-digit',
+                                                year: 'numeric',
+                                                hour: '2-digit',
+                                                minute: '2-digit'
+                                            })
 
-                                        return (
-                                            <tr key={order.id}>
-                                                <td style={{ fontWeight: 'bold' }}>#{order.id}</td>
-                                                <td>{order.customer_name}</td>
-                                                <td>{order.customer_phone || <span style={{ color: 'var(--text-muted)' }}>—</span>}</td>
-                                                <td>{orderDate}</td>
-                                                <td style={{ fontWeight: '700' }}>${order.total_price.toLocaleString()}</td>
-                                                <td>
-                                                    <span style={{
-                                                        background: badge.background,
-                                                        color: badge.color,
-                                                        padding: '4px 10px',
-                                                        borderRadius: '20px',
-                                                        fontSize: '12px',
-                                                        fontWeight: '700',
-                                                        display: 'inline-block'
-                                                    }}>
-                                                        {badge.label}
-                                                    </span>
-                                                </td>
-                                                <td>
-                                                    <div style={{ display: 'flex', gap: '8px' }}>
-                                                        <button
-                                                            onClick={() => setSelectedOrderForDetail(order)}
-                                                            className="btn btn-secondary"
-                                                            style={{ padding: '6px 12px', fontSize: '12px' }}
-                                                        >
-                                                            👁️ Ver Detalle
-                                                        </button>
-                                                        {order.status === 'PENDIENTE' && (
-                                                            <>
-                                                                <button
-                                                                    onClick={() => handleUpdateStatus(order.id, 'ENTREGADO')}
-                                                                    className="btn"
-                                                                    style={{ 
-                                                                        padding: '6px 12px', 
-                                                                        fontSize: '12px', 
-                                                                        background: '#2ecc71', 
-                                                                        color: 'white',
-                                                                        border: 'none',
-                                                                        cursor: 'pointer'
-                                                                    }}
-                                                                >
-                                                                    ✅ Entregar
-                                                                </button>
+                                            return (
+                                                <tr key={order.id}>
+                                                    <td style={{ fontWeight: 'bold' }}>#{order.id}</td>
+                                                    <td>{order.customer_name}</td>
+                                                    <td>{order.customer_phone || <span style={{ color: 'var(--text-muted)' }}>—</span>}</td>
+                                                    <td>{orderDate}</td>
+                                                    <td style={{ fontWeight: '700' }}>${order.total_price.toLocaleString()}</td>
+                                                    <td>
+                                                        <span style={{
+                                                            background: badge.background,
+                                                            color: badge.color,
+                                                            padding: '4px 10px',
+                                                            borderRadius: '20px',
+                                                            fontSize: '12px',
+                                                            fontWeight: '700',
+                                                            display: 'inline-block'
+                                                        }}>
+                                                            {badge.label}
+                                                        </span>
+                                                    </td>
+                                                    <td>
+                                                        <div style={{ display: 'flex', gap: '8px' }}>
+                                                            <button
+                                                                onClick={() => setSelectedOrderForDetail(order)}
+                                                                className="btn btn-secondary"
+                                                                style={{ padding: '6px 12px', fontSize: '12px' }}
+                                                            >
+                                                                👁️ Ver Detalle
+                                                            </button>
+                                                            {order.status === 'PENDIENTE' && (
+                                                                <>
+                                                                    <button
+                                                                        onClick={() => handleUpdateStatus(order.id, 'ENTREGADO')}
+                                                                        className="btn"
+                                                                        style={{
+                                                                            padding: '6px 12px',
+                                                                            fontSize: '12px',
+                                                                            background: '#2ecc71',
+                                                                            color: 'white',
+                                                                            border: 'none',
+                                                                            cursor: 'pointer'
+                                                                        }}
+                                                                    >
+                                                                        ✅ Entregar
+                                                                    </button>
+                                                                    <button
+                                                                        onClick={() => handleUpdateStatus(order.id, 'CANCELADO')}
+                                                                        className="btn btn-danger"
+                                                                        style={{ padding: '6px 12px', fontSize: '12px' }}
+                                                                    >
+                                                                        🚫 Cancelar
+                                                                    </button>
+                                                                </>
+                                                            )}
+                                                            {order.status === 'ENTREGADO' && (
                                                                 <button
                                                                     onClick={() => handleUpdateStatus(order.id, 'CANCELADO')}
                                                                     className="btn btn-danger"
                                                                     style={{ padding: '6px 12px', fontSize: '12px' }}
                                                                 >
-                                                                    🚫 Cancelar
+                                                                    🚫 Cancelar y Restaurar Stock
                                                                 </button>
-                                                            </>
-                                                        )}
-                                                        {order.status === 'ENTREGADO' && (
-                                                            <button
-                                                                onClick={() => handleUpdateStatus(order.id, 'CANCELADO')}
-                                                                className="btn btn-danger"
-                                                                style={{ padding: '6px 12px', fontSize: '12px' }}
-                                                            >
-                                                                🚫 Cancelar y Restaurar Stock
-                                                            </button>
-                                                        )}
-                                                        {order.status === 'CANCELADO' && (
-                                                            <button
-                                                                onClick={() => handleUpdateStatus(order.id, 'ENTREGADO')}
-                                                                className="btn"
-                                                                style={{ 
-                                                                    padding: '6px 12px', 
-                                                                    fontSize: '12px', 
-                                                                    background: '#2ecc71', 
-                                                                    color: 'white',
-                                                                    border: 'none',
-                                                                    cursor: 'pointer'
-                                                                }}
-                                                            >
-                                                                ✅ Entregar y Descontar Stock
-                                                            </button>
-                                                        )}
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        )
-                                    })}
-                                </tbody>
-                            </table>
-                        </div>
+                                                            )}
+                                                            {order.status === 'CANCELADO' && (
+                                                                <button
+                                                                    onClick={() => handleUpdateStatus(order.id, 'ENTREGADO')}
+                                                                    className="btn"
+                                                                    style={{
+                                                                        padding: '6px 12px',
+                                                                        fontSize: '12px',
+                                                                        background: '#2ecc71',
+                                                                        color: 'white',
+                                                                        border: 'none',
+                                                                        cursor: 'pointer'
+                                                                    }}
+                                                                >
+                                                                    ✅ Entregar y Descontar Stock
+                                                                </button>
+                                                            )}
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            )
+                                        })}
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            {/* Mobile Cards */}
+                            <div className="mobile-cards">
+                                {filteredOrders.map(order => {
+                                    const badge = getStatusStyles(order.status)
+                                    const orderDate = new Date(order.created_at).toLocaleString('es-ES', {
+                                        day: '2-digit',
+                                        month: '2-digit',
+                                        year: 'numeric',
+                                        hour: '2-digit',
+                                        minute: '2-digit'
+                                    })
+
+                                    return (
+                                        <div key={order.id} className="mobile-order-card">
+                                            <div className="mobile-order-header">
+                                                <span className="mobile-order-id">#{order.id}</span>
+                                                <span style={{
+                                                    background: badge.background,
+                                                    color: badge.color,
+                                                    padding: '3px 10px',
+                                                    borderRadius: '20px',
+                                                    fontSize: '11px',
+                                                    fontWeight: '700',
+                                                    display: 'inline-block'
+                                                }}>
+                                                    {badge.label}
+                                                </span>
+                                            </div>
+                                            <div className="mobile-order-body">
+                                                <div className="mobile-order-row">
+                                                    <span className="mobile-order-label">Cliente:</span>
+                                                    <span className="mobile-order-value">{order.customer_name}</span>
+                                                </div>
+                                                <div className="mobile-order-row">
+                                                    <span className="mobile-order-label">Teléfono:</span>
+                                                    <span className="mobile-order-value">{order.customer_phone || '—'}</span>
+                                                </div>
+                                                <div className="mobile-order-row">
+                                                    <span className="mobile-order-label">Fecha:</span>
+                                                    <span className="mobile-order-value">{orderDate}</span>
+                                                </div>
+                                                <div className="mobile-order-row">
+                                                    <span className="mobile-order-label">Total:</span>
+                                                    <span className="mobile-order-value" style={{ fontWeight: '700', color: 'var(--primary-dark)', fontSize: '15px' }}>${order.total_price.toLocaleString()}</span>
+                                                </div>
+                                            </div>
+                                            <div className="mobile-order-actions">
+                                                <button
+                                                    onClick={() => setSelectedOrderForDetail(order)}
+                                                    className="btn btn-secondary"
+                                                    style={{ flex: 1, padding: '6px 10px', fontSize: '11px' }}
+                                                >
+                                                    👁️ Ver Detalle
+                                                </button>
+                                                {order.status === 'PENDIENTE' && (
+                                                    <>
+                                                        <button
+                                                            onClick={() => handleUpdateStatus(order.id, 'ENTREGADO')}
+                                                            className="btn"
+                                                            style={{
+                                                                flex: 1, padding: '6px 10px', fontSize: '11px',
+                                                                background: '#2ecc71', color: 'white', border: 'none', cursor: 'pointer'
+                                                            }}
+                                                        >
+                                                            ✅ Entregar
+                                                        </button>
+                                                        <button
+                                                            onClick={() => handleUpdateStatus(order.id, 'CANCELADO')}
+                                                            className="btn btn-danger"
+                                                            style={{ flex: 1, padding: '6px 10px', fontSize: '11px' }}
+                                                        >
+                                                            🚫 Cancelar
+                                                        </button>
+                                                    </>
+                                                )}
+                                                {order.status === 'ENTREGADO' && (
+                                                    <button
+                                                        onClick={() => handleUpdateStatus(order.id, 'CANCELADO')}
+                                                        className="btn btn-danger"
+                                                        style={{ flex: 1, padding: '6px 10px', fontSize: '11px' }}
+                                                    >
+                                                        🚫 Cancelar y Restaurar Stock
+                                                    </button>
+                                                )}
+                                                {order.status === 'CANCELADO' && (
+                                                    <button
+                                                        onClick={() => handleUpdateStatus(order.id, 'ENTREGADO')}
+                                                        className="btn"
+                                                        style={{
+                                                            flex: 1, padding: '6px 10px', fontSize: '11px',
+                                                            background: '#2ecc71', color: 'white', border: 'none', cursor: 'pointer'
+                                                        }}
+                                                    >
+                                                        ✅ Entregar y Descontar Stock
+                                                    </button>
+                                                )}
+                                            </div>
+                                        </div>
+                                    )
+                                })}
+                            </div>
+                        </>
                     )}
                 </div>
             </AdminLayout>

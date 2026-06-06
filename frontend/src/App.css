@@ -815,6 +815,75 @@
     z-index: 1;
 }
 
+/* Sort select for catalog */
+.sort-select {
+    border: none;
+    background: none;
+    font-weight: 700;
+    font-size: 13px;
+    color: var(--text-primary);
+    cursor: pointer;
+    outline: none;
+}
+
+[data-theme="dark"] .sort-select {
+    color: var(--text-primary);
+    background: transparent;
+}
+
+.sort-select option {
+    color: initial;
+    background: white;
+}
+
+[data-theme="dark"] .sort-select option {
+    color: #000;
+    background: #fff;
+}
+
+/* Dashboard filters — horizontal on desktop, stack on mobile */
+.dashboard-filters {
+    display: flex;
+    align-items: flex-end;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.dashboard-filters .input-group {
+    margin-bottom: 0;
+}
+
+@media (max-width: 600px) {
+    .dashboard-filters {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.875rem;
+    }
+
+    .dashboard-filters .input-group {
+        min-width: 100% !important;
+    }
+}
+
+/* Filter actions alignment */
+.filter-actions {
+    display: flex;
+    align-items: flex-end;
+    margin-bottom: 0;
+    min-width: fit-content;
+}
+
+@media (max-width: 480px) {
+    .filter-actions {
+        width: 100%;
+        margin-top: 12px;
+    }
+
+    .filter-actions .btn {
+        width: 100%;
+    }
+}
+
 /* Data Table Styles */
 .table-wrapper {
     overflow-x: auto;
@@ -888,6 +957,68 @@
     text-decoration: none;
 }
 
+/* Mobile Cards for Orders */
+.mobile-order-card {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px;
+    background: var(--background);
+}
+
+.mobile-order-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+}
+
+.mobile-order-id {
+    font-weight: 700;
+    font-size: 15px;
+    color: var(--primary-dark);
+}
+
+.mobile-order-body {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 12px;
+}
+
+.mobile-order-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 13px;
+}
+
+.mobile-order-label {
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.mobile-order-value {
+    color: var(--text-primary);
+    font-weight: 600;
+    text-align: right;
+}
+
+.mobile-order-actions {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    padding-top: 10px;
+    border-top: 1px solid var(--border);
+}
+
+.mobile-order-actions .btn {
+    flex: 1;
+    padding: 6px 10px;
+    font-size: 11px;
+}
+
 /* Mobile Cards for Product Table */
 .mobile-cards {
     display: none;
@@ -901,7 +1032,7 @@
     .mobile-cards {
         display: flex;
         flex-direction: column;
-        gap: 12px;
+        gap: 4px;
     }
 
     .mobile-product-card {
