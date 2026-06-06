@@ -3,6 +3,7 @@ from app.services.order_service import OrderService
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from app.models.user import User
 from app.models.order import Order
+from app.extensions import socketio
 
 order_bp = Blueprint('orders', __name__)
 
@@ -17,7 +18,10 @@ def create_public_order():
         
     try:
         order = OrderService.create_order(data['store_id'], data)
+        socketio.emit('order_created', order, namespace='/')
         return jsonify(order), 201
+    except ValueError as ve:
+        return jsonify({'error': str(ve)}), 400
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
@@ -67,5 +71,11 @@ def update_status(order_id):
     if not new_status or new_status not in ['PENDIENTE', 'ENTREGADO', 'CANCELADO']:
         return jsonify({'error': 'Estado no válido'}), 400
         
-    updated_order = OrderService.update_order_status(order_id, new_status)
-    return jsonify(updated_order), 200
+    try:
+        updated_order = OrderService.update_order_status(order_id, new_status)
+        socketio.emit('order_updated', updated_order, namespace='/')
+        return jsonify(updated_order), 200
+    except ValueError as ve:
+        return jsonify({'error': str(ve)}), 400
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500

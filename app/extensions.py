@@ -6,6 +6,7 @@ from flask_bcrypt import Bcrypt
 from flasgger import Swagger
 from flask_cors import CORS
 from flask_mail import Mail
+from flask_socketio import SocketIO
 
 db = SQLAlchemy()
 migrate = Migrate()
@@ -15,3 +16,4 @@ bcrypt = Bcrypt()
 swagger = Swagger()
 cors = CORS()
 mail = Mail()
+socketio = SocketIO(cors_allowed_origins="*")

@@ -279,10 +279,14 @@ function Catalog() {
                 body: JSON.stringify(orderData)
             })
             if (!res.ok) {
-                console.error("Error al registrar el pedido en la base de datos")
+                const errData = await res.json()
+                alert(errData.error || "Hubo un problema al registrar tu pedido. Por favor, inténtalo de nuevo.")
+                return
             }
         } catch (error) {
             console.error("Error de conexión al registrar el pedido:", error)
+            alert("Error de conexión con el servidor. Por favor, verifica tu conexión a internet.")
+            return
         }
 
         let message = `🛍️ *NUEVO PEDIDO - ${store.name}*\n`

@@ -16,7 +16,7 @@ class OrderService:
 
     @staticmethod
     def create_order(store_id, data):
-        """Create a new order starting as PENDIENTE"""
+        """Create a new order starting as PENDIENTE, reserving stock immediately"""
         order = Order(
             store_id=store_id,
             customer_name=data['customer_name'],
@@ -28,10 +28,21 @@ class OrderService:
         db.session.add(order)
         db.session.flush() # Populate order.id
         
+        # Loop through items and validate/adjust stock inside the transaction
         for item_data in data['items']:
+            product_id = item_data.get('product_id')
+            if product_id:
+                # This locks the product row and validates stock availability
+                OrderService._validate_and_adjust_stock(
+                    product_id=product_id,
+                    quantity=item_data['quantity'],
+                    size=item_data.get('selected_size'),
+                    decrease=True
+                )
+                
             item = OrderItem(
                 order_id=order.id,
-                product_id=item_data.get('product_id'),
+                product_id=product_id,
                 product_name=item_data['product_name'],
                 quantity=item_data['quantity'],
                 price=item_data['price'],
@@ -54,45 +65,73 @@ class OrderService:
             return order_schema.dump(order)
             
         # Check transition and update stock
-        # 1. Transition TO 'ENTREGADO' (decrease stock)
-        if new_status == 'ENTREGADO' and old_status != 'ENTREGADO':
-            OrderService._adjust_stock(order, decrease=True)
-            
-        # 2. Transition FROM 'ENTREGADO' to other state (increase/restore stock)
-        elif old_status == 'ENTREGADO' and new_status != 'ENTREGADO':
-            OrderService._adjust_stock(order, decrease=False)
+        # 1. From active (PENDIENTE/ENTREGADO) to CANCELADO -> Restore stock (increase)
+        if old_status in ['PENDIENTE', 'ENTREGADO'] and new_status == 'CANCELADO':
+            for item in order.items:
+                if item.product_id:
+                    OrderService._validate_and_adjust_stock(
+                        product_id=item.product_id,
+                        quantity=item.quantity,
+                        size=item.selected_size,
+                        decrease=False
+                    )
+                    
+        # 2. From CANCELADO to active (PENDIENTE/ENTREGADO) -> Deduct stock (decrease)
+        elif old_status == 'CANCELADO' and new_status in ['PENDIENTE', 'ENTREGADO']:
+            for item in order.items:
+                if item.product_id:
+                    OrderService._validate_and_adjust_stock(
+                        product_id=item.product_id,
+                        quantity=item.quantity,
+                        size=item.selected_size,
+                        decrease=True
+                    )
             
         order.status = new_status
         db.session.commit()
         return order_schema.dump(order)
 
     @staticmethod
-    def _adjust_stock(order, decrease=True):
-        """Adjust product stock based on order item quantities and sizes"""
-        for item in order.items:
-            if not item.product_id:
-                continue
-                
-            product = Product.query.get(item.product_id)
-            if not product:
-                continue
-                
-            qty_change = item.quantity if decrease else -item.quantity
-            
-            # If product has sizes
-            if product.sizes and product.sizes.startswith('{'):
-                try:
-                    sizes_map = json.loads(product.sizes)
-                    size = item.selected_size
-                    if size and size in sizes_map:
-                        # Decrease or increase size stock, ensuring it doesn't go below 0
-                        sizes_map[size] = max(0, sizes_map[size] - qty_change)
-                        product.sizes = json.dumps(sizes_map)
-                        # Recalculate total product stock as sum of all sizes
-                        product.stock = sum(sizes_map.values())
-                    else:
-                        product.stock = max(0, product.stock - qty_change)
-                except Exception:
+    def _validate_and_adjust_stock(product_id, quantity, size=None, decrease=True):
+        """
+        Locks the product row using with_for_update, validates stock availability if decreasing,
+        and adjusts the stock global and size values.
+        Raises ValueError if stock is insufficient.
+        """
+        # Lock row using pessimistic lock (concurrency-safe)
+        product = Product.query.with_for_update().get(product_id)
+        if not product:
+            raise ValueError(f"El producto con ID {product_id} no existe.")
+
+        qty_change = quantity if decrease else -quantity
+
+        # If product has sizes mapping
+        if product.sizes and product.sizes.startswith('{'):
+            try:
+                sizes_map = json.loads(product.sizes)
+                if size:
+                    if size not in sizes_map:
+                        raise ValueError(f"La talla '{size}' no existe para el producto '{product.name}'.")
+                    
+                    if decrease and sizes_map[size] < quantity:
+                        raise ValueError(f"Stock insuficiente para {product.name} (Talla {size}). Disponibles: {sizes_map[size]}.")
+                    
+                    sizes_map[size] = max(0, sizes_map[size] - qty_change)
+                    product.sizes = json.dumps(sizes_map)
+                    product.stock = sum(sizes_map.values())
+                else:
+                    # Fallback if size not specified
+                    if decrease and product.stock < quantity:
+                        raise ValueError(f"Stock insuficiente para {product.name}. Disponibles: {product.stock}.")
                     product.stock = max(0, product.stock - qty_change)
-            else:
+            except ValueError as ve:
+                raise ve
+            except Exception:
+                # Fallback if json parsing fails
+                if decrease and product.stock < quantity:
+                    raise ValueError(f"Stock insuficiente para {product.name}. Disponibles: {product.stock}.")
                 product.stock = max(0, product.stock - qty_change)
+        else:
+            if decrease and product.stock < quantity:
+                raise ValueError(f"Stock insuficiente para {product.name}. Disponibles: {product.stock}.")
+            product.stock = max(0, product.stock - qty_change)

@@ -14,3 +14,6 @@ Flask-Bcrypt==1.0.1
 flasgger==0.9.7.1
 Flask-CORS==4.0.0
 Flask-Mail==0.9.1
+Flask-SocketIO==5.3.6
+gevent==23.9.1
+gevent-websocket==0.10.1

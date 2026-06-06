@@ -17,5 +17,5 @@ ENV FLASK_ENV=production
 
 EXPOSE 5000
 
-# Use gunicorn for production
-CMD ["gunicorn", "--bind", "0.0.0.0:5000", "run:app"]
+# Use gunicorn with gevent-websocket worker for production
+CMD ["gunicorn", "-k", "geventwebsocket.gunicorn.workers.GeventWebSocketWorker", "-w", "1", "--bind", "0.0.0.0:5000", "run:app"]

@@ -3,6 +3,7 @@ import AdminLayout from '../components/AdminLayout'
 import StatCard from '../components/StatCard'
 import { TableSkeleton } from '../components/Skeleton'
 import { useToast } from '../components/Toast'
+import { useSocket } from '../context/SocketContext'
 
 function Orders({ user, onLogout }) {
     const [orders, setOrders] = useState([])
@@ -10,10 +11,27 @@ function Orders({ user, onLogout }) {
     const [statusFilter, setStatusFilter] = useState('ALL')
     const [selectedOrderForDetail, setSelectedOrderForDetail] = useState(null)
     const toast = useToast()
+    const socket = useSocket()
 
     useEffect(() => {
         fetchOrders()
     }, [])
+
+    useEffect(() => {
+        if (!socket) return;
+        
+        const handleSocketEvent = () => {
+            fetchOrders();
+        };
+
+        socket.on('order_created', handleSocketEvent);
+        socket.on('order_updated', handleSocketEvent);
+
+        return () => {
+            socket.off('order_created', handleSocketEvent);
+            socket.off('order_updated', handleSocketEvent);
+        };
+    }, [socket])
 
     const fetchOrders = async () => {
         try {
@@ -219,7 +237,7 @@ function Orders({ user, onLogout }) {
                                                         </span>
                                                     </td>
                                                     <td>
-                                                        <div style={{ display: 'flex', gap: '8px' }}>
+                                                        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                                                             <button
                                                                 onClick={() => setSelectedOrderForDetail(order)}
                                                                 className="btn btn-secondary"
@@ -241,7 +259,7 @@ function Orders({ user, onLogout }) {
                                                                             cursor: 'pointer'
                                                                         }}
                                                                     >
-                                                                        ✅ Entregar
+                                                                        ✅ Marcar Entregado
                                                                     </button>
                                                                     <button
                                                                         onClick={() => handleUpdateStatus(order.id, 'CANCELADO')}
@@ -258,23 +276,23 @@ function Orders({ user, onLogout }) {
                                                                     className="btn btn-danger"
                                                                     style={{ padding: '6px 12px', fontSize: '12px' }}
                                                                 >
-                                                                    🚫 Cancelar y Restaurar Stock
+                                                                    🚫 Cancelar
                                                                 </button>
                                                             )}
                                                             {order.status === 'CANCELADO' && (
                                                                 <button
-                                                                    onClick={() => handleUpdateStatus(order.id, 'ENTREGADO')}
+                                                                    onClick={() => handleUpdateStatus(order.id, 'PENDIENTE')}
                                                                     className="btn"
                                                                     style={{
                                                                         padding: '6px 12px',
                                                                         fontSize: '12px',
-                                                                        background: '#2ecc71',
+                                                                        background: '#f39c12',
                                                                         color: 'white',
                                                                         border: 'none',
                                                                         cursor: 'pointer'
                                                                     }}
                                                                 >
-                                                                    ✅ Entregar y Descontar Stock
+                                                                    ↩️ Reactivar Pedido
                                                                 </button>
                                                             )}
                                                         </div>
@@ -350,7 +368,7 @@ function Orders({ user, onLogout }) {
                                                                 background: '#2ecc71', color: 'white', border: 'none', cursor: 'pointer'
                                                             }}
                                                         >
-                                                            ✅ Entregar
+                                                            ✅ Marcar Entregado
                                                         </button>
                                                         <button
                                                             onClick={() => handleUpdateStatus(order.id, 'CANCELADO')}
@@ -367,19 +385,19 @@ function Orders({ user, onLogout }) {
                                                         className="btn btn-danger"
                                                         style={{ flex: 1, padding: '6px 10px', fontSize: '11px' }}
                                                     >
-                                                        🚫 Cancelar y Restaurar Stock
+                                                        🚫 Cancelar
                                                     </button>
                                                 )}
                                                 {order.status === 'CANCELADO' && (
                                                     <button
-                                                        onClick={() => handleUpdateStatus(order.id, 'ENTREGADO')}
+                                                        onClick={() => handleUpdateStatus(order.id, 'PENDIENTE')}
                                                         className="btn"
                                                         style={{
                                                             flex: 1, padding: '6px 10px', fontSize: '11px',
-                                                            background: '#2ecc71', color: 'white', border: 'none', cursor: 'pointer'
+                                                            background: '#f39c12', color: 'white', border: 'none', cursor: 'pointer'
                                                         }}
                                                     >
-                                                        ✅ Entregar y Descontar Stock
+                                                        ↩️ Reactivar
                                                     </button>
                                                 )}
                                             </div>

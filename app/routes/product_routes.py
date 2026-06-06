@@ -3,6 +3,7 @@ from app.services.product_service import ProductService
 from app.schemas.product_schema import ProductSchema
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from app.models.user import User
+from app.extensions import socketio
 
 product_bp = Blueprint('products', __name__)
 product_schema = ProductSchema()
@@ -123,6 +124,7 @@ def create_product():
         return jsonify({'error': 'Faltan campos obligatorios (name, price, category_id)'}), 400
     
     product = ProductService.create_product(data['store_id'], data)
+    socketio.emit('product_created', product, namespace='/')
     return jsonify(product), 201
 
 @product_bp.route('/<int:product_id>', methods=['PUT'])
@@ -176,6 +178,7 @@ def update_product(product_id):
     if not product:
         return jsonify({'error': 'Producto no encontrado'}), 404
     
+    socketio.emit('product_updated', product, namespace='/')
     return jsonify(product), 200
 
 @product_bp.route('/<int:product_id>', methods=['DELETE'])
@@ -207,4 +210,5 @@ def delete_product(product_id):
     if not success:
         return jsonify({'error': 'Producto no encontrado'}), 404
     
+    socketio.emit('product_deleted', {'product_id': product_id}, namespace='/')
     return jsonify({'message': 'Producto eliminado'}), 200

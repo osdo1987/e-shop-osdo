@@ -17,4 +17,4 @@ ENV FLASK_DEBUG=1
 
 EXPOSE 5002
 
-CMD ["flask", "run", "--host=0.0.0.0"]
+CMD ["python", "run.py"]
