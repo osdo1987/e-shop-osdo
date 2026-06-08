@@ -2,6 +2,19 @@ import { useState, useEffect } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import AdminLayout from '../components/AdminLayout'
 import { useToast } from '../components/Toast'
+import Box from '@mui/material/Box'
+import Card from '@mui/material/Card'
+import CardContent from '@mui/material/CardContent'
+import Typography from '@mui/material/Typography'
+import TextField from '@mui/material/TextField'
+import MenuItem from '@mui/material/MenuItem'
+import Button from '@mui/material/Button'
+import Grid from '@mui/material/Grid'
+import Alert from '@mui/material/Alert'
+import Chip from '@mui/material/Chip'
+import Checkbox from '@mui/material/Checkbox'
+import FormControlLabel from '@mui/material/FormControlLabel'
+import IconButton from '@mui/material/IconButton'
 
 function ProductForm({ user }) {
     const navigate = useNavigate()
@@ -60,7 +73,7 @@ function ProductForm({ user }) {
                         image_url: product.image_url || '',
                         sizes: product.sizes || ''
                     })
-                    
+
                     let parsedSizes = {}
                     if (product.sizes) {
                         try {
@@ -178,304 +191,314 @@ function ProductForm({ user }) {
     if (loading) {
         return (
             <AdminLayout title="Cargando..." user={user}>
-                <p style={{ color: 'var(--text-secondary)', textAlign: 'center', padding: '40px' }}>Cargando producto...</p>
+                <Typography color="text.secondary" textAlign="center" sx={{ py: 5 }}>Cargando producto...</Typography>
             </AdminLayout>
         )
     }
 
     return (
         <AdminLayout title={isEditing ? 'Editar Producto' : 'Nuevo Producto'} user={user} showBack>
-            <div className="card" style={{ maxWidth: '700px' }}>
-                {error && <div className="error-message">{error}</div>}
-                <form onSubmit={handleSubmit}>
-                    <div className="input-group">
-                        <label>Nombre del Producto</label>
-                        <input
-                            type="text"
+            <Card sx={{ maxWidth: 700 }}>
+                <CardContent sx={{ p: 3, '&:last-child': { pb: 3 } }}>
+                    {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+                    <Box component="form" onSubmit={handleSubmit}>
+                        <TextField
+                            fullWidth
+                            label="Nombre del Producto"
                             name="name"
                             value={form.name}
                             onChange={handleChange}
                             required
                             placeholder="Ej: Camiseta Algodón Premium"
+                            sx={{ mb: 2 }}
                         />
-                    </div>
-                    <div className="input-group">
-                        <label>Descripción</label>
-                        <textarea
+                        <TextField
+                            fullWidth
+                            label="Descripción"
                             name="description"
                             value={form.description}
                             onChange={handleChange}
-                            rows="3"
+                            multiline
+                            rows={3}
                             placeholder="Descripción del producto..."
+                            sx={{ mb: 2 }}
                         />
-                    </div>
-                    <div className="flex-row" style={{ alignItems: 'flex-start' }}>
-                        <div className="input-group">
-                            <label>Precio de Venta</label>
-                            <input
-                                type="number"
-                                name="price"
-                                value={form.price}
-                                onChange={handleChange}
-                                required
-                                min="0"
-                                step="0.01"
-                                placeholder="45000"
-                            />
-                        </div>
-                        <div className="input-group">
-                            <label>Precio Promocional</label>
-                            <input
-                                type="number"
-                                name="promo_price"
-                                value={form.promo_price}
-                                onChange={handleChange}
-                                min="0"
-                                step="0.01"
-                                placeholder="35000"
-                            />
-                        </div>
-                        <div className="input-group">
-                            <label>Precio de Compra (Costo)</label>
-                            <input
-                                type="number"
-                                name="purchase_price"
-                                value={form.purchase_price}
-                                onChange={handleChange}
-                                min="0"
-                                step="0.01"
-                                placeholder="25000"
-                            />
-                        </div>
-                    </div>
-                    <div className="flex-row" style={{ alignItems: 'flex-start' }}>
-                        <div className="input-group">
-                            <label>Stock {hasSizes && <span style={{ fontSize: '11px', color: 'var(--primary-color)' }}>(Calculado de las tallas)</span>}</label>
-                            <input
-                                type="number"
-                                name="stock"
-                                value={hasSizes ? Object.values(sizeStockMap).reduce((a, b) => a + b, 0) : form.stock}
-                                onChange={handleChange}
-                                required
-                                disabled={hasSizes}
-                                min="0"
-                                placeholder="50"
-                                style={hasSizes ? { opacity: 0.7, cursor: 'not-allowed', background: 'var(--border)' } : {}}
-                            />
-                        </div>
-                        <div className="input-group">
-                            <label>Categoría</label>
-                            <select
-                                name="category_id"
-                                value={form.category_id}
-                                onChange={handleChange}
-                                required
-                            >
-                                <option value="">Seleccionar categoría</option>
-                                {categories.map(cat => (
-                                    <option key={cat.id} value={cat.id}>{cat.name}</option>
-                                ))}
-                            </select>
-                        </div>
-                    </div>
+                        <Grid container spacing={2} sx={{ mb: 2 }}>
+                            <Grid item xs={12} sm={4}>
+                                <TextField
+                                    fullWidth
+                                    label="Precio de Venta"
+                                    name="price"
+                                    value={form.price}
+                                    onChange={handleChange}
+                                    required
+                                    type="number"
+                                    inputProps={{ min: 0, step: 0.01 }}
+                                    placeholder="45000"
+                                />
+                            </Grid>
+                            <Grid item xs={12} sm={4}>
+                                <TextField
+                                    fullWidth
+                                    label="Precio Promocional"
+                                    name="promo_price"
+                                    value={form.promo_price}
+                                    onChange={handleChange}
+                                    type="number"
+                                    inputProps={{ min: 0, step: 0.01 }}
+                                    placeholder="35000"
+                                />
+                            </Grid>
+                            <Grid item xs={12} sm={4}>
+                                <TextField
+                                    fullWidth
+                                    label="Precio de Compra (Costo)"
+                                    name="purchase_price"
+                                    value={form.purchase_price}
+                                    onChange={handleChange}
+                                    type="number"
+                                    inputProps={{ min: 0, step: 0.01 }}
+                                    placeholder="25000"
+                                />
+                            </Grid>
+                        </Grid>
+                        <Grid container spacing={2} sx={{ mb: 2 }}>
+                            <Grid item xs={12} sm={6}>
+                                <TextField
+                                    fullWidth
+                                    label={`Stock ${hasSizes ? '(Calculado de las tallas)' : ''}`}
+                                    name="stock"
+                                    value={hasSizes ? Object.values(sizeStockMap).reduce((a, b) => a + b, 0) : form.stock}
+                                    onChange={handleChange}
+                                    required
+                                    disabled={hasSizes}
+                                    type="number"
+                                    inputProps={{ min: 0 }}
+                                    placeholder="50"
+                                    sx={hasSizes ? { '& .MuiInputBase-root': { opacity: 0.7 } } : {}}
+                                />
+                            </Grid>
+                            <Grid item xs={12} sm={6}>
+                                <TextField
+                                    fullWidth
+                                    select
+                                    label="Categoría"
+                                    name="category_id"
+                                    value={form.category_id}
+                                    onChange={handleChange}
+                                    required
+                                >
+                                    <MenuItem value="">Seleccionar categoría</MenuItem>
+                                    {categories.map(cat => (
+                                        <MenuItem key={cat.id} value={cat.id}>{cat.name}</MenuItem>
+                                    ))}
+                                </TextField>
+                            </Grid>
+                        </Grid>
 
-                    {/* Tallas y Variantes */}
-                    <div className="input-group" style={{ marginBottom: '20px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', userSelect: 'none' }} onClick={handleToggleHasSizes}>
-                            <input
-                                type="checkbox"
-                                checked={hasSizes}
-                                onChange={() => {}} // Manejado por click en div
-                                style={{ width: '18px', height: '18px', cursor: 'pointer' }}
+                        {/* Tallas y Variantes */}
+                        <Box sx={{ mb: 2.5 }}>
+                            <FormControlLabel
+                                control={
+                                    <Checkbox
+                                        checked={hasSizes}
+                                        onChange={handleToggleHasSizes}
+                                    />
+                                }
+                                label={<Typography variant="body2" sx={{ fontWeight: 600 }}>¿Este producto tiene tallas o variantes?</Typography>}
                             />
-                            <strong style={{ fontSize: '14px', color: 'var(--text-primary)' }}>¿Este producto tiene tallas o variantes?</strong>
-                        </div>
-                        
-                        {hasSizes && (
-                            <div style={{
-                                marginTop: '12px',
-                                padding: '16px',
-                                background: 'var(--background)',
-                                borderRadius: '8px',
-                                border: '1px solid var(--border)'
-                            }}>
-                                <div style={{ marginBottom: '12px' }}>
-                                    <label style={{ fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '6px', display: 'block', fontWeight: '600' }}>Tallas de Ropa Comunes</label>
-                                    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+
+                            {hasSizes && (
+                                <Box sx={{
+                                    mt: 1.5,
+                                    p: 2,
+                                    bgcolor: 'background.default',
+                                    borderRadius: 1,
+                                    border: 1,
+                                    borderColor: 'divider',
+                                }}>
+                                    <Typography variant="caption" color="text.secondary" sx={{ display: 'block', fontWeight: 600, mb: 1 }}>
+                                        Tallas de Ropa Comunes
+                                    </Typography>
+                                    <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mb: 2 }}>
                                         {presetClothing.map(size => (
-                                            <button
+                                            <Chip
                                                 key={size}
-                                                type="button"
-                                                className={`btn ${selectedSizes.includes(size) ? 'btn-primary' : 'btn-secondary'}`}
-                                                style={{ padding: '4px 12px', fontSize: '12px', borderRadius: '20px' }}
+                                                label={size}
                                                 onClick={() => handleToggleSize(size)}
-                                            >
-                                                {size}
-                                            </button>
+                                                color={selectedSizes.includes(size) ? 'primary' : 'default'}
+                                                variant={selectedSizes.includes(size) ? 'filled' : 'outlined'}
+                                                size="small"
+                                                sx={{ borderRadius: 20 }}
+                                            />
                                         ))}
-                                    </div>
-                                </div>
+                                    </Box>
 
-                                <div style={{ marginBottom: '16px' }}>
-                                    <label style={{ fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '6px', display: 'block', fontWeight: '600' }}>Tallas de Calzado Comunes</label>
-                                    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                                    <Typography variant="caption" color="text.secondary" sx={{ display: 'block', fontWeight: 600, mb: 1 }}>
+                                        Tallas de Calzado Comunes
+                                    </Typography>
+                                    <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mb: 2 }}>
                                         {presetShoes.map(size => (
-                                            <button
+                                            <Chip
                                                 key={size}
-                                                type="button"
-                                                className={`btn ${selectedSizes.includes(size) ? 'btn-primary' : 'btn-secondary'}`}
-                                                style={{ padding: '4px 12px', fontSize: '12px', borderRadius: '20px' }}
+                                                label={size}
                                                 onClick={() => handleToggleSize(size)}
-                                            >
-                                                {size}
-                                            </button>
+                                                color={selectedSizes.includes(size) ? 'primary' : 'default'}
+                                                variant={selectedSizes.includes(size) ? 'filled' : 'outlined'}
+                                                size="small"
+                                                sx={{ borderRadius: 20 }}
+                                            />
                                         ))}
-                                    </div>
-                                </div>
+                                    </Box>
 
-                                {/* Custom Size tag input */}
-                                <div style={{ marginBottom: '20px', display: 'flex', gap: '8px', alignItems: 'flex-end' }}>
-                                    <div style={{ flex: 1 }}>
-                                        <label style={{ fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '4px', display: 'block', fontWeight: '600' }}>Agregar Talla Personalizada</label>
-                                        <input
-                                            type="text"
+                                    {/* Custom Size */}
+                                    <Box sx={{ display: 'flex', gap: 1, alignItems: 'flex-end', mb: 2.5 }}>
+                                        <TextField
+                                            size="small"
+                                            label="Agregar Talla Personalizada"
                                             value={customSize}
                                             onChange={(e) => setCustomSize(e.target.value)}
                                             placeholder="Ej: XXL, 44, Única"
-                                            style={{ width: '100%', padding: '8px 12px', fontSize: '14px', borderRadius: '6px', border: '1px solid var(--border)' }}
+                                            sx={{ flex: 1 }}
                                         />
-                                    </div>
-                                    <button
-                                        type="button"
-                                        className="btn btn-primary"
-                                        style={{ padding: '8px 16px', height: '38px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                                        onClick={() => {
-                                            const cleanSize = customSize.trim().toUpperCase()
-                                            if (cleanSize && !sizeStockMap.hasOwnProperty(cleanSize)) {
-                                                setSizeStockMap(prev => ({ ...prev, [cleanSize]: 10 }))
-                                                setCustomSize('')
-                                            }
-                                        }}
-                                    >
-                                        + Agregar
-                                    </button>
-                                </div>
+                                        <Button
+                                            variant="contained"
+                                            size="small"
+                                            onClick={() => {
+                                                const cleanSize = customSize.trim().toUpperCase()
+                                                if (cleanSize && !sizeStockMap.hasOwnProperty(cleanSize)) {
+                                                    setSizeStockMap(prev => ({ ...prev, [cleanSize]: 10 }))
+                                                    setCustomSize('')
+                                                }
+                                            }}
+                                            sx={{ height: 40 }}
+                                        >
+                                            + Agregar
+                                        </Button>
+                                    </Box>
 
-                                {/* Quantities Config list */}
-                                {selectedSizes.length > 0 && (
-                                    <div style={{ borderTop: '1px solid var(--border)', paddingTop: '16px' }}>
-                                        <label style={{ fontSize: '13px', fontWeight: '700', color: 'var(--text-primary)', marginBottom: '10px', display: 'block' }}>Configurar Unidades por Talla</label>
-                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                                            {selectedSizes.map(size => (
-                                                <div key={size} style={{ display: 'flex', alignItems: 'center', gap: '12px', background: 'rgba(255, 255, 255, 0.03)', padding: '8px 12px', borderRadius: '6px', border: '1px solid var(--border)' }}>
-                                                    <span style={{ fontWeight: '700', fontSize: '14px', minWidth: '40px' }}>{size}</span>
-                                                    <input
-                                                        type="number"
-                                                        min="0"
-                                                        value={sizeStockMap[size] ?? 10}
-                                                        onChange={(e) => {
-                                                            const val = parseInt(e.target.value) || 0
-                                                            setSizeStockMap(prev => ({ ...prev, [size]: val }))
-                                                        }}
-                                                        style={{ width: '80px', padding: '6px 10px', fontSize: '13px', borderRadius: '4px', border: '1px solid var(--border)' }}
-                                                        required
-                                                    />
-                                                    <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>unidades</span>
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => {
-                                                            setSizeStockMap(prev => {
-                                                                const next = { ...prev }
-                                                                delete next[size]
-                                                                return next
-                                                            })
-                                                        }}
-                                                        style={{ marginLeft: 'auto', background: 'none', border: 'none', color: 'var(--error)', cursor: 'pointer', fontSize: '13px', fontWeight: '600' }}
-                                                    >
-                                                        🗑️ Eliminar
-                                                    </button>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-                        )}
-                    </div>
+                                    {selectedSizes.length > 0 && (
+                                        <Box sx={{ borderTop: 1, borderColor: 'divider', pt: 2 }}>
+                                            <Typography variant="body2" sx={{ fontWeight: 700, mb: 1 }}>
+                                                Configurar Unidades por Talla
+                                            </Typography>
+                                            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                                                {selectedSizes.map(size => (
+                                                    <Box key={size} sx={{ display: 'flex', alignItems: 'center', gap: 1.5, p: 1, borderRadius: 1, border: 1, borderColor: 'divider' }}>
+                                                        <Typography sx={{ fontWeight: 700, fontSize: '0.875rem', minWidth: 40 }}>{size}</Typography>
+                                                        <TextField
+                                                            type="number"
+                                                            size="small"
+                                                            inputProps={{ min: 0 }}
+                                                            value={sizeStockMap[size] ?? 10}
+                                                            onChange={(e) => {
+                                                                const val = parseInt(e.target.value) || 0
+                                                                setSizeStockMap(prev => ({ ...prev, [size]: val }))
+                                                            }}
+                                                            sx={{ width: 80 }}
+                                                        />
+                                                        <Typography variant="caption" color="text.disabled">unidades</Typography>
+                                                        <IconButton
+                                                            size="small"
+                                                            onClick={() => {
+                                                                setSizeStockMap(prev => {
+                                                                    const next = { ...prev }
+                                                                    delete next[size]
+                                                                    return next
+                                                                })
+                                                            }}
+                                                            sx={{ ml: 'auto', color: 'error.main' }}
+                                                        >
+                                                            🗑️
+                                                        </IconButton>
+                                                    </Box>
+                                                ))}
+                                            </Box>
+                                        </Box>
+                                    )}
+                                </Box>
+                            )}
+                        </Box>
 
-                    <div className="input-group">
-                        <label>URL de Imagen (opcional)</label>
-                        <input
-                            type="url"
+                        <TextField
+                            fullWidth
+                            label="URL de Imagen (opcional)"
                             name="image_url"
                             value={form.image_url}
                             onChange={handleChange}
                             placeholder="https://ejemplo.com/imagen.jpg"
+                            sx={{ mb: 2 }}
                         />
-                    </div>
 
-                    {/* Image Upload */}
-                    <div className="input-group">
-                        <label>O subir imagen</label>
-                        <label className="image-upload-zone" style={{
-                            border: '2px dashed var(--border)',
-                            borderRadius: '8px',
-                            padding: '24px',
-                            textAlign: 'center',
-                            color: 'var(--text-muted)',
-                            fontSize: '14px',
-                            cursor: 'pointer',
-                            transition: 'all 0.2s',
-                            background: 'var(--background)',
-                            display: 'block'
-                        }}>
-                            📸 Arrastra una imagen aquí o haz clic para seleccionar
-                            <input
-                                type="file"
-                                accept="image/*"
-                                style={{ display: 'none' }}
-                                onChange={(e) => {
-                                    const file = e.target.files[0]
-                                    if (file) {
-                                        const reader = new FileReader()
-                                        reader.onload = (ev) => {
-                                            setForm({ ...form, image_url: ev.target.result })
-                                        }
-                                        reader.readAsDataURL(file)
-                                    }
+                        {/* Image Upload */}
+                        <Box sx={{ mb: 2 }}>
+                            <Typography variant="body2" sx={{ fontWeight: 600, mb: 0.5 }}>O subir imagen</Typography>
+                            <Box
+                                component="label"
+                                sx={{
+                                    border: '2px dashed',
+                                    borderColor: 'divider',
+                                    borderRadius: 1,
+                                    p: 3,
+                                    textAlign: 'center',
+                                    color: 'text.disabled',
+                                    fontSize: '0.875rem',
+                                    cursor: 'pointer',
+                                    display: 'block',
+                                    bgcolor: 'background.default',
+                                    transition: 'all 0.2s',
+                                    '&:hover': {
+                                        borderColor: 'primary.main',
+                                    },
                                 }}
-                            />
-                        </label>
-                        {form.image_url && (
-                            <div style={{ marginTop: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                <img src={form.image_url} alt="Preview" style={{ width: '60px', height: '60px', objectFit: 'cover', borderRadius: '4px' }} />
-                                <button
-                                    type="button"
-                                    className="btn btn-secondary"
-                                    style={{ padding: '4px 8px', fontSize: '12px' }}
-                                    onClick={() => setForm({ ...form, image_url: '' })}
-                                >
-                                    Quitar imagen
-                                </button>
-                            </div>
-                        )}
-                    </div>
+                            >
+                                📸 Arrastra una imagen aquí o haz clic para seleccionar
+                                <input
+                                    type="file"
+                                    accept="image/*"
+                                    style={{ display: 'none' }}
+                                    onChange={(e) => {
+                                        const file = e.target.files[0]
+                                        if (file) {
+                                            const reader = new FileReader()
+                                            reader.onload = (ev) => {
+                                                setForm({ ...form, image_url: ev.target.result })
+                                            }
+                                            reader.readAsDataURL(file)
+                                        }
+                                    }}
+                                />
+                            </Box>
+                            {form.image_url && (
+                                <Box sx={{ mt: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
+                                    <Box
+                                        component="img"
+                                        src={form.image_url}
+                                        alt="Preview"
+                                        sx={{ width: 60, height: 60, objectFit: 'cover', borderRadius: 1 }}
+                                    />
+                                    <Button variant="outlined" size="small" onClick={() => setForm({ ...form, image_url: '' })}>
+                                        Quitar imagen
+                                    </Button>
+                                </Box>
+                            )}
+                        </Box>
 
-                    <div className="flex-row" style={{ marginTop: '1.5rem' }}>
-                        <button
-                            type="submit"
-                            className="btn btn-primary"
-                            style={{ flex: 1 }}
-                            disabled={saving}
-                        >
-                            {saving ? 'Guardando...' : (isEditing ? 'Actualizar Producto' : 'Guardar Producto')}
-                        </button>
-                        <Link to="/admin" className="btn btn-secondary" style={{ flex: 1, textAlign: 'center', textDecoration: 'none' }}>
-                            Cancelar
-                        </Link>
-                    </div>
-                </form>
-            </div>
+                        <Grid container spacing={1.5} sx={{ mt: 1 }}>
+                            <Grid item xs={6}>
+                                <Button type="submit" variant="contained" fullWidth disabled={saving} sx={{ py: 1.5 }}>
+                                    {saving ? 'Guardando...' : (isEditing ? 'Actualizar Producto' : 'Guardar Producto')}
+                                </Button>
+                            </Grid>
+                            <Grid item xs={6}>
+                                <Button component={Link} to="/admin" variant="outlined" fullWidth sx={{ py: 1.5 }}>
+                                    Cancelar
+                                </Button>
+                            </Grid>
+                        </Grid>
+                    </Box>
+                </CardContent>
+            </Card>
         </AdminLayout>
     )
 }

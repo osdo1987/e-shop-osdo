@@ -2,6 +2,17 @@ import { useState, useEffect } from 'react'
 import AdminLayout from '../components/AdminLayout'
 import ConfirmModal from '../components/ConfirmModal'
 import { useToast } from '../components/Toast'
+import Box from '@mui/material/Box'
+import Card from '@mui/material/Card'
+import CardContent from '@mui/material/CardContent'
+import Typography from '@mui/material/Typography'
+import TextField from '@mui/material/TextField'
+import Button from '@mui/material/Button'
+import Table from '@mui/material/Table'
+import TableHead from '@mui/material/TableHead'
+import TableBody from '@mui/material/TableBody'
+import TableRow from '@mui/material/TableRow'
+import TableCell from '@mui/material/TableCell'
 
 function Categories({ user }) {
     const [categories, setCategories] = useState([])
@@ -83,77 +94,80 @@ function Categories({ user }) {
     return (
         <>
             <AdminLayout title="Categorías" user={user}>
-                <div className="card" style={{ marginBottom: '24px' }}>
-                    <h3 style={{ marginBottom: '16px' }}>Nueva Categoría</h3>
-                    <form onSubmit={handleCreate} style={{ display: 'flex', gap: '12px' }}>
-                        <input
-                            type="text"
-                            value={newCategoryName}
-                            onChange={(e) => setNewCategoryName(e.target.value)}
-                            placeholder="Nombre de la categoría"
-                            required
-                            style={{ flex: 1 }}
-                        />
-                        <button type="submit" className="btn btn-primary">Crear</button>
-                    </form>
-                </div>
+                <Card sx={{ mb: 3 }}>
+                    <CardContent sx={{ p: 3, '&:last-child': { pb: 3 } }}>
+                        <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>
+                            Nueva Categoría
+                        </Typography>
+                        <Box component="form" onSubmit={handleCreate} sx={{ display: 'flex', gap: 1.5 }}>
+                            <TextField
+                                value={newCategoryName}
+                                onChange={(e) => setNewCategoryName(e.target.value)}
+                                placeholder="Nombre de la categoría"
+                                required
+                                size="small"
+                                sx={{ flex: 1 }}
+                            />
+                            <Button type="submit" variant="contained">Crear</Button>
+                        </Box>
+                    </CardContent>
+                </Card>
 
-                <div className="card">
-                    <h3 style={{ marginBottom: '16px' }}>Lista de Categorías ({categories.length})</h3>
-                    {loading ? (
-                        <p style={{ color: 'var(--text-secondary)' }}>Cargando...</p>
-                    ) : categories.length === 0 ? (
-                        <p style={{ color: 'var(--text-secondary)' }}>No hay categorías. Crea la primera.</p>
-                    ) : (
-                        <>
-                            {/* Desktop Table */}
-                            <div className="table-wrapper">
-                                <table className="data-table">
-                                    <thead>
-                                        <tr>
-                                            <th>Nombre</th>
-                                            <th>Acciones</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {categories.map(cat => (
-                                            <tr key={cat.id}>
-                                                <td>{cat.name}</td>
-                                                <td>
-                                                    <button
-                                                        className="btn btn-danger"
-                                                        style={{ padding: '4px 10px', fontSize: '12px' }}
-                                                        onClick={() => setDeleteTarget(cat)}
-                                                    >
-                                                        🗑️ Eliminar
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
+                <Card>
+                    <CardContent sx={{ p: 3, '&:last-child': { pb: 3 } }}>
+                        <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>
+                            Lista de Categorías ({categories.length})
+                        </Typography>
+                        {loading ? (
+                            <Typography color="text.secondary">Cargando...</Typography>
+                        ) : categories.length === 0 ? (
+                            <Typography color="text.secondary">No hay categorías. Crea la primera.</Typography>
+                        ) : (
+                            <>
+                                <Box sx={{ overflowX: 'auto', display: { xs: 'none', md: 'block' } }}>
+                                    <Table>
+                                        <TableHead>
+                                            <TableRow>
+                                                <TableCell>Nombre</TableCell>
+                                                <TableCell>Acciones</TableCell>
+                                            </TableRow>
+                                        </TableHead>
+                                        <TableBody>
+                                            {categories.map(cat => (
+                                                <TableRow key={cat.id} hover>
+                                                    <TableCell>{cat.name}</TableCell>
+                                                    <TableCell>
+                                                        <Button
+                                                            variant="contained"
+                                                            color="error"
+                                                            size="small"
+                                                            onClick={() => setDeleteTarget(cat)}
+                                                        >
+                                                            🗑️ Eliminar
+                                                        </Button>
+                                                    </TableCell>
+                                                </TableRow>
+                                            ))}
+                                        </TableBody>
+                                    </Table>
+                                </Box>
 
-                            {/* Mobile Cards */}
-                            <div className="mobile-cards">
-                                {categories.map(cat => (
-                                    <div key={cat.id} className="mobile-product-card">
-                                        <div className="mobile-product-header">
-                                            <span className="mobile-product-name">{cat.name}</span>
-                                            <button
-                                                className="btn btn-danger"
-                                                style={{ padding: '4px 10px', fontSize: '12px' }}
-                                                onClick={() => setDeleteTarget(cat)}
-                                            >
-                                                🗑️ Eliminar
-                                            </button>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </>
-                    )}
-                </div>
+                                <Box sx={{ display: { xs: 'flex', md: 'none' }, flexDirection: 'column', gap: 1.5 }}>
+                                    {categories.map(cat => (
+                                        <Card key={cat.id} variant="outlined" sx={{ borderRadius: 2 }}>
+                                            <CardContent sx={{ p: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center', '&:last-child': { pb: 2 } }}>
+                                                <Typography sx={{ fontWeight: 600 }}>{cat.name}</Typography>
+                                                <Button variant="contained" color="error" size="small" onClick={() => setDeleteTarget(cat)}>
+                                                    🗑️ Eliminar
+                                                </Button>
+                                            </CardContent>
+                                        </Card>
+                                    ))}
+                                </Box>
+                            </>
+                        )}
+                    </CardContent>
+                </Card>
             </AdminLayout>
 
             <ConfirmModal

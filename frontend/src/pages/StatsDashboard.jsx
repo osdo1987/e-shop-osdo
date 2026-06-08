@@ -2,6 +2,11 @@ import { useState, useEffect, useMemo } from 'react'
 import AdminLayout from '../components/AdminLayout'
 import StatCard from '../components/StatCard'
 import { useToast } from '../components/Toast'
+import Box from '@mui/material/Box'
+import Card from '@mui/material/Card'
+import CardContent from '@mui/material/CardContent'
+import Typography from '@mui/material/Typography'
+import SkeletonMui from '@mui/material/Skeleton'
 
 function StatsDashboard({ user }) {
     const [categories, setCategories] = useState([])
@@ -72,70 +77,38 @@ function StatsDashboard({ user }) {
     if (loading) {
         return (
             <AdminLayout title="Dashboard" user={user}>
-                <div className="stats-grid">
+                <Box sx={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))',
+                    gap: 2,
+                }}>
                     {[...Array(7)].map((_, i) => (
-                        <div key={i} className="card" style={{ height: '120px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                            <div style={{ width: '80%', height: '20px', background: 'var(--skeleton)', borderRadius: '4px', animation: 'pulse 1.5s infinite' }} />
-                        </div>
+                        <Card key={i}>
+                            <CardContent sx={{ height: 120, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                <SkeletonMui variant="rectangular" width="80%" height={20} sx={{ borderRadius: 1 }} />
+                            </CardContent>
+                        </Card>
                     ))}
-                </div>
+                </Box>
             </AdminLayout>
         )
     }
 
     return (
         <AdminLayout title="Dashboard" user={user}>
-            <div className="stats-grid">
-                <StatCard
-                    title="Productos"
-                    value={stats.total}
-                    icon="📦"
-                    color="var(--primary-color)"
-                    subtitle={`${stats.totalUnits} piezas en total`}
-                />
-                <StatCard
-                    title="Valor Venta"
-                    value={`$${stats.inventoryValue.toLocaleString()}`}
-                    icon="💰"
-                    color="#2ecc71"
-                    subtitle="Valuado a precio activo"
-                />
-                <StatCard
-                    title="Costo Inventario"
-                    value={`$${stats.inventoryCost.toLocaleString()}`}
-                    icon="📉"
-                    color="#9b59b6"
-                    subtitle="Inversión total en stock"
-                />
-                <StatCard
-                    title="Ganancia Estimada"
-                    value={`$${stats.projectedProfit.toLocaleString()}`}
-                    icon="📈"
-                    color="#1abc9c"
-                    subtitle={`Margen: ${stats.marginPercent.toFixed(1)}%`}
-                />
-                <StatCard
-                    title="En Oferta"
-                    value={stats.promoCount}
-                    icon="🏷️"
-                    color="#3498db"
-                    subtitle="Con precio promo"
-                />
-                <StatCard
-                    title="Stock Bajo"
-                    value={stats.lowStock}
-                    icon="⚠"
-                    color="var(--warning)"
-                    subtitle={stats.lowStock > 0 ? 'Menos de 5 unidades' : 'Todo en orden'}
-                />
-                <StatCard
-                    title="Agotados"
-                    value={stats.outOfStock}
-                    icon="🚫"
-                    color="var(--error)"
-                    subtitle={stats.outOfStock > 0 ? 'Requieren reposición' : 'Sin novedades'}
-                />
-            </div>
+            <Box sx={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))',
+                gap: 2,
+            }}>
+                <StatCard title="Productos" value={stats.total} icon="📦" color="#6366f1" subtitle={`${stats.totalUnits} piezas en total`} />
+                <StatCard title="Valor Venta" value={`$${stats.inventoryValue.toLocaleString()}`} icon="💰" color="#2ecc71" subtitle="Valuado a precio activo" />
+                <StatCard title="Costo Inventario" value={`$${stats.inventoryCost.toLocaleString()}`} icon="📉" color="#9b59b6" subtitle="Inversión total en stock" />
+                <StatCard title="Ganancia Estimada" value={`$${stats.projectedProfit.toLocaleString()}`} icon="📈" color="#1abc9c" subtitle={`Margen: ${stats.marginPercent.toFixed(1)}%`} />
+                <StatCard title="En Oferta" value={stats.promoCount} icon="🏷️" color="#3498db" subtitle="Con precio promo" />
+                <StatCard title="Stock Bajo" value={stats.lowStock} icon="⚠" color="#f59e0b" subtitle={stats.lowStock > 0 ? 'Menos de 5 unidades' : 'Todo en orden'} />
+                <StatCard title="Agotados" value={stats.outOfStock} icon="🚫" color="#ef4444" subtitle={stats.outOfStock > 0 ? 'Requieren reposición' : 'Sin novedades'} />
+            </Box>
         </AdminLayout>
     )
 }

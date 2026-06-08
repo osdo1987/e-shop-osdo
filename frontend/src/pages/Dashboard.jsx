@@ -5,6 +5,19 @@ import ConfirmModal from '../components/ConfirmModal'
 import Pagination from '../components/Pagination'
 import { TableSkeleton } from '../components/Skeleton'
 import { useToast } from '../components/Toast'
+import Box from '@mui/material/Box'
+import Card from '@mui/material/Card'
+import CardContent from '@mui/material/CardContent'
+import Typography from '@mui/material/Typography'
+import TextField from '@mui/material/TextField'
+import MenuItem from '@mui/material/MenuItem'
+import Button from '@mui/material/Button'
+import Table from '@mui/material/Table'
+import TableHead from '@mui/material/TableHead'
+import TableBody from '@mui/material/TableBody'
+import TableRow from '@mui/material/TableRow'
+import TableCell from '@mui/material/TableCell'
+import Chip from '@mui/material/Chip'
 
 function Dashboard({ user, onLogout }) {
     const [categories, setCategories] = useState([])
@@ -69,7 +82,6 @@ function Dashboard({ user, onLogout }) {
         }
     }
 
-    // Filter products
     const filteredProducts = useMemo(() => {
         return products.filter(product => {
             const matchCategory = !selectedCategory || product.category_id === parseInt(selectedCategory)
@@ -80,213 +92,214 @@ function Dashboard({ user, onLogout }) {
         })
     }, [products, selectedCategory, searchTerm])
 
-    // Pagination
     const totalPages = Math.ceil(filteredProducts.length / itemsPerPage)
     const paginatedProducts = useMemo(() => {
         const start = (currentPage - 1) * itemsPerPage
         return filteredProducts.slice(start, start + itemsPerPage)
     }, [filteredProducts, currentPage])
 
-    // Reset page when filters change
     useEffect(() => {
         setCurrentPage(1)
     }, [selectedCategory, searchTerm])
 
     const getStockBadge = (stock) => {
-        if (stock <= 0) return { color: 'var(--error)', label: 'Agotado' }
-        if (stock < 5) return { color: 'var(--warning)', label: 'Stock bajo' }
-        return { color: 'var(--success)', label: 'Disponible' }
+        if (stock <= 0) return { color: 'error', label: 'Agotado' }
+        if (stock < 5) return { color: 'warning', label: 'Stock bajo' }
+        return { color: 'success', label: 'Disponible' }
     }
 
     return (
         <>
             <AdminLayout title="Mi Tienda" user={user} onLogout={onLogout}>
                 {/* Filters */}
-                <div className="card" style={{ marginBottom: '1.5rem' }}>
-                    <div className="dashboard-filters">
-                        <div className="input-group" style={{ flex: 2, minWidth: '200px' }}>
-                            <label>Buscar producto</label>
-                            <input
-                                type="text"
+                <Card sx={{ mb: 3 }}>
+                    <CardContent sx={{ p: 3, '&:last-child': { pb: 3 } }}>
+                        <Box sx={{ display: 'flex', alignItems: 'flex-end', gap: 2, flexWrap: 'wrap' }}>
+                            <TextField
+                                label="Buscar producto"
                                 placeholder="Buscar por nombre o descripción..."
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
+                                size="small"
+                                sx={{ flex: 2, minWidth: 200 }}
                             />
-                        </div>
-                        <div className="input-group" style={{ flex: 1, minWidth: '160px' }}>
-                            <label>Filtrar por categoría</label>
-                            <select
+                            <TextField
+                                select
+                                label="Filtrar por categoría"
                                 value={selectedCategory}
                                 onChange={(e) => setSelectedCategory(e.target.value)}
+                                size="small"
+                                sx={{ flex: 1, minWidth: 160 }}
                             >
-                                <option value="">Todas las categorías</option>
+                                <MenuItem value="">Todas las categorías</MenuItem>
                                 {categories.map(cat => (
-                                    <option key={cat.id} value={cat.id}>{cat.name}</option>
+                                    <MenuItem key={cat.id} value={cat.id}>{cat.name}</MenuItem>
                                 ))}
-                            </select>
-                        </div>
-                        <div className="filter-actions">
-                            <button
-                                className="btn btn-secondary"
-                                onClick={() => { setSelectedCategory(''); setSearchTerm('') }}
-                                style={{ padding: '8px 16px', fontSize: '13px' }}
-                            >
-                                Limpiar filtros
-                            </button>
-                        </div>
-                    </div>
-                </div>
+                            </TextField>
+                            <Box sx={{ minWidth: 'fit-content' }}>
+                                <Button
+                                    variant="outlined"
+                                    size="medium"
+                                    onClick={() => { setSelectedCategory(''); setSearchTerm('') }}
+                                >
+                                    Limpiar filtros
+                                </Button>
+                            </Box>
+                        </Box>
+                    </CardContent>
+                </Card>
 
                 {/* Products Table */}
-                <div className="card">
-                    <div className="flex-row" style={{
-                        justifyContent: 'space-between',
-                        marginBottom: '1rem',
-                        flexWrap: 'wrap'
-                    }}>
-                        <h2>
-                            Productos ({filteredProducts.length})
-                            {selectedCategory && (
-                                <span style={{
-                                    fontSize: '14px',
-                                    fontWeight: 'normal',
-                                    color: 'var(--text-muted)',
-                                    marginLeft: '8px'
-                                }}>
-                                    en {categories.find(c => c.id === parseInt(selectedCategory))?.name}
-                                </span>
-                            )}
-                        </h2>
-                        <Link to="/admin/products/new" className="btn btn-primary" style={{ fontSize: '13px' }}>
-                            + Nuevo Producto
-                        </Link>
-                    </div>
+                <Card>
+                    <CardContent sx={{ p: 3, '&:last-child': { pb: 3 } }}>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2, flexWrap: 'wrap', gap: 1 }}>
+                            <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                                Productos ({filteredProducts.length})
+                                {selectedCategory && (
+                                    <Typography component="span" variant="body2" color="text.disabled" sx={{ ml: 1 }}>
+                                        en {categories.find(c => c.id === parseInt(selectedCategory))?.name}
+                                    </Typography>
+                                )}
+                            </Typography>
+                            <Button component={Link} to="/admin/products/new" variant="contained" size="small">
+                                + Nuevo Producto
+                            </Button>
+                        </Box>
 
-                    {loading ? (
-                        <TableSkeleton rows={5} cols={5} />
-                    ) : filteredProducts.length === 0 ? (
-                        <p style={{ color: 'var(--text-secondary)', textAlign: 'center', padding: '40px 0' }}>
-                            {products.length === 0
-                                ? 'No hay productos registrados. Crea tu primer producto.'
-                                : 'No se encontraron productos con los filtros aplicados.'}
-                        </p>
-                    ) : (
-                        <>
-                            {/* Desktop Table */}
-                            <div className="table-wrapper">
-                                <table className="data-table">
-                                    <thead>
-                                        <tr>
-                                            <th>Nombre</th>
-                                            <th>Precio Venta</th>
-                                            <th>Costo</th>
-                                            <th>Margen</th>
-                                            <th>Stock</th>
-                                            <th>Categoría</th>
-                                            <th>Acciones</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {paginatedProducts.map(product => {
-                                            const badge = getStockBadge(product.stock)
-                                            const activePrice = product.promo_price || product.price
-                                            const margin = product.purchase_price
-                                                ? ((activePrice - product.purchase_price) / activePrice) * 100
-                                                : null
+                        {loading ? (
+                            <TableSkeleton rows={5} cols={5} />
+                        ) : filteredProducts.length === 0 ? (
+                            <Typography color="text.secondary" textAlign="center" sx={{ py: 5 }}>
+                                {products.length === 0
+                                    ? 'No hay productos registrados. Crea tu primer producto.'
+                                    : 'No se encontraron productos con los filtros aplicados.'}
+                            </Typography>
+                        ) : (
+                            <>
+                                {/* Desktop Table */}
+                                <Box sx={{ overflowX: 'auto', display: { xs: 'none', md: 'block' } }}>
+                                    <Table>
+                                        <TableHead>
+                                            <TableRow>
+                                                <TableCell>Nombre</TableCell>
+                                                <TableCell>Precio Venta</TableCell>
+                                                <TableCell>Costo</TableCell>
+                                                <TableCell>Margen</TableCell>
+                                                <TableCell>Stock</TableCell>
+                                                <TableCell>Categoría</TableCell>
+                                                <TableCell>Acciones</TableCell>
+                                            </TableRow>
+                                        </TableHead>
+                                        <TableBody>
+                                            {paginatedProducts.map(product => {
+                                                const badge = getStockBadge(product.stock)
+                                                const activePrice = product.promo_price || product.price
+                                                const margin = product.purchase_price
+                                                    ? ((activePrice - product.purchase_price) / activePrice) * 100
+                                                    : null
 
-                                            return (
-                                                <tr key={product.id}>
-                                                    <td className="cell-name">{product.name}</td>
-                                                    <td>
-                                                        ${activePrice.toLocaleString()}
-                                                        {product.promo_price && (
-                                                            <span className="old-price-inline">${product.price.toLocaleString()}</span>
-                                                        )}
-                                                    </td>
-                                                    <td>
-                                                        {product.purchase_price ? `$${product.purchase_price.toLocaleString()}` : <span style={{ color: 'var(--text-muted)' }}>—</span>}
-                                                    </td>
-                                                    <td>
-                                                        {margin !== null ? (
-                                                            <span style={{
-                                                                background: margin >= 0 ? 'rgba(46, 204, 113, 0.15)' : 'rgba(231, 76, 60, 0.15)',
-                                                                color: margin >= 0 ? '#27ae60' : '#c0392b',
-                                                                padding: '3px 8px',
-                                                                borderRadius: '4px',
-                                                                fontSize: '11px',
-                                                                fontWeight: '700',
-                                                                display: 'inline-block'
-                                                            }}>
-                                                                {margin >= 0 ? '+' : ''}{margin.toFixed(0)}%
-                                                            </span>
-                                                        ) : (
-                                                            <span style={{ color: 'var(--text-muted)' }}>—</span>
-                                                        )}
-                                                    </td>
-                                                    <td>
-                                                        <span className="stock-badge" style={{ background: badge.color + '20', color: badge.color }}>
-                                                            <span className="stock-dot" style={{ background: badge.color }} />
-                                                            {badge.label} {product.stock > 0 && `(${product.stock})`}
-                                                        </span>
-                                                    </td>
-                                                    <td>{categories.find(c => c.id === product.category_id)?.name || 'Sin categoría'}</td>
-                                                    <td>
-                                                        <div className="action-buttons">
-                                                            <Link
-                                                                to={`/admin/products/edit/${product.id}`}
-                                                                className="btn btn-secondary"
-                                                            >
-                                                                ✏️ Editar
-                                                            </Link>
-                                                            <button
-                                                                className="btn btn-danger"
-                                                                onClick={() => setDeleteTarget(product)}
-                                                            >
-                                                                🗑️ Eliminar
-                                                            </button>
-                                                        </div>
-                                                    </td>
-                                                </tr>
-                                            )
-                                        })}
-                                    </tbody>
-                                </table>
-                            </div>
+                                                return (
+                                                    <TableRow key={product.id} hover>
+                                                        <TableCell sx={{ fontWeight: 600 }}>{product.name}</TableCell>
+                                                        <TableCell>
+                                                            ${activePrice.toLocaleString()}
+                                                            {product.promo_price && (
+                                                                <Typography component="span" variant="caption" sx={{ textDecoration: 'line-through', color: 'text.disabled', ml: 0.75 }}>
+                                                                    ${product.price.toLocaleString()}
+                                                                </Typography>
+                                                            )}
+                                                        </TableCell>
+                                                        <TableCell>
+                                                            {product.purchase_price ? `$${product.purchase_price.toLocaleString()}` : <Typography component="span" color="text.disabled">—</Typography>}
+                                                        </TableCell>
+                                                        <TableCell>
+                                                            {margin !== null ? (
+                                                                <Chip
+                                                                    label={`${margin >= 0 ? '+' : ''}${margin.toFixed(0)}%`}
+                                                                    size="small"
+                                                                    color={margin >= 0 ? 'success' : 'error'}
+                                                                    variant="filled"
+                                                                    sx={{ fontWeight: 700, fontSize: '0.6875rem' }}
+                                                                />
+                                                            ) : (
+                                                                <Typography component="span" color="text.disabled">—</Typography>
+                                                            )}
+                                                        </TableCell>
+                                                        <TableCell>
+                                                            <Chip
+                                                                label={`${badge.label}${product.stock > 0 ? ` (${product.stock})` : ''}`}
+                                                                size="small"
+                                                                color={badge.color}
+                                                                variant="filled"
+                                                                sx={{ fontWeight: 600, fontSize: '0.75rem' }}
+                                                            />
+                                                        </TableCell>
+                                                        <TableCell>{categories.find(c => c.id === product.category_id)?.name || 'Sin categoría'}</TableCell>
+                                                        <TableCell>
+                                                            <Box sx={{ display: 'flex', gap: 0.75 }}>
+                                                                <Button
+                                                                    component={Link}
+                                                                    to={`/admin/products/edit/${product.id}`}
+                                                                    variant="outlined"
+                                                                    size="small"
+                                                                >
+                                                                    ✏️ Editar
+                                                                </Button>
+                                                                <Button
+                                                                    variant="contained"
+                                                                    color="error"
+                                                                    size="small"
+                                                                    onClick={() => setDeleteTarget(product)}
+                                                                >
+                                                                    🗑️ Eliminar
+                                                                </Button>
+                                                            </Box>
+                                                        </TableCell>
+                                                    </TableRow>
+                                                )
+                                            })}
+                                        </TableBody>
+                                    </Table>
+                                </Box>
 
-                            {/* Mobile Cards */}
-                            <div className="mobile-cards">
-                                {paginatedProducts.map(product => {
-                                    const badge = getStockBadge(product.stock)
-                                    return (
-                                        <div key={product.id} className="mobile-product-card">
-                                            <div className="mobile-product-header">
-                                                <span className="mobile-product-name">{product.name}</span>
-                                                <span className="mobile-product-price">${product.promo_price || product.price}</span>
-                                            </div>
-                                            <div className="mobile-product-meta">
-                                                <span className="stock-badge" style={{ background: badge.color + '20', color: badge.color }}>
-                                                    <span className="stock-dot" style={{ background: badge.color }} />
-                                                    {badge.label}
-                                                </span>
-                                                <span>Categoría: {categories.find(c => c.id === product.category_id)?.name || 'Sin categoría'}</span>
-                                            </div>
-                                            <div className="mobile-product-actions">
-                                                <Link to={`/admin/products/edit/${product.id}`} className="btn btn-secondary">✏️ Editar</Link>
-                                                <button className="btn btn-danger" onClick={() => setDeleteTarget(product)}>🗑️ Eliminar</button>
-                                            </div>
-                                        </div>
-                                    )
-                                })}
-                            </div>
+                                {/* Mobile Cards */}
+                                <Box sx={{ display: { xs: 'flex', md: 'none' }, flexDirection: 'column', gap: 1.5 }}>
+                                    {paginatedProducts.map(product => {
+                                        const badge = getStockBadge(product.stock)
+                                        return (
+                                            <Card key={product.id} variant="outlined" sx={{ borderRadius: 2 }}>
+                                                <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
+                                                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+                                                        <Typography sx={{ fontWeight: 600, fontSize: '0.9375rem' }}>{product.name}</Typography>
+                                                        <Typography sx={{ fontWeight: 700, color: 'primary.main', fontSize: '1rem' }}>
+                                                            ${product.promo_price || product.price}
+                                                        </Typography>
+                                                    </Box>
+                                                    <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'center', flexWrap: 'wrap', mb: 1 }}>
+                                                        <Chip label={badge.label} size="small" color={badge.color} variant="filled" sx={{ fontWeight: 600 }} />
+                                                        <Typography variant="caption" color="text.secondary">
+                                                            Categoría: {categories.find(c => c.id === product.category_id)?.name || 'Sin categoría'}
+                                                        </Typography>
+                                                    </Box>
+                                                    <Box sx={{ display: 'flex', gap: 0.75 }}>
+                                                        <Button component={Link} to={`/admin/products/edit/${product.id}`} variant="outlined" size="small" sx={{ flex: 1 }}>✏️ Editar</Button>
+                                                        <Button variant="contained" color="error" size="small" sx={{ flex: 1 }} onClick={() => setDeleteTarget(product)}>🗑️ Eliminar</Button>
+                                                    </Box>
+                                                </CardContent>
+                                            </Card>
+                                        )
+                                    })}
+                                </Box>
 
-                            <Pagination
-                                currentPage={currentPage}
-                                totalPages={totalPages}
-                                onPageChange={setCurrentPage}
-                            />
-                        </>
-                    )}
-                </div>
+                                <Pagination
+                                    currentPage={currentPage}
+                                    totalPages={totalPages}
+                                    onPageChange={setCurrentPage}
+                                />
+                            </>
+                        )}
+                    </CardContent>
+                </Card>
             </AdminLayout>
 
             <ConfirmModal

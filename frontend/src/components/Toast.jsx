@@ -1,5 +1,7 @@
 import { useState, useEffect, useCallback, createContext, useContext } from 'react'
-import './Toast.css'
+import Snackbar from '@mui/material/Snackbar'
+import Alert from '@mui/material/Alert'
+import Box from '@mui/material/Box'
 
 const ToastContext = createContext(null)
 
@@ -30,37 +32,45 @@ export function ToastProvider({ children }) {
     const warning = useCallback((msg, duration) => addToast(msg, 'warning', duration), [addToast])
     const info = useCallback((msg, duration) => addToast(msg, 'info', duration), [addToast])
 
-    return (
-        <ToastContext.Provider value={{ success, error, warning, info, clear, addToast }}>
-            {children}
-            <div className="toast-container">
-                {toasts.map(toast => (
-                    <ToastItem key={toast.id} toast={toast} onRemove={removeToast} />
-                ))}
-            </div>
-        </ToastContext.Provider>
-    )
-}
-
-function ToastItem({ toast, onRemove }) {
-    useEffect(() => {
-        const timer = setTimeout(() => onRemove(toast.id), toast.duration)
-        return () => clearTimeout(timer)
-    }, [toast, onRemove])
-
-    const icons = {
-        success: '✓',
-        error: '✕',
-        warning: '⚠',
-        info: 'ℹ'
+    const getSeverity = (type) => {
+        switch (type) {
+            case 'success': return 'success'
+            case 'error': return 'error'
+            case 'warning': return 'warning'
+            default: return 'info'
+        }
     }
 
     return (
-        <div className={`toast toast-${toast.type}`} onClick={() => onRemove(toast.id)}>
-            <span className="toast-icon">{icons[toast.type]}</span>
-            <span className="toast-message">{toast.message}</span>
-            <button className="toast-close" onClick={(e) => { e.stopPropagation(); onRemove(toast.id) }}>×</button>
-        </div>
+        <ToastContext.Provider value={{ success, error, warning, info, clear, addToast }}>
+            {children}
+            <Box sx={{ position: 'fixed', top: 20, right: 20, zIndex: 10000, display: 'flex', flexDirection: 'column', gap: 1, maxWidth: 380 }}>
+                {toasts.map(toast => (
+                    <Snackbar
+                        key={toast.id}
+                        open={true}
+                        autoHideDuration={toast.duration}
+                        onClose={() => removeToast(toast.id)}
+                        anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+                        sx={{ position: 'static', transform: 'none' }}
+                    >
+                        <Alert
+                            onClose={() => removeToast(toast.id)}
+                            severity={getSeverity(toast.type)}
+                            variant="filled"
+                            sx={{
+                                width: '100%',
+                                backdropFilter: 'blur(16px)',
+                                boxShadow: '0 8px 24px rgba(0, 0, 0, 0.14)',
+                                '& .MuiAlert-icon': { alignItems: 'center' },
+                            }}
+                        >
+                            {toast.message}
+                        </Alert>
+                    </Snackbar>
+                ))}
+            </Box>
+        </ToastContext.Provider>
     )
 }
 

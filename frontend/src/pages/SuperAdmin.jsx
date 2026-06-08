@@ -3,6 +3,22 @@ import AdminLayout from '../components/AdminLayout'
 import StatCard from '../components/StatCard'
 import ConfirmModal from '../components/ConfirmModal'
 import { useToast } from '../components/Toast'
+import Box from '@mui/material/Box'
+import Card from '@mui/material/Card'
+import CardContent from '@mui/material/CardContent'
+import Typography from '@mui/material/Typography'
+import TextField from '@mui/material/TextField'
+import Button from '@mui/material/Button'
+import Table from '@mui/material/Table'
+import TableHead from '@mui/material/TableHead'
+import TableBody from '@mui/material/TableBody'
+import TableRow from '@mui/material/TableRow'
+import TableCell from '@mui/material/TableCell'
+import Dialog from '@mui/material/Dialog'
+import DialogTitle from '@mui/material/DialogTitle'
+import DialogContent from '@mui/material/DialogContent'
+import DialogActions from '@mui/material/DialogActions'
+import Alert from '@mui/material/Alert'
 
 function SuperAdmin({ user, onLogout }) {
     const [stores, setStores] = useState([])
@@ -166,393 +182,280 @@ function SuperAdmin({ user, onLogout }) {
         totalProducts: stores.reduce((sum, s) => sum + (s.productCount || 0), 0)
     }
 
+    const renderStoreForm = (form, setForm, includePassword = false) => (
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <TextField
+                label="Nombre de la Tienda"
+                value={form.storeName || form.name}
+                onChange={(e) => setForm({ ...form, [includePassword ? 'storeName' : 'name']: e.target.value })}
+                required
+                fullWidth
+            />
+            <TextField
+                label="URL/Slug"
+                value={form.slug}
+                onChange={(e) => setForm({ ...form, slug: e.target.value.toLowerCase().replace(/\s+/g, '-') })}
+                required
+                placeholder="mi-tienda"
+                fullWidth
+            />
+            <TextField
+                label="WhatsApp (opcional)"
+                value={form.whatsapp}
+                onChange={(e) => setForm({ ...form, whatsapp: e.target.value })}
+                placeholder="+1234567890"
+                fullWidth
+            />
+            <Box>
+                <TextField
+                    label="Logo de la Tienda (opcional)"
+                    value={form.logo_url}
+                    onChange={(e) => setForm({ ...form, logo_url: e.target.value })}
+                    placeholder="https://ejemplo.com/logo.png"
+                    fullWidth
+                    size="small"
+                    sx={{ mb: 1 }}
+                />
+                <Typography variant="caption" color="text.disabled" sx={{ display: 'block', mb: 0.5 }}>
+                    Puedes pegar una URL o subir una imagen desde tu computador
+                </Typography>
+                <Box
+                    component="label"
+                    sx={{
+                        border: '2px dashed',
+                        borderColor: 'divider',
+                        borderRadius: 1,
+                        p: 2.5,
+                        textAlign: 'center',
+                        color: 'text.disabled',
+                        fontSize: '0.8125rem',
+                        cursor: 'pointer',
+                        display: 'block',
+                        bgcolor: 'background.default',
+                        transition: 'all 0.2s',
+                        '&:hover': { borderColor: 'primary.main' },
+                    }}
+                >
+                    📸 Arrastra una imagen aquí o haz clic para seleccionar
+                    <input
+                        type="file"
+                        accept="image/*"
+                        style={{ display: 'none' }}
+                        onChange={(e) => {
+                            const file = e.target.files[0]
+                            if (file) {
+                                const reader = new FileReader()
+                                reader.onload = (ev) => {
+                                    setForm({ ...form, logo_url: ev.target.result })
+                                }
+                                reader.readAsDataURL(file)
+                            }
+                        }}
+                    />
+                </Box>
+                {form.logo_url && (
+                    <Box sx={{ mt: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Box component="img" src={form.logo_url} alt="Preview logo" sx={{ width: 60, height: 60, objectFit: 'cover', borderRadius: 1 }} />
+                        <Button variant="outlined" size="small" onClick={() => setForm({ ...form, logo_url: '' })}>
+                            Quitar imagen
+                        </Button>
+                    </Box>
+                )}
+            </Box>
+            {includePassword && (
+                <>
+                    <TextField
+                        label="Email del Vendedor"
+                        type="email"
+                        value={form.email}
+                        onChange={(e) => setForm({ ...form, email: e.target.value })}
+                        required
+                        fullWidth
+                    />
+                    <TextField
+                        label="Contraseña"
+                        type="password"
+                        value={form.password}
+                        onChange={(e) => setForm({ ...form, password: e.target.value })}
+                        required
+                        inputProps={{ minLength: 6 }}
+                        fullWidth
+                    />
+                </>
+            )}
+        </Box>
+    )
+
     return (
         <>
             <AdminLayout title="Gestión de Tiendas" user={user} onLogout={onLogout} superadmin>
-                {/* Stats */}
                 {!loading && (
-                    <div className="stats-grid" style={{
+                    <Box sx={{
                         display: 'grid',
                         gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-                        gap: '16px',
-                        marginBottom: '24px'
+                        gap: 2,
+                        mb: 3
                     }}>
-                        <StatCard title="Tiendas" value={stats.total} icon="🏪" color="var(--primary-color)" />
-                        <StatCard title="Con WhatsApp" value={stats.withWhatsapp} icon="💬" color="var(--success)" />
-                        <StatCard title="Productos" value={stats.totalProducts} icon="📦" color="var(--warning)" />
-                    </div>
+                        <StatCard title="Tiendas" value={stats.total} icon="🏪" color="#6366f1" />
+                        <StatCard title="Con WhatsApp" value={stats.withWhatsapp} icon="💬" color="#10b981" />
+                        <StatCard title="Productos" value={stats.totalProducts} icon="📦" color="#f59e0b" />
+                    </Box>
                 )}
 
-                {/* Search & Actions */}
-                <div className="card" style={{ marginBottom: '24px' }}>
-                    <div style={{
-                        display: 'flex',
-                        gap: '16px',
-                        alignItems: 'center',
-                        flexWrap: 'wrap',
-                        justifyContent: 'space-between'
-                    }}>
-                        <div style={{ flex: 2, minWidth: '200px' }}>
-                            <label style={{ fontSize: '13px', fontWeight: '600', display: 'block', marginBottom: '4px' }}>
-                                Buscar tienda
-                            </label>
-                            <input
-                                type="text"
+                <Card sx={{ mb: 3 }}>
+                    <CardContent sx={{ p: 3, '&:last-child': { pb: 3 } }}>
+                        <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', flexWrap: 'wrap', justifyContent: 'space-between' }}>
+                            <TextField
+                                label="Buscar tienda"
                                 placeholder="Buscar por nombre o slug..."
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
+                                size="small"
+                                sx={{ flex: 2, minWidth: 200 }}
                             />
-                        </div>
-                        <div style={{ alignSelf: 'flex-end' }}>
-                            <button
-                                className="btn btn-primary"
-                                onClick={() => setShowCreateModal(true)}
-                                style={{ whiteSpace: 'nowrap' }}
-                            >
-                                + Nueva Tienda
-                            </button>
-                        </div>
-                    </div>
-                </div>
+                            <Box sx={{ alignSelf: 'flex-end' }}>
+                                <Button variant="contained" onClick={() => setShowCreateModal(true)} sx={{ whiteSpace: 'nowrap' }}>
+                                    + Nueva Tienda
+                                </Button>
+                            </Box>
+                        </Box>
+                    </CardContent>
+                </Card>
 
-                {/* Stores Table */}
-                <div className="card">
-                    <h2 style={{ marginBottom: '16px' }}>Tiendas ({filteredStores.length})</h2>
-                    {loading ? (
-                        <p style={{ color: 'var(--text-secondary)' }}>Cargando...</p>
-                    ) : filteredStores.length === 0 ? (
-                        <p style={{ color: 'var(--text-secondary)', textAlign: 'center', padding: '40px' }}>
-                            {stores.length === 0
-                                ? 'No hay tiendas registradas.'
-                                : 'No se encontraron tiendas con ese filtro.'}
-                        </p>
-                    ) : (
-                        <>
-                            {/* Desktop Table */}
-                            <div className="table-wrapper">
-                                <table className="data-table">
-                                    <thead>
-                                        <tr>
-                                            <th>Nombre</th>
-                                            <th>Slug/URL</th>
-                                            <th>WhatsApp</th>
-                                            <th>Vendedor</th>
-                                            <th>Acciones</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {filteredStores.map(store => (
-                                            <tr key={store.id}>
-                                                <td className="cell-name">{store.name}</td>
-                                                <td>
-                                                    <a
-                                                        href={`/${store.slug}`}
-                                                        target="_blank"
-                                                        rel="noopener noreferrer"
-                                                        style={{ color: 'var(--primary-color)' }}
-                                                    >
-                                                        /{store.slug}
-                                                    </a>
-                                                </td>
-                                                <td>{store.whatsapp || <span style={{ color: 'var(--text-muted)' }}>—</span>}</td>
-                                                <td>
-                                                    {store.users?.find(u => u.role === 'SELLER')?.email || (
-                                                        <span style={{ color: 'var(--text-muted)' }}>Sin vendedor</span>
-                                                    )}
-                                                </td>
-                                                <td>
-                                                    <div className="action-buttons">
-                                                        <a
-                                                            href={`/${store.slug}`}
-                                                            target="_blank"
-                                                            rel="noopener noreferrer"
-                                                            className="btn btn-secondary"
-                                                            title="Ver catálogo público"
-                                                        >
-                                                            👁️ Ver
+                <Card>
+                    <CardContent sx={{ p: 3, '&:last-child': { pb: 3 } }}>
+                        <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>
+                            Tiendas ({filteredStores.length})
+                        </Typography>
+                        {loading ? (
+                            <Typography color="text.secondary">Cargando...</Typography>
+                        ) : filteredStores.length === 0 ? (
+                            <Typography color="text.secondary" textAlign="center" sx={{ py: 5 }}>
+                                {stores.length === 0 ? 'No hay tiendas registradas.' : 'No se encontraron tiendas con ese filtro.'}
+                            </Typography>
+                        ) : (
+                            <>
+                                <Box sx={{ overflowX: 'auto', display: { xs: 'none', md: 'block' } }}>
+                                    <Table>
+                                        <TableHead>
+                                            <TableRow>
+                                                <TableCell>Nombre</TableCell>
+                                                <TableCell>Slug/URL</TableCell>
+                                                <TableCell>WhatsApp</TableCell>
+                                                <TableCell>Vendedor</TableCell>
+                                                <TableCell>Acciones</TableCell>
+                                            </TableRow>
+                                        </TableHead>
+                                        <TableBody>
+                                            {filteredStores.map(store => (
+                                                <TableRow key={store.id} hover>
+                                                    <TableCell sx={{ fontWeight: 600 }}>{store.name}</TableCell>
+                                                    <TableCell>
+                                                        <a href={`/${store.slug}`} target="_blank" rel="noopener noreferrer" style={{ color: '#6366f1' }}>
+                                                            /{store.slug}
                                                         </a>
-                                                        <button
-                                                            className="btn btn-secondary"
-                                                            onClick={() => openEditModal(store)}
-                                                        >
-                                                            ✏️ Editar
-                                                        </button>
-                                                        <button
-                                                            className="btn btn-danger"
-                                                            onClick={() => setDeleteTarget(store)}
-                                                        >
-                                                            🗑️ Eliminar
-                                                        </button>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
+                                                    </TableCell>
+                                                    <TableCell>{store.whatsapp || <Typography component="span" color="text.disabled">—</Typography>}</TableCell>
+                                                    <TableCell>
+                                                        {store.users?.find(u => u.role === 'SELLER')?.email || (
+                                                            <Typography component="span" color="text.disabled">Sin vendedor</Typography>
+                                                        )}
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <Box sx={{ display: 'flex', gap: 0.75 }}>
+                                                            <a href={`/${store.slug}`} target="_blank" rel="noopener noreferrer">
+                                                                <Button variant="outlined" size="small" title="Ver catálogo público">👁️ Ver</Button>
+                                                            </a>
+                                                            <Button variant="outlined" size="small" onClick={() => openEditModal(store)}>✏️ Editar</Button>
+                                                            <Button variant="contained" color="error" size="small" onClick={() => setDeleteTarget(store)}>🗑️ Eliminar</Button>
+                                                        </Box>
+                                                    </TableCell>
+                                                </TableRow>
+                                            ))}
+                                        </TableBody>
+                                    </Table>
+                                </Box>
 
-                            {/* Mobile Cards */}
-                            <div className="mobile-cards">
-                                {filteredStores.map(store => (
-                                    <div key={store.id} className="mobile-product-card">
-                                        <div className="mobile-product-header">
-                                            <span className="mobile-product-name">{store.name}</span>
-                                            <a href={`/${store.slug}`} target="_blank" rel="noopener noreferrer" className="btn btn-secondary" style={{ padding: '4px 8px', fontSize: '11px' }}>
-                                                👁️ Ver
-                                            </a>
-                                        </div>
-                                        <div className="mobile-product-meta">
-                                            <span>/{store.slug}</span>
-                                            <span>{store.whatsapp || 'Sin WhatsApp'}</span>
-                                        </div>
-                                        <div className="mobile-product-actions">
-                                            <button className="btn btn-secondary" onClick={() => openEditModal(store)}>✏️ Editar</button>
-                                            <button className="btn btn-danger" onClick={() => setDeleteTarget(store)}>🗑️ Eliminar</button>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </>
-                    )}
-                </div>
+                                <Box sx={{ display: { xs: 'flex', md: 'none' }, flexDirection: 'column', gap: 1.5 }}>
+                                    {filteredStores.map(store => (
+                                        <Card key={store.id} variant="outlined" sx={{ borderRadius: 2 }}>
+                                            <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
+                                                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+                                                    <Typography sx={{ fontWeight: 600 }}>{store.name}</Typography>
+                                                    <a href={`/${store.slug}`} target="_blank" rel="noopener noreferrer">
+                                                        <Button variant="outlined" size="small" sx={{ fontSize: '0.6875rem', px: 1 }}>👁️ Ver</Button>
+                                                    </a>
+                                                </Box>
+                                                <Box sx={{ display: 'flex', gap: 1.5, mb: 1, fontSize: '0.8125rem', color: 'text.secondary' }}>
+                                                    <span>/{store.slug}</span>
+                                                    <span>{store.whatsapp || 'Sin WhatsApp'}</span>
+                                                </Box>
+                                                <Box sx={{ display: 'flex', gap: 0.75 }}>
+                                                    <Button variant="outlined" size="small" sx={{ flex: 1 }} onClick={() => openEditModal(store)}>✏️ Editar</Button>
+                                                    <Button variant="contained" color="error" size="small" sx={{ flex: 1 }} onClick={() => setDeleteTarget(store)}>🗑️ Eliminar</Button>
+                                                </Box>
+                                            </CardContent>
+                                        </Card>
+                                    ))}
+                                </Box>
+                            </>
+                        )}
+                    </CardContent>
+                </Card>
             </AdminLayout>
 
             {/* Create Store Modal */}
-            {showCreateModal && (
-                <div className="modal-overlay" onClick={() => { setShowCreateModal(false); setModalError('') }}>
-                    <div className="modal-card card" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '500px', width: '100%' }}>
-                        <h2 style={{ marginBottom: '24px' }}>Crear Nueva Tienda</h2>
-                        {modalError && <div className="error-message">{modalError}</div>}
-                        <form onSubmit={handleCreateStore}>
-                            <div className="input-group">
-                                <label>Nombre de la Tienda</label>
-                                <input
-                                    type="text"
-                                    value={newStore.storeName}
-                                    onChange={(e) => setNewStore({ ...newStore, storeName: e.target.value })}
-                                    required
-                                />
-                            </div>
-                            <div className="input-group">
-                                <label>URL/Slug</label>
-                                <input
-                                    type="text"
-                                    value={newStore.slug}
-                                    onChange={(e) => setNewStore({ ...newStore, slug: e.target.value.toLowerCase().replace(/\s+/g, '-') })}
-                                    required
-                                    placeholder="mi-tienda"
-                                />
-                            </div>
-                            <div className="input-group">
-                                <label>WhatsApp (opcional)</label>
-                                <input
-                                    type="text"
-                                    value={newStore.whatsapp}
-                                    onChange={(e) => setNewStore({ ...newStore, whatsapp: e.target.value })}
-                                    placeholder="+1234567890"
-                                />
-                            </div>
-                            <div className="input-group">
-                                <label>Logo de la Tienda (opcional)</label>
-                                <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '8px' }}>
-                                    Puedes pegar una URL o subir una imagen desde tu computador
-                                </p>
-                                <input
-                                    type="url"
-                                    value={newStore.logo_url}
-                                    onChange={(e) => setNewStore({ ...newStore, logo_url: e.target.value })}
-                                    placeholder="https://ejemplo.com/logo.png"
-                                    style={{ marginBottom: '8px' }}
-                                />
-                                <label className="image-upload-zone" style={{
-                                    border: '2px dashed var(--border)',
-                                    borderRadius: '8px',
-                                    padding: '20px',
-                                    textAlign: 'center',
-                                    color: 'var(--text-muted)',
-                                    fontSize: '13px',
-                                    cursor: 'pointer',
-                                    transition: 'all 0.2s',
-                                    background: 'var(--background)',
-                                    display: 'block'
-                                }}>
-                                    📸 Arrastra una imagen aquí o haz clic para seleccionar
-                                    <input
-                                        type="file"
-                                        accept="image/*"
-                                        style={{ display: 'none' }}
-                                        onChange={(e) => {
-                                            const file = e.target.files[0]
-                                            if (file) {
-                                                const reader = new FileReader()
-                                                reader.onload = (ev) => {
-                                                    setNewStore({ ...newStore, logo_url: ev.target.result })
-                                                }
-                                                reader.readAsDataURL(file)
-                                            }
-                                        }}
-                                    />
-                                </label>
-                                {newStore.logo_url && (
-                                    <div style={{ marginTop: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                        <img src={newStore.logo_url} alt="Preview logo" style={{ width: '60px', height: '60px', objectFit: 'cover', borderRadius: '4px' }} />
-                                        <button
-                                            type="button"
-                                            className="btn btn-secondary"
-                                            style={{ padding: '4px 8px', fontSize: '12px' }}
-                                            onClick={() => setNewStore({ ...newStore, logo_url: '' })}
-                                        >
-                                            Quitar imagen
-                                        </button>
-                                    </div>
-                                )}
-                            </div>
-                            <div className="input-group">
-                                <label>Email del Vendedor</label>
-                                <input
-                                    type="email"
-                                    value={newStore.email}
-                                    onChange={(e) => setNewStore({ ...newStore, email: e.target.value })}
-                                    required
-                                />
-                            </div>
-                            <div className="input-group">
-                                <label>Contraseña</label>
-                                <input
-                                    type="password"
-                                    value={newStore.password}
-                                    onChange={(e) => setNewStore({ ...newStore, password: e.target.value })}
-                                    required
-                                    minLength="6"
-                                />
-                            </div>
-                            <div style={{ display: 'flex', gap: '12px', marginTop: '24px' }}>
-                                <button type="submit" className="btn btn-primary" style={{ flex: 1 }} disabled={loading}>
-                                    {loading ? 'Creando...' : 'Crear Tienda'}
-                                </button>
-                                <button
-                                    type="button"
-                                    className="btn btn-secondary"
-                                    onClick={() => { setShowCreateModal(false); setModalError('') }}
-                                    style={{ flex: 1 }}
-                                >
-                                    Cancelar
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            )}
+            <Dialog
+                open={showCreateModal}
+                onClose={() => { setShowCreateModal(false); setModalError('') }}
+                maxWidth="sm"
+                fullWidth
+                PaperProps={{ sx: { borderRadius: 3 } }}
+            >
+                <DialogTitle sx={{ fontWeight: 700, fontSize: '1.25rem' }}>Crear Nueva Tienda</DialogTitle>
+                <DialogContent>
+                    {modalError && <Alert severity="error" sx={{ mb: 2, mt: 1 }}>{modalError}</Alert>}
+                    <Box component="form" onSubmit={handleCreateStore} id="create-store-form" sx={{ mt: 1 }}>
+                        {renderStoreForm(newStore, setNewStore, true)}
+                    </Box>
+                </DialogContent>
+                <DialogActions sx={{ px: 3, pb: 3, gap: 1 }}>
+                    <Button onClick={() => { setShowCreateModal(false); setModalError('') }} variant="outlined" fullWidth>
+                        Cancelar
+                    </Button>
+                    <Button type="submit" form="create-store-form" variant="contained" fullWidth disabled={loading}>
+                        {loading ? 'Creando...' : 'Crear Tienda'}
+                    </Button>
+                </DialogActions>
+            </Dialog>
 
             {/* Edit Store Modal */}
-            {showEditModal && editingStore && (
-                <div className="modal-overlay" onClick={() => { setShowEditModal(false); setEditingStore(null); setModalError('') }}>
-                    <div className="modal-card card" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '500px', width: '100%' }}>
-                        <h2 style={{ marginBottom: '24px' }}>Editar Tienda: {editingStore.name}</h2>
-                        {modalError && <div className="error-message">{modalError}</div>}
-                        <form onSubmit={handleEditStore}>
-                            <div className="input-group">
-                                <label>Nombre de la Tienda</label>
-                                <input
-                                    type="text"
-                                    value={editForm.name}
-                                    onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
-                                    required
-                                />
-                            </div>
-                            <div className="input-group">
-                                <label>URL/Slug</label>
-                                <input
-                                    type="text"
-                                    value={editForm.slug}
-                                    onChange={(e) => setEditForm({ ...editForm, slug: e.target.value.toLowerCase().replace(/\s+/g, '-') })}
-                                    required
-                                    placeholder="mi-tienda"
-                                />
-                            </div>
-                            <div className="input-group">
-                                <label>WhatsApp</label>
-                                <input
-                                    type="text"
-                                    value={editForm.whatsapp}
-                                    onChange={(e) => setEditForm({ ...editForm, whatsapp: e.target.value })}
-                                    placeholder="+1234567890"
-                                />
-                            </div>
-                            <div className="input-group">
-                                <label>Logo de la Tienda (opcional)</label>
-                                <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '8px' }}>
-                                    Puedes pegar una URL o subir una imagen desde tu computador
-                                </p>
-                                <input
-                                    type="url"
-                                    value={editForm.logo_url}
-                                    onChange={(e) => setEditForm({ ...editForm, logo_url: e.target.value })}
-                                    placeholder="https://ejemplo.com/logo.png"
-                                    style={{ marginBottom: '8px' }}
-                                />
-                                <label className="image-upload-zone" style={{
-                                    border: '2px dashed var(--border)',
-                                    borderRadius: '8px',
-                                    padding: '20px',
-                                    textAlign: 'center',
-                                    color: 'var(--text-muted)',
-                                    fontSize: '13px',
-                                    cursor: 'pointer',
-                                    transition: 'all 0.2s',
-                                    background: 'var(--background)',
-                                    display: 'block'
-                                }}>
-                                    📸 Arrastra una imagen aquí o haz clic para seleccionar
-                                    <input
-                                        type="file"
-                                        accept="image/*"
-                                        style={{ display: 'none' }}
-                                        onChange={(e) => {
-                                            const file = e.target.files[0]
-                                            if (file) {
-                                                const reader = new FileReader()
-                                                reader.onload = (ev) => {
-                                                    setEditForm({ ...editForm, logo_url: ev.target.result })
-                                                }
-                                                reader.readAsDataURL(file)
-                                            }
-                                        }}
-                                    />
-                                </label>
-                                {editForm.logo_url && (
-                                    <div style={{ marginTop: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                        <img src={editForm.logo_url} alt="Preview logo" style={{ width: '60px', height: '60px', objectFit: 'cover', borderRadius: '4px' }} />
-                                        <button
-                                            type="button"
-                                            className="btn btn-secondary"
-                                            style={{ padding: '4px 8px', fontSize: '12px' }}
-                                            onClick={() => setEditForm({ ...editForm, logo_url: '' })}
-                                        >
-                                            Quitar imagen
-                                        </button>
-                                    </div>
-                                )}
-                            </div>
-                            <div style={{ display: 'flex', gap: '12px', marginTop: '24px' }}>
-                                <button type="submit" className="btn btn-primary" style={{ flex: 1 }} disabled={loading}>
-                                    {loading ? 'Guardando...' : 'Guardar Cambios'}
-                                </button>
-                                <button
-                                    type="button"
-                                    className="btn btn-secondary"
-                                    onClick={() => { setShowEditModal(false); setEditingStore(null); setModalError('') }}
-                                    style={{ flex: 1 }}
-                                >
-                                    Cancelar
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            )}
+            <Dialog
+                open={showEditModal}
+                onClose={() => { setShowEditModal(false); setEditingStore(null); setModalError('') }}
+                maxWidth="sm"
+                fullWidth
+                PaperProps={{ sx: { borderRadius: 3 } }}
+            >
+                <DialogTitle sx={{ fontWeight: 700, fontSize: '1.25rem' }}>
+                    Editar Tienda: {editingStore?.name}
+                </DialogTitle>
+                <DialogContent>
+                    {modalError && <Alert severity="error" sx={{ mb: 2, mt: 1 }}>{modalError}</Alert>}
+                    <Box component="form" onSubmit={handleEditStore} id="edit-store-form" sx={{ mt: 1 }}>
+                        {renderStoreForm(editForm, setEditForm, false)}
+                    </Box>
+                </DialogContent>
+                <DialogActions sx={{ px: 3, pb: 3, gap: 1 }}>
+                    <Button onClick={() => { setShowEditModal(false); setEditingStore(null); setModalError('') }} variant="outlined" fullWidth>
+                        Cancelar
+                    </Button>
+                    <Button type="submit" form="edit-store-form" variant="contained" fullWidth disabled={loading}>
+                        {loading ? 'Guardando...' : 'Guardar Cambios'}
+                    </Button>
+                </DialogActions>
+            </Dialog>
 
-            {/* Delete Confirmation */}
             <ConfirmModal
                 isOpen={!!deleteTarget}
                 title="Eliminar Tienda"

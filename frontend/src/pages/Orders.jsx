@@ -4,6 +4,17 @@ import StatCard from '../components/StatCard'
 import { TableSkeleton } from '../components/Skeleton'
 import { useToast } from '../components/Toast'
 import { useSocket } from '../context/SocketContext'
+import Box from '@mui/material/Box'
+import Card from '@mui/material/Card'
+import CardContent from '@mui/material/CardContent'
+import Typography from '@mui/material/Typography'
+import Button from '@mui/material/Button'
+import Table from '@mui/material/Table'
+import TableHead from '@mui/material/TableHead'
+import TableBody from '@mui/material/TableBody'
+import TableRow from '@mui/material/TableRow'
+import TableCell from '@mui/material/TableCell'
+import Chip from '@mui/material/Chip'
 
 function Orders({ user, onLogout }) {
     const [orders, setOrders] = useState([])
@@ -19,7 +30,7 @@ function Orders({ user, onLogout }) {
 
     useEffect(() => {
         if (!socket) return;
-        
+
         const handleSocketEvent = () => {
             fetchOrders();
         };
@@ -79,7 +90,6 @@ function Orders({ user, onLogout }) {
         }
     }
 
-    // Stats
     const stats = useMemo(() => {
         const total = orders.length
         const pending = orders.filter(o => o.status === 'PENDIENTE').length
@@ -92,7 +102,6 @@ function Orders({ user, onLogout }) {
         return { total, pending, delivered, cancelled, totalRevenue }
     }, [orders])
 
-    // Filtered orders
     const filteredOrders = useMemo(() => {
         if (statusFilter === 'ALL') return orders
         return orders.filter(o => o.status === statusFilter)
@@ -101,438 +110,295 @@ function Orders({ user, onLogout }) {
     const getStatusStyles = (status) => {
         switch (status) {
             case 'PENDIENTE':
-                return { background: 'rgba(241, 196, 15, 0.15)', color: '#d35400', label: 'Pendiente' }
+                return { color: 'warning', label: 'Pendiente' }
             case 'ENTREGADO':
-                return { background: 'rgba(46, 204, 113, 0.15)', color: '#27ae60', label: 'Entregado' }
+                return { color: 'success', label: 'Entregado' }
             case 'CANCELADO':
-                return { background: 'rgba(231, 76, 60, 0.15)', color: '#c0392b', label: 'Cancelado' }
+                return { color: 'error', label: 'Cancelado' }
             default:
-                return { background: 'rgba(127, 140, 141, 0.15)', color: '#7f8c8d', label: status }
+                return { color: 'default', label: status }
         }
     }
 
     return (
         <>
             <AdminLayout title="Seguimiento de Pedidos" user={user} onLogout={onLogout}>
-                {/* Stats */}
                 {!loading && (
-                    <div className="stats-grid" style={{
+                    <Box sx={{
                         display: 'grid',
                         gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-                        gap: '0.75rem',
-                        marginBottom: '1rem'
+                        gap: 1.5,
+                        mb: 2
                     }}>
-                        <StatCard
-                            title="Total Pedidos"
-                            value={stats.total}
-                            icon="📦"
-                            color="var(--primary-color)"
-                            subtitle="Pedidos recibidos"
-                        />
-                        <StatCard
-                            title="Pendientes"
-                            value={stats.pending}
-                            icon="⏳"
-                            color="#f1c40f"
-                            subtitle="Por entregar"
-                        />
-                        <StatCard
-                            title="Entregados"
-                            value={stats.delivered}
-                            icon="✅"
-                            color="#2ecc71"
-                            subtitle="Ventas completadas"
-                        />
-                        <StatCard
-                            title="Ventas Totales"
-                            value={`$${stats.totalRevenue.toLocaleString()}`}
-                            icon="💰"
-                            color="#1abc9c"
-                            subtitle="De pedidos entregados"
-                        />
-                    </div>
+                        <StatCard title="Total Pedidos" value={stats.total} icon="📦" color="#6366f1" subtitle="Pedidos recibidos" />
+                        <StatCard title="Pendientes" value={stats.pending} icon="⏳" color="#f1c40f" subtitle="Por entregar" />
+                        <StatCard title="Entregados" value={stats.delivered} icon="✅" color="#2ecc71" subtitle="Ventas completadas" />
+                        <StatCard title="Ventas Totales" value={`$${stats.totalRevenue.toLocaleString()}`} icon="💰" color="#1abc9c" subtitle="De pedidos entregados" />
+                    </Box>
                 )}
 
-                {/* Filter Tabs */}
-                <div style={{ display: 'flex', gap: '8px', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
+                <Box sx={{ display: 'flex', gap: 1, mb: 2.5, flexWrap: 'wrap' }}>
                     {['ALL', 'PENDIENTE', 'ENTREGADO', 'CANCELADO'].map(status => (
-                        <button
+                        <Button
                             key={status}
                             onClick={() => setStatusFilter(status)}
-                            className={`btn ${statusFilter === status ? 'btn-primary' : 'btn-secondary'}`}
-                            style={{
-                                fontSize: '13px',
-                                padding: '8px 16px',
-                                background: statusFilter === status ? 'var(--primary-color)' : 'var(--surface)',
-                                border: statusFilter === status ? 'none' : '1px solid var(--border)'
-                            }}
+                            variant={statusFilter === status ? 'contained' : 'outlined'}
+                            size="small"
+                            sx={{ borderRadius: 2 }}
                         >
                             {status === 'ALL' ? 'Todos' : getStatusStyles(status).label}
-                            <span style={{
-                                marginLeft: '8px',
-                                background: 'rgba(0,0,0,0.1)',
-                                padding: '2px 6px',
-                                borderRadius: '10px',
-                                fontSize: '11px'
-                            }}>
+                            <Typography
+                                component="span"
+                                variant="caption"
+                                sx={{ ml: 0.75, opacity: 0.7, fontWeight: 700 }}
+                            >
                                 {status === 'ALL' ? orders.length : orders.filter(o => o.status === status).length}
-                            </span>
-                        </button>
+                            </Typography>
+                        </Button>
                     ))}
-                </div>
+                </Box>
 
-                {/* Table */}
-                <div className="card">
-                    {loading ? (
-                        <TableSkeleton rows={5} cols={6} />
-                    ) : filteredOrders.length === 0 ? (
-                        <p style={{ color: 'var(--text-secondary)', textAlign: 'center', padding: '40px 0' }}>
-                            No se encontraron pedidos con este estado.
-                        </p>
-                    ) : (
-                        <>
-                            {/* Desktop Table */}
-                            <div className="table-wrapper">
-                                <table className="data-table">
-                                    <thead>
-                                        <tr>
-                                            <th>ID Pedido</th>
-                                            <th>Cliente</th>
-                                            <th>Teléfono</th>
-                                            <th>Fecha</th>
-                                            <th>Total</th>
-                                            <th>Estado</th>
-                                            <th>Acciones</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {filteredOrders.map(order => {
-                                            const badge = getStatusStyles(order.status)
-                                            const orderDate = new Date(order.created_at).toLocaleString('es-ES', {
-                                                day: '2-digit',
-                                                month: '2-digit',
-                                                year: 'numeric',
-                                                hour: '2-digit',
-                                                minute: '2-digit'
-                                            })
+                <Card>
+                    <CardContent sx={{ p: 3, '&:last-child': { pb: 3 } }}>
+                        {loading ? (
+                            <TableSkeleton rows={5} cols={6} />
+                        ) : filteredOrders.length === 0 ? (
+                            <Typography color="text.secondary" textAlign="center" sx={{ py: 5 }}>
+                                No se encontraron pedidos con este estado.
+                            </Typography>
+                        ) : (
+                            <>
+                                <Box sx={{ overflowX: 'auto', display: { xs: 'none', md: 'block' } }}>
+                                    <Table>
+                                        <TableHead>
+                                            <TableRow>
+                                                <TableCell>ID Pedido</TableCell>
+                                                <TableCell>Cliente</TableCell>
+                                                <TableCell>Teléfono</TableCell>
+                                                <TableCell>Fecha</TableCell>
+                                                <TableCell>Total</TableCell>
+                                                <TableCell>Estado</TableCell>
+                                                <TableCell>Acciones</TableCell>
+                                            </TableRow>
+                                        </TableHead>
+                                        <TableBody>
+                                            {filteredOrders.map(order => {
+                                                const badge = getStatusStyles(order.status)
+                                                const orderDate = new Date(order.created_at).toLocaleString('es-ES', {
+                                                    day: '2-digit', month: '2-digit', year: 'numeric',
+                                                    hour: '2-digit', minute: '2-digit'
+                                                })
 
-                                            return (
-                                                <tr key={order.id}>
-                                                    <td style={{ fontWeight: 'bold' }}>#{order.id}</td>
-                                                    <td>{order.customer_name}</td>
-                                                    <td>{order.customer_phone || <span style={{ color: 'var(--text-muted)' }}>—</span>}</td>
-                                                    <td>{orderDate}</td>
-                                                    <td style={{ fontWeight: '700' }}>${order.total_price.toLocaleString()}</td>
-                                                    <td>
-                                                        <span style={{
-                                                            background: badge.background,
-                                                            color: badge.color,
-                                                            padding: '4px 10px',
-                                                            borderRadius: '20px',
-                                                            fontSize: '12px',
-                                                            fontWeight: '700',
-                                                            display: 'inline-block'
-                                                        }}>
-                                                            {badge.label}
-                                                        </span>
-                                                    </td>
-                                                    <td>
-                                                        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                                                            <button
-                                                                onClick={() => setSelectedOrderForDetail(order)}
-                                                                className="btn btn-secondary"
-                                                                style={{ padding: '6px 12px', fontSize: '12px' }}
-                                                            >
-                                                                👁️ Ver Detalle
-                                                            </button>
-                                                            {order.status === 'PENDIENTE' && (
-                                                                <>
-                                                                    <button
-                                                                        onClick={() => handleUpdateStatus(order.id, 'ENTREGADO')}
-                                                                        className="btn"
-                                                                        style={{
-                                                                            padding: '6px 12px',
-                                                                            fontSize: '12px',
-                                                                            background: '#2ecc71',
-                                                                            color: 'white',
-                                                                            border: 'none',
-                                                                            cursor: 'pointer'
-                                                                        }}
-                                                                    >
-                                                                        ✅ Marcar Entregado
-                                                                    </button>
-                                                                    <button
-                                                                        onClick={() => handleUpdateStatus(order.id, 'CANCELADO')}
-                                                                        className="btn btn-danger"
-                                                                        style={{ padding: '6px 12px', fontSize: '12px' }}
-                                                                    >
+                                                return (
+                                                    <TableRow key={order.id} hover>
+                                                        <TableCell sx={{ fontWeight: 700 }}>#{order.id}</TableCell>
+                                                        <TableCell>{order.customer_name}</TableCell>
+                                                        <TableCell>{order.customer_phone || <Typography component="span" color="text.disabled">—</Typography>}</TableCell>
+                                                        <TableCell>{orderDate}</TableCell>
+                                                        <TableCell sx={{ fontWeight: 700 }}>${order.total_price.toLocaleString()}</TableCell>
+                                                        <TableCell>
+                                                            <Chip label={badge.label} size="small" color={badge.color} variant="filled" sx={{ fontWeight: 700 }} />
+                                                        </TableCell>
+                                                        <TableCell>
+                                                            <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                                                                <Button variant="outlined" size="small" onClick={() => setSelectedOrderForDetail(order)}>
+                                                                    👁️ Ver Detalle
+                                                                </Button>
+                                                                {order.status === 'PENDIENTE' && (
+                                                                    <>
+                                                                        <Button variant="contained" color="success" size="small" onClick={() => handleUpdateStatus(order.id, 'ENTREGADO')}>
+                                                                            ✅ Marcar Entregado
+                                                                        </Button>
+                                                                        <Button variant="contained" color="error" size="small" onClick={() => handleUpdateStatus(order.id, 'CANCELADO')}>
+                                                                            🚫 Cancelar
+                                                                        </Button>
+                                                                    </>
+                                                                )}
+                                                                {order.status === 'ENTREGADO' && (
+                                                                    <Button variant="contained" color="error" size="small" onClick={() => handleUpdateStatus(order.id, 'CANCELADO')}>
                                                                         🚫 Cancelar
-                                                                    </button>
-                                                                </>
-                                                            )}
-                                                            {order.status === 'ENTREGADO' && (
-                                                                <button
-                                                                    onClick={() => handleUpdateStatus(order.id, 'CANCELADO')}
-                                                                    className="btn btn-danger"
-                                                                    style={{ padding: '6px 12px', fontSize: '12px' }}
-                                                                >
+                                                                    </Button>
+                                                                )}
+                                                                {order.status === 'CANCELADO' && (
+                                                                    <Button variant="contained" size="small" sx={{ bgcolor: '#f39c12', '&:hover': { bgcolor: '#e67e22' } }} onClick={() => handleUpdateStatus(order.id, 'PENDIENTE')}>
+                                                                        ↩️ Reactivar Pedido
+                                                                    </Button>
+                                                                )}
+                                                            </Box>
+                                                        </TableCell>
+                                                    </TableRow>
+                                                )
+                                            })}
+                                        </TableBody>
+                                    </Table>
+                                </Box>
+
+                                <Box sx={{ display: { xs: 'flex', md: 'none' }, flexDirection: 'column', gap: 1.5 }}>
+                                    {filteredOrders.map(order => {
+                                        const badge = getStatusStyles(order.status)
+                                        const orderDate = new Date(order.created_at).toLocaleString('es-ES', {
+                                            day: '2-digit', month: '2-digit', year: 'numeric',
+                                            hour: '2-digit', minute: '2-digit'
+                                        })
+
+                                        return (
+                                            <Card key={order.id} variant="outlined" sx={{ borderRadius: 2 }}>
+                                                <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
+                                                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1, pb: 1, borderBottom: 1, borderColor: 'divider' }}>
+                                                        <Typography sx={{ fontWeight: 700, color: 'primary.main', fontSize: '0.9375rem' }}>#{order.id}</Typography>
+                                                        <Chip label={badge.label} size="small" color={badge.color} variant="filled" sx={{ fontWeight: 700 }} />
+                                                    </Box>
+                                                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75, mb: 1.5 }}>
+                                                        <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                                                            <Typography variant="caption" color="text.secondary">Cliente:</Typography>
+                                                            <Typography variant="caption" sx={{ fontWeight: 600 }}>{order.customer_name}</Typography>
+                                                        </Box>
+                                                        <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                                                            <Typography variant="caption" color="text.secondary">Teléfono:</Typography>
+                                                            <Typography variant="caption" sx={{ fontWeight: 600 }}>{order.customer_phone || '—'}</Typography>
+                                                        </Box>
+                                                        <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                                                            <Typography variant="caption" color="text.secondary">Fecha:</Typography>
+                                                            <Typography variant="caption" sx={{ fontWeight: 600 }}>{orderDate}</Typography>
+                                                        </Box>
+                                                        <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                                                            <Typography variant="caption" color="text.secondary">Total:</Typography>
+                                                            <Typography variant="caption" sx={{ fontWeight: 700, color: 'primary.dark', fontSize: '0.9375rem' }}>${order.total_price.toLocaleString()}</Typography>
+                                                        </Box>
+                                                    </Box>
+                                                    <Box sx={{ display: 'flex', gap: 0.75, flexWrap: 'wrap' }}>
+                                                        <Button variant="outlined" size="small" sx={{ flex: 1, fontSize: '0.6875rem' }} onClick={() => setSelectedOrderForDetail(order)}>
+                                                            👁️ Ver Detalle
+                                                        </Button>
+                                                        {order.status === 'PENDIENTE' && (
+                                                            <>
+                                                                <Button variant="contained" color="success" size="small" sx={{ flex: 1, fontSize: '0.6875rem' }} onClick={() => handleUpdateStatus(order.id, 'ENTREGADO')}>
+                                                                    ✅ Entregado
+                                                                </Button>
+                                                                <Button variant="contained" color="error" size="small" sx={{ flex: 1, fontSize: '0.6875rem' }} onClick={() => handleUpdateStatus(order.id, 'CANCELADO')}>
                                                                     🚫 Cancelar
-                                                                </button>
-                                                            )}
-                                                            {order.status === 'CANCELADO' && (
-                                                                <button
-                                                                    onClick={() => handleUpdateStatus(order.id, 'PENDIENTE')}
-                                                                    className="btn"
-                                                                    style={{
-                                                                        padding: '6px 12px',
-                                                                        fontSize: '12px',
-                                                                        background: '#f39c12',
-                                                                        color: 'white',
-                                                                        border: 'none',
-                                                                        cursor: 'pointer'
-                                                                    }}
-                                                                >
-                                                                    ↩️ Reactivar Pedido
-                                                                </button>
-                                                            )}
-                                                        </div>
-                                                    </td>
-                                                </tr>
-                                            )
-                                        })}
-                                    </tbody>
-                                </table>
-                            </div>
-
-                            {/* Mobile Cards */}
-                            <div className="mobile-cards">
-                                {filteredOrders.map(order => {
-                                    const badge = getStatusStyles(order.status)
-                                    const orderDate = new Date(order.created_at).toLocaleString('es-ES', {
-                                        day: '2-digit',
-                                        month: '2-digit',
-                                        year: 'numeric',
-                                        hour: '2-digit',
-                                        minute: '2-digit'
-                                    })
-
-                                    return (
-                                        <div key={order.id} className="mobile-order-card">
-                                            <div className="mobile-order-header">
-                                                <span className="mobile-order-id">#{order.id}</span>
-                                                <span style={{
-                                                    background: badge.background,
-                                                    color: badge.color,
-                                                    padding: '3px 10px',
-                                                    borderRadius: '20px',
-                                                    fontSize: '11px',
-                                                    fontWeight: '700',
-                                                    display: 'inline-block'
-                                                }}>
-                                                    {badge.label}
-                                                </span>
-                                            </div>
-                                            <div className="mobile-order-body">
-                                                <div className="mobile-order-row">
-                                                    <span className="mobile-order-label">Cliente:</span>
-                                                    <span className="mobile-order-value">{order.customer_name}</span>
-                                                </div>
-                                                <div className="mobile-order-row">
-                                                    <span className="mobile-order-label">Teléfono:</span>
-                                                    <span className="mobile-order-value">{order.customer_phone || '—'}</span>
-                                                </div>
-                                                <div className="mobile-order-row">
-                                                    <span className="mobile-order-label">Fecha:</span>
-                                                    <span className="mobile-order-value">{orderDate}</span>
-                                                </div>
-                                                <div className="mobile-order-row">
-                                                    <span className="mobile-order-label">Total:</span>
-                                                    <span className="mobile-order-value" style={{ fontWeight: '700', color: 'var(--primary-dark)', fontSize: '15px' }}>${order.total_price.toLocaleString()}</span>
-                                                </div>
-                                            </div>
-                                            <div className="mobile-order-actions">
-                                                <button
-                                                    onClick={() => setSelectedOrderForDetail(order)}
-                                                    className="btn btn-secondary"
-                                                    style={{ flex: 1, padding: '6px 10px', fontSize: '11px' }}
-                                                >
-                                                    👁️ Ver Detalle
-                                                </button>
-                                                {order.status === 'PENDIENTE' && (
-                                                    <>
-                                                        <button
-                                                            onClick={() => handleUpdateStatus(order.id, 'ENTREGADO')}
-                                                            className="btn"
-                                                            style={{
-                                                                flex: 1, padding: '6px 10px', fontSize: '11px',
-                                                                background: '#2ecc71', color: 'white', border: 'none', cursor: 'pointer'
-                                                            }}
-                                                        >
-                                                            ✅ Marcar Entregado
-                                                        </button>
-                                                        <button
-                                                            onClick={() => handleUpdateStatus(order.id, 'CANCELADO')}
-                                                            className="btn btn-danger"
-                                                            style={{ flex: 1, padding: '6px 10px', fontSize: '11px' }}
-                                                        >
-                                                            🚫 Cancelar
-                                                        </button>
-                                                    </>
-                                                )}
-                                                {order.status === 'ENTREGADO' && (
-                                                    <button
-                                                        onClick={() => handleUpdateStatus(order.id, 'CANCELADO')}
-                                                        className="btn btn-danger"
-                                                        style={{ flex: 1, padding: '6px 10px', fontSize: '11px' }}
-                                                    >
-                                                        🚫 Cancelar
-                                                    </button>
-                                                )}
-                                                {order.status === 'CANCELADO' && (
-                                                    <button
-                                                        onClick={() => handleUpdateStatus(order.id, 'PENDIENTE')}
-                                                        className="btn"
-                                                        style={{
-                                                            flex: 1, padding: '6px 10px', fontSize: '11px',
-                                                            background: '#f39c12', color: 'white', border: 'none', cursor: 'pointer'
-                                                        }}
-                                                    >
-                                                        ↩️ Reactivar
-                                                    </button>
-                                                )}
-                                            </div>
-                                        </div>
-                                    )
-                                })}
-                            </div>
-                        </>
-                    )}
-                </div>
+                                                                </Button>
+                                                            </>
+                                                        )}
+                                                        {order.status === 'ENTREGADO' && (
+                                                            <Button variant="contained" color="error" size="small" sx={{ flex: 1, fontSize: '0.6875rem' }} onClick={() => handleUpdateStatus(order.id, 'CANCELADO')}>
+                                                                🚫 Cancelar
+                                                            </Button>
+                                                        )}
+                                                        {order.status === 'CANCELADO' && (
+                                                            <Button variant="contained" size="small" sx={{ flex: 1, fontSize: '0.6875rem', bgcolor: '#f39c12', '&:hover': { bgcolor: '#e67e22' } }} onClick={() => handleUpdateStatus(order.id, 'PENDIENTE')}>
+                                                                ↩️ Reactivar
+                                                            </Button>
+                                                        )}
+                                                    </Box>
+                                                </CardContent>
+                                            </Card>
+                                        )
+                                    })}
+                                </Box>
+                            </>
+                        )}
+                    </CardContent>
+                </Card>
             </AdminLayout>
 
             {/* Order Detail Modal */}
             {selectedOrderForDetail && (
-                <div
-                    style={{
+                <Box
+                    sx={{
                         position: 'fixed',
                         top: 0,
                         left: 0,
                         width: '100%',
                         height: '100vh',
-                        background: 'rgba(0,0,0,0.5)',
+                        bgcolor: 'rgba(0,0,0,0.5)',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
                         zIndex: 2000,
                         backdropFilter: 'blur(4px)',
-                        padding: '16px'
+                        p: 2,
                     }}
                 >
-                    <div
-                        style={{
-                            background: 'var(--surface)',
-                            border: '1px solid var(--border)',
-                            borderRadius: '12px',
-                            width: '100%',
-                            maxWidth: '600px',
-                            padding: '24px',
-                            boxShadow: '0 10px 25px rgba(0,0,0,0.15)',
-                            position: 'relative'
-                        }}
-                    >
-                        <button
-                            onClick={() => setSelectedOrderForDetail(null)}
-                            style={{
-                                position: 'absolute',
-                                top: '16px',
-                                right: '16px',
-                                background: 'none',
-                                border: 'none',
-                                fontSize: '24px',
-                                cursor: 'pointer',
-                                color: 'var(--text-secondary)'
-                            }}
-                        >
-                            &times;
-                        </button>
-
-                        <h2 style={{ margin: '0 0 16px 0', fontSize: '20px', fontWeight: '700' }}>
-                            Detalle del Pedido #{selectedOrderForDetail.id}
-                        </h2>
-
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '20px', padding: '16px', background: 'rgba(0,0,0,0.02)', borderRadius: '8px' }}>
-                            <div>
-                                <strong style={{ fontSize: '12px', color: 'var(--text-secondary)', display: 'block', marginBottom: '4px' }}>Cliente:</strong>
-                                <span style={{ fontSize: '14px', fontWeight: '600' }}>{selectedOrderForDetail.customer_name}</span>
-                            </div>
-                            <div>
-                                <strong style={{ fontSize: '12px', color: 'var(--text-secondary)', display: 'block', marginBottom: '4px' }}>Teléfono:</strong>
-                                <span style={{ fontSize: '14px', fontWeight: '600' }}>{selectedOrderForDetail.customer_phone || '—'}</span>
-                            </div>
-                            <div>
-                                <strong style={{ fontSize: '12px', color: 'var(--text-secondary)', display: 'block', marginBottom: '4px' }}>Fecha y Hora:</strong>
-                                <span style={{ fontSize: '14px', fontWeight: '600' }}>{new Date(selectedOrderForDetail.created_at).toLocaleString()}</span>
-                            </div>
-                            <div>
-                                <strong style={{ fontSize: '12px', color: 'var(--text-secondary)', display: 'block', marginBottom: '4px' }}>Estado actual:</strong>
-                                <span style={{
-                                    background: getStatusStyles(selectedOrderForDetail.status).background,
-                                    color: getStatusStyles(selectedOrderForDetail.status).color,
-                                    padding: '2px 8px',
-                                    borderRadius: '12px',
-                                    fontSize: '12px',
-                                    fontWeight: '700',
-                                    display: 'inline-block'
-                                }}>
-                                    {getStatusStyles(selectedOrderForDetail.status).label}
-                                </span>
-                            </div>
-                        </div>
-
-                        <h3 style={{ fontSize: '14px', fontWeight: '700', marginBottom: '10px' }}>Artículos del Pedido</h3>
-                        <div style={{ maxHeight: '200px', overflowY: 'auto', border: '1px solid var(--border)', borderRadius: '6px', marginBottom: '20px' }}>
-                            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
-                                <thead style={{ background: 'var(--background)', borderBottom: '1px solid var(--border)' }}>
-                                    <tr>
-                                        <th style={{ textAlign: 'left', padding: '10px' }}>Producto</th>
-                                        <th style={{ textAlign: 'center', padding: '10px' }}>Talla</th>
-                                        <th style={{ textAlign: 'center', padding: '10px' }}>Cant.</th>
-                                        <th style={{ textAlign: 'right', padding: '10px' }}>Precio</th>
-                                        <th style={{ textAlign: 'right', padding: '10px' }}>Subtotal</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {selectedOrderForDetail.items.map((item, idx) => (
-                                        <tr key={idx} style={{ borderBottom: '1px solid var(--border)' }}>
-                                            <td style={{ padding: '10px' }}>{item.product_name}</td>
-                                            <td style={{ textAlign: 'center', padding: '10px', color: 'var(--text-secondary)' }}>{item.selected_size || '—'}</td>
-                                            <td style={{ textAlign: 'center', padding: '10px' }}>{item.quantity}</td>
-                                            <td style={{ textAlign: 'right', padding: '10px' }}>${item.price.toLocaleString()}</td>
-                                            <td style={{ textAlign: 'right', padding: '10px', fontWeight: '700' }}>${(item.price * item.quantity).toLocaleString()}</td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
-
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-                            <span style={{ fontWeight: '700' }}>Total del Pedido:</span>
-                            <span style={{ fontSize: '20px', fontWeight: '800', color: 'var(--primary-dark)' }}>
-                                ${selectedOrderForDetail.total_price.toLocaleString()}
-                            </span>
-                        </div>
-
-                        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
-                            <button
+                    <Card sx={{ width: '100%', maxWidth: 600, position: 'relative' }}>
+                        <CardContent sx={{ p: 3, '&:last-child': { pb: 3 } }}>
+                            <Button
                                 onClick={() => setSelectedOrderForDetail(null)}
-                                className="btn btn-secondary"
-                                style={{ padding: '10px 20px', fontSize: '13px' }}
+                                sx={{ position: 'absolute', top: 1, right: 1, minWidth: 0, fontSize: '1.5rem', color: 'text.secondary' }}
                             >
-                                Cerrar
-                            </button>
-                        </div>
-                    </div>
-                </div>
+                                &times;
+                            </Button>
+
+                            <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>
+                                Detalle del Pedido #{selectedOrderForDetail.id}
+                            </Typography>
+
+                            <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2, p: 2, bgcolor: 'action.hover', borderRadius: 1, mb: 2.5 }}>
+                                <Box>
+                                    <Typography variant="caption" color="text.secondary" sx={{ display: 'block', fontWeight: 600, mb: 0.5 }}>Cliente:</Typography>
+                                    <Typography variant="body2" sx={{ fontWeight: 600 }}>{selectedOrderForDetail.customer_name}</Typography>
+                                </Box>
+                                <Box>
+                                    <Typography variant="caption" color="text.secondary" sx={{ display: 'block', fontWeight: 600, mb: 0.5 }}>Teléfono:</Typography>
+                                    <Typography variant="body2" sx={{ fontWeight: 600 }}>{selectedOrderForDetail.customer_phone || '—'}</Typography>
+                                </Box>
+                                <Box>
+                                    <Typography variant="caption" color="text.secondary" sx={{ display: 'block', fontWeight: 600, mb: 0.5 }}>Fecha y Hora:</Typography>
+                                    <Typography variant="body2" sx={{ fontWeight: 600 }}>{new Date(selectedOrderForDetail.created_at).toLocaleString()}</Typography>
+                                </Box>
+                                <Box>
+                                    <Typography variant="caption" color="text.secondary" sx={{ display: 'block', fontWeight: 600, mb: 0.5 }}>Estado actual:</Typography>
+                                    <Chip
+                                        label={getStatusStyles(selectedOrderForDetail.status).label}
+                                        size="small"
+                                        color={getStatusStyles(selectedOrderForDetail.status).color}
+                                        variant="filled"
+                                        sx={{ fontWeight: 700 }}
+                                    />
+                                </Box>
+                            </Box>
+
+                            <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1.25 }}>Artículos del Pedido</Typography>
+                            <Box sx={{ maxHeight: 200, overflowY: 'auto', border: 1, borderColor: 'divider', borderRadius: 1, mb: 2.5 }}>
+                                <Table size="small">
+                                    <TableHead>
+                                        <TableRow>
+                                            <TableCell>Producto</TableCell>
+                                            <TableCell align="center">Talla</TableCell>
+                                            <TableCell align="center">Cant.</TableCell>
+                                            <TableCell align="right">Precio</TableCell>
+                                            <TableCell align="right">Subtotal</TableCell>
+                                        </TableRow>
+                                    </TableHead>
+                                    <TableBody>
+                                        {selectedOrderForDetail.items.map((item, idx) => (
+                                            <TableRow key={idx}>
+                                                <TableCell>{item.product_name}</TableCell>
+                                                <TableCell align="center" sx={{ color: 'text.secondary' }}>{item.selected_size || '—'}</TableCell>
+                                                <TableCell align="center">{item.quantity}</TableCell>
+                                                <TableCell align="right">${item.price.toLocaleString()}</TableCell>
+                                                <TableCell align="right" sx={{ fontWeight: 700 }}>${(item.price * item.quantity).toLocaleString()}</TableCell>
+                                            </TableRow>
+                                        ))}
+                                    </TableBody>
+                                </Table>
+                            </Box>
+
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+                                <Typography sx={{ fontWeight: 700 }}>Total del Pedido:</Typography>
+                                <Typography variant="h5" sx={{ fontWeight: 800, color: 'primary.dark' }}>
+                                    ${selectedOrderForDetail.total_price.toLocaleString()}
+                                </Typography>
+                            </Box>
+
+                            <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+                                <Button variant="outlined" onClick={() => setSelectedOrderForDetail(null)}>
+                                    Cerrar
+                                </Button>
+                            </Box>
+                        </CardContent>
+                    </Card>
+                </Box>
             )}
         </>
     )

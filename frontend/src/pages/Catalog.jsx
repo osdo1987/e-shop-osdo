@@ -2,8 +2,42 @@ import { useState, useEffect, useMemo } from 'react'
 import { useParams } from 'react-router-dom'
 import useDebounce from '../hooks/useDebounce'
 import { GridSkeleton } from '../components/Skeleton'
+import Box from '@mui/material/Box'
+import Typography from '@mui/material/Typography'
+import AppBar from '@mui/material/AppBar'
+import Toolbar from '@mui/material/Toolbar'
+import IconButton from '@mui/material/IconButton'
+import Drawer from '@mui/material/Drawer'
+import List from '@mui/material/List'
+import ListItemButton from '@mui/material/ListItemButton'
+import ListItemText from '@mui/material/ListItemText'
+import Slider from '@mui/material/Slider'
+import Switch from '@mui/material/Switch'
+import FormControlLabel from '@mui/material/FormControlLabel'
+import InputBase from '@mui/material/InputBase'
+import Fab from '@mui/material/Fab'
+import Badge from '@mui/material/Badge'
+import Dialog from '@mui/material/Dialog'
+import DialogTitle from '@mui/material/DialogTitle'
+import DialogContent from '@mui/material/DialogContent'
+import DialogActions from '@mui/material/DialogActions'
+import Button from '@mui/material/Button'
+import Card from '@mui/material/Card'
+import CardContent from '@mui/material/CardContent'
+import Chip from '@mui/material/Chip'
+import TextField from '@mui/material/TextField'
+import SearchIcon from '@mui/icons-material/Search'
+import ShoppingCartIcon from '@mui/icons-material/ShoppingCart'
+import FavoriteIcon from '@mui/icons-material/Favorite'
+import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder'
+import CloseIcon from '@mui/icons-material/Close'
+import AddIcon from '@mui/icons-material/Add'
+import RemoveIcon from '@mui/icons-material/Remove'
+import DeleteIcon from '@mui/icons-material/Delete'
+import StorefrontIcon from '@mui/icons-material/Storefront'
+import FilterListIcon from '@mui/icons-material/FilterList'
+import { useTheme } from '@mui/material/styles'
 
-// Adaptative parser for sizes stock JSON or comma list
 const parseSizes = (sizesStr, overallStock) => {
     if (!sizesStr) return null
     try {
@@ -27,6 +61,7 @@ const parseSizes = (sizesStr, overallStock) => {
 
 function Catalog() {
     const { slug } = useParams()
+    const theme = useTheme()
     const [store, setStore] = useState(null)
     const [categories, setCategories] = useState([])
     const [products, setProducts] = useState([])
@@ -39,7 +74,6 @@ function Catalog() {
     const [searchTerm, setSearchTerm] = useState('')
     const [sidebarOpen, setSidebarOpen] = useState(false)
 
-    // Estados para Favoritos y Carrito
     const [favorites, setFavorites] = useState(() => {
         const stored = localStorage.getItem(`favorites_${slug}`)
         return stored ? JSON.parse(stored) : []
@@ -76,12 +110,10 @@ function Catalog() {
         }
     }, [store])
 
-    // Products on promotion
     const promoProducts = useMemo(() => {
         return products.filter(p => p.promo_price !== null)
     }, [products])
 
-    // Rotate promo banner every 5 seconds
     useEffect(() => {
         if (promoProducts.length <= 1) return
         const interval = setInterval(() => {
@@ -90,7 +122,6 @@ function Catalog() {
         return () => clearInterval(interval)
     }, [promoProducts.length])
 
-    // Randomize initial promo product
     useEffect(() => {
         if (promoProducts.length > 0) {
             setPromoIndex(Math.floor(Math.random() * promoProducts.length))
@@ -121,7 +152,6 @@ function Catalog() {
         return counts
     }, [products])
 
-    // Dynamic price bounds based on actual products
     const priceBounds = useMemo(() => {
         if (products.length === 0) return { min: 0, max: 1000000 }
         const prices = products.flatMap(p => [p.price, p.promo_price].filter(Boolean))
@@ -147,7 +177,6 @@ function Catalog() {
         })
     }, [products, selectedCategory, priceRange, onlyPromo, onlyFavorites, favorites, debouncedSearch])
 
-    // Reset price range when products load
     useEffect(() => {
         if (products.length > 0) {
             setPriceRange([priceBounds.min, priceBounds.max])
@@ -164,7 +193,6 @@ function Catalog() {
 
     const hasActiveFilters = selectedCategory !== 'all' || priceRange[0] !== priceBounds.min || priceRange[1] !== priceBounds.max || onlyPromo || onlyFavorites || searchTerm
 
-    // Favoritos
     const toggleFavorite = (productId, e) => {
         e.preventDefault()
         e.stopPropagation()
@@ -175,7 +203,6 @@ function Catalog() {
         }
     }
 
-    // Carrito de compras
     const toggleCart = () => setCartOpen(!cartOpen)
 
     const addToCart = (product, size = null) => {
@@ -214,7 +241,7 @@ function Catalog() {
 
         setSizeModalProduct(null)
         setSelectedSizeForModal('')
-        setCartOpen(true) // Abrir el carrito para feedback visual inmediato
+        setCartOpen(true)
     }
 
     const updateCartItemQty = (productId, size, change) => {
@@ -250,6 +277,7 @@ function Catalog() {
     const cartTotalItems = useMemo(() => {
         return cart.reduce((total, item) => total + item.quantity, 0)
     }, [cart])
+
     const handleCheckout = async () => {
         if (cart.length === 0) return
 
@@ -302,7 +330,6 @@ function Catalog() {
             const sizeStr = item.selected_size ? ` (Talla: ${item.selected_size})` : ''
             const price = item.promo_price || item.price
             const subtotal = price * item.quantity
-
             message += `• ${item.quantity}x *${item.name}*${sizeStr}\n`
             message += `  Precio: $${price.toLocaleString()} c/u | Subtotal: $${subtotal.toLocaleString()}\n`
         })
@@ -316,7 +343,6 @@ function Catalog() {
         const waUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`
         window.open(waUrl, '_blank')
 
-        // Limpiar carrito y datos del cliente
         setCart([])
         setCustomerName('')
         setCustomerPhone('')
@@ -325,746 +351,713 @@ function Catalog() {
 
     if (loading) {
         return (
-            <div className="catalog-wrapper">
-                <header className="catalog-top-bar">
-                    <div className="logo-container">
-                        <div className="logo-icon">🏪</div>
-                        <div className="logo-text">Cargando<span>.</span></div>
-                    </div>
-                </header>
-                <main className="catalog-main-layout">
-                    <section className="catalog-content">
-                        <GridSkeleton count={8} />
-                    </section>
-                </main>
-            </div>
+            <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+                <AppBar position="static" color="inherit" elevation={0} sx={{ borderBottom: 1, borderColor: 'divider' }}>
+                    <Toolbar>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                            <Box sx={{ width: 40, height: 40, borderRadius: 2, background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white' }}>
+                                <StorefrontIcon fontSize="small" />
+                            </Box>
+                            <Typography variant="h6" sx={{ fontWeight: 800 }}>Cargando<span style={{ color: '#6366f1' }}>.</span></Typography>
+                        </Box>
+                    </Toolbar>
+                </AppBar>
+                <Box sx={{ p: { xs: 2, md: 3.5 }, flex: 1 }}>
+                    <GridSkeleton count={8} />
+                </Box>
+            </Box>
         )
     }
 
     if (!store) {
         return (
-            <div className="home-container">
-                <div style={{ fontSize: '64px', marginBottom: '16px' }}>🔍</div>
-                <h2 style={{ fontSize: '24px', marginBottom: '12px' }}>Tienda no encontrada</h2>
-                <p style={{ color: 'var(--text-secondary)' }}>El catálogo que buscas no existe o fue eliminado.</p>
-            </div>
+            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', textAlign: 'center', p: 2.5 }}>
+                <Box sx={{ fontSize: '4rem', mb: 1 }}>🔍</Box>
+                <Typography variant="h5" sx={{ fontWeight: 700, mb: 1.5 }}>Tienda no encontrada</Typography>
+                <Typography color="text.secondary">El catálogo que buscas no existe o fue eliminado.</Typography>
+            </Box>
         )
     }
 
-    // Current promo product to display
     const currentPromo = promoProducts.length > 0
         ? promoProducts[promoIndex % promoProducts.length]
         : null
 
-    return (
-        <div className="catalog-wrapper">
-            <div className="promo-banner">
-                {currentPromo ? (
-                    <span className="promo-banner-content">
-                        <span className="promo-badge">🔥 OFERTA</span>
-                        <span className="promo-name">{currentPromo.name}</span>
-                        <span className="promo-price-old">${currentPromo.price.toLocaleString()}</span>
-                        <span className="promo-price-new">${currentPromo.promo_price.toLocaleString()}</span>
-                        <span className="promo-discount">
-                            -{Math.round(((currentPromo.price - currentPromo.promo_price) / currentPromo.price) * 100)}%
-                        </span>
-                        {promoProducts.length > 1 && (
-                            <span className="promo-counter">{promoIndex + 1}/{promoProducts.length}</span>
-                        )}
-                    </span>
-                ) : (
-                    <span>🚀 Envío gratis en pedidos sobre $100.000</span>
-                )}
-            </div>
-            <header className="catalog-top-bar">
-                <div className="logo-container">
-                    <div className="logo-icon">
-                        {store.logo_url ? (
-                            <img src={store.logo_url} alt={`${store.name} logo`} style={{ width: '100%', height: '100%', objectFit: 'contain', borderRadius: '4px' }} />
-                        ) : (
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" style={{ width: '20px', height: '20px' }}>
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 21v-7.5a.75.75 0 01.75-.75h3a.75.75 0 01.75.75V21m-4.5 0H2.36m11.14 0H18m0 0h3.64m-1.39 0V9.809c0-.816-.31-1.597-.86-2.176l-3.32-3.483A3.013 3.013 0 0015.36 3.25h-6.72c-.8 0-1.564.316-2.128.878L3.192 7.61a3 3 0 00-.86 2.122V21m15.66 0h-3.66m-1.34 0v-7.5a.75.75 0 00-.75-.75h-3a.75.75 0 00-.75.75V21M3.66 21H2.34m0 0v-7.5a.75.75 0 01.75-.75h3a.75.75 0 01.75.75V21" />
-                            </svg>
-                        )}
-                    </div>
-                    <div className="logo-text">{store.name}<span>.</span></div>
-                </div>
+    const sidebarContent = (
+        <Box sx={{ p: 2.5, width: 280 }}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                <Typography variant="caption" sx={{ fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'text.disabled' }}>
+                    Filtros
+                </Typography>
+                <IconButton size="small" onClick={() => setSidebarOpen(false)} sx={{ display: { md: 'none' } }}>
+                    <CloseIcon fontSize="small" />
+                </IconButton>
+            </Box>
 
-                <div className="navbar-center">
-                    <div className="search-wrapper navbar-search">
-                        <svg className="search-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
-                        </svg>
-                        <input
-                            type="text"
-                            placeholder="Buscar productos..."
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                        />
-                    </div>
-                    <div className="navbar-categories">
-                        <button className={selectedCategory === 'all' ? 'active' : ''} onClick={() => setSelectedCategory('all')}>Todos</button>
-                        {categories.slice(0, 4).map(cat => (
-                            <button key={cat.id} className={selectedCategory === cat.id.toString() ? 'active' : ''} onClick={() => setSelectedCategory(cat.id.toString())}>{cat.name}</button>
-                        ))}
-                    </div>
-                </div>
-
-                <div className="navbar-actions">
-                    <button
-                        className="btn btn-secondary"
-                        style={{ display: 'none', padding: '6px 10px', fontSize: '13px', alignItems: 'center', gap: '6px', borderRadius: '20px' }}
-                        onClick={() => setSidebarOpen(!sidebarOpen)}
-                        id="mobile-filter-btn"
-                    >
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" style={{ width: '16px', height: '16px' }}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 6h9.75M10.5 6a1.5 1.5 0 11-3 0m3 0a1.5 1.5 0 10-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-9.75 0h9.75" />
-                        </svg>
-                    </button>
-                    <button className={`nav-icon-btn ${onlyFavorites ? 'active' : ''}`} onClick={() => setOnlyFavorites(!onlyFavorites)} title="Mis Favoritos">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill={onlyFavorites ? 'currentColor' : 'none'} viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" style={{ width: '22px', height: '22px' }}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
-                        </svg>
-                        {favorites.length > 0 && <span className="nav-badge">{favorites.length}</span>}
-                    </button>
-                    <button className="nav-icon-btn" onClick={toggleCart} title="Carrito de compras">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" style={{ width: '22px', height: '22px' }}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007zM8.625 10.5a.375.375 0 11-.75 0 .375.375 0 01.75 0zm7.5 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
-                        </svg>
-                        {cartTotalItems > 0 && <span className="nav-badge">{cartTotalItems}</span>}
-                    </button>
-                </div>
-            </header>
-
-            <main className="catalog-main-layout">
-                {/* Mobile sidebar overlay */}
-                {sidebarOpen && (
-                    <div
-                        style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 998 }}
-                        onClick={() => setSidebarOpen(false)}
+            {/* Mobile Search */}
+            <Box sx={{ display: { xs: 'block', md: 'none' }, mb: 2 }}>
+                <Typography variant="caption" sx={{ fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'text.disabled', display: 'block', mb: 1 }}>
+                    Buscar
+                </Typography>
+                <Box sx={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                    <SearchIcon sx={{ position: 'absolute', left: 13, color: 'text.disabled', pointerEvents: 'none' }} fontSize="small" />
+                    <InputBase
+                        placeholder="Buscar productos..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        sx={{
+                            pl: 4.5,
+                            pr: 2,
+                            py: 1,
+                            width: '100%',
+                            border: '1.5px solid',
+                            borderColor: 'divider',
+                            borderRadius: 20,
+                            bgcolor: 'background.paper',
+                            fontSize: '0.875rem',
+                            '&.Mui-focused': {
+                                borderColor: 'primary.main',
+                            },
+                        }}
                     />
-                )}
+                </Box>
+            </Box>
 
-                <aside className={`catalog-sidebar ${sidebarOpen ? 'catalog-sidebar-open' : ''}`}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-                        <h3 className="filter-title" style={{ margin: 0 }}>Filtros</h3>
-                        <button
-                            style={{ display: 'none', background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: 'var(--text-secondary)' }}
-                            onClick={() => setSidebarOpen(false)}
-                            id="sidebar-close-btn"
+            <Box sx={{ mb: 3 }}>
+                <Typography variant="caption" sx={{ fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'text.disabled', display: 'block', mb: 1 }}>
+                    Categorías
+                </Typography>
+                <List dense>
+                    <ListItemButton
+                        selected={selectedCategory === 'all'}
+                        onClick={() => { setSelectedCategory('all'); setSidebarOpen(false) }}
+                        sx={{ borderRadius: 20, mb: 0.5 }}
+                    >
+                        <ListItemText primary="Todos" slotProps={{ primary: { fontSize: '0.875rem', fontWeight: 500 } }} />
+                        <Chip label={categoryCounts.all} size="small" variant="outlined" sx={{ fontWeight: 700, fontSize: '0.6875rem' }} />
+                    </ListItemButton>
+                    {categories.map(cat => (
+                        <ListItemButton
+                            key={cat.id}
+                            selected={selectedCategory === cat.id.toString()}
+                            onClick={() => { setSelectedCategory(cat.id.toString()); setSidebarOpen(false) }}
+                            sx={{ borderRadius: 20, mb: 0.5 }}
                         >
-                            ×
-                        </button>
-                    </div>
+                            <ListItemText primary={cat.name} slotProps={{ primary: { fontSize: '0.875rem', fontWeight: 500 } }} />
+                            <Chip label={categoryCounts[cat.id] || 0} size="small" variant="outlined" sx={{ fontWeight: 700, fontSize: '0.6875rem' }} />
+                        </ListItemButton>
+                    ))}
+                </List>
+            </Box>
 
-                    {/* Mobile Search - Only visible when navbar search is hidden */}
-                    <div className="filter-group mobile-only-search">
-                        <h3 className="filter-title">Buscar</h3>
-                        <div className="search-wrapper">
-                            <svg className="search-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
-                            </svg>
-                            <input
-                                type="text"
+            <Box sx={{ mb: 3 }}>
+                <Typography variant="caption" sx={{ fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'text.disabled', display: 'block', mb: 2 }}>
+                    Precio
+                </Typography>
+                <Slider
+                    value={priceRange}
+                    onChange={(_, newValue) => setPriceRange(newValue)}
+                    min={priceBounds.min}
+                    max={priceBounds.max}
+                    valueLabelDisplay="auto"
+                    valueLabelFormat={(value) => `$${value.toLocaleString()}`}
+                    sx={{ mx: 1 }}
+                />
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 1 }}>
+                    <Chip label={`$${priceRange[0].toLocaleString()}`} size="small" variant="outlined" sx={{ fontWeight: 700 }} />
+                    <Typography variant="caption" color="text.disabled" sx={{ alignSelf: 'center' }}>—</Typography>
+                    <Chip label={`$${priceRange[1].toLocaleString()}`} size="small" variant="outlined" sx={{ fontWeight: 700 }} />
+                </Box>
+            </Box>
+
+            <Box sx={{ mb: 2 }}>
+                <FormControlLabel
+                    control={<Switch checked={onlyPromo} onChange={() => setOnlyPromo(!onlyPromo)} size="small" />}
+                    label={<Typography variant="body2" sx={{ fontWeight: 500 }}>🏷️ Solo en promoción</Typography>}
+                    sx={{ width: '100%', mx: 0, px: 1.75, py: 1.5, border: 1, borderColor: onlyPromo ? 'primary.main' : 'divider', borderRadius: 2, bgcolor: onlyPromo ? 'primary.light' : 'transparent' }}
+                />
+            </Box>
+
+            <Box sx={{ mb: 2 }}>
+                <FormControlLabel
+                    control={<Switch checked={onlyFavorites} onChange={() => setOnlyFavorites(!onlyFavorites)} size="small" />}
+                    label={<Typography variant="body2" sx={{ fontWeight: 500 }}>{onlyFavorites ? '❤️' : '🤍'} Solo mis favoritos</Typography>}
+                    sx={{ width: '100%', mx: 0, px: 1.75, py: 1.5, border: 1, borderColor: onlyFavorites ? 'primary.main' : 'divider', borderRadius: 2, bgcolor: onlyFavorites ? 'primary.light' : 'transparent' }}
+                />
+            </Box>
+
+            {hasActiveFilters && (
+                <Button fullWidth variant="text" color="error" size="small" onClick={clearFilters} sx={{ mt: 1 }}>
+                    Limpiar filtros
+                </Button>
+            )}
+        </Box>
+    )
+
+    return (
+        <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+            {/* Promo Banner */}
+            <Box
+                sx={{
+                    background: (theme) => theme.palette.mode === 'dark'
+                        ? 'linear-gradient(90deg, #1e1b4b 0%, #4f46e5 40%, #7c3aed 60%, #1e1b4b 100%)'
+                        : 'linear-gradient(90deg, #3730a3 0%, #6366f1 40%, #8b5cf6 60%, #3730a3 100%)',
+                    backgroundSize: '200% 100%',
+                    color: 'white',
+                    textAlign: 'center',
+                    py: 2,
+                    px: 3,
+                    fontWeight: 700,
+                    fontSize: '0.9375rem',
+                    minHeight: 56,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    overflow: 'hidden',
+                    position: 'relative',
+                    boxShadow: (theme) => `0 4px 20px ${theme.palette.mode === 'dark' ? 'rgba(99, 102, 241, 0.5)' : 'rgba(99, 102, 241, 0.35)'}`,
+                    animation: 'promo-gradient-shift 4s ease infinite',
+                    '@keyframes promo-gradient-shift': {
+                        '0%, 100%': { backgroundPosition: '0% 50%' },
+                        '50%': { backgroundPosition: '100% 50%' },
+                    },
+                }}
+            >
+                {currentPromo ? (
+                    <Box sx={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: 1.5,
+                        animation: 'promo-slide-in 0.5s ease-out',
+                        '@keyframes promo-slide-in': {
+                            from: { opacity: 0, transform: 'translateY(-100%)' },
+                            to: { opacity: 1, transform: 'translateY(0)' }
+                        },
+                        maxWidth: '100%',
+                        flexWrap: 'wrap',
+                        justifyContent: 'center',
+                    }}>
+                        <Chip label="🔥 OFERTA" size="small" sx={{ bgcolor: '#f59e0b', color: 'white', fontWeight: 900, fontSize: '0.75rem' }} />
+                        <Typography sx={{ fontWeight: 800, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: { xs: 120, sm: 240 }, textShadow: '0 1px 3px rgba(0,0,0,0.25)' }}>
+                            {currentPromo.name}
+                        </Typography>
+                        <Typography sx={{ textDecoration: 'line-through', opacity: 0.65, fontSize: '0.8125rem' }}>
+                            ${currentPromo.price.toLocaleString()}
+                        </Typography>
+                        <Typography sx={{ fontWeight: 900, color: '#fde047', textShadow: '0 0 12px rgba(253, 224, 71, 0.6)' }}>
+                            ${currentPromo.promo_price.toLocaleString()}
+                        </Typography>
+                        <Chip
+                            label={`-${Math.round(((currentPromo.price - currentPromo.promo_price) / currentPromo.price) * 100)}%`}
+                            size="small"
+                            sx={{ bgcolor: 'rgba(245, 158, 11, 0.25)', color: '#fde047', fontWeight: 800, border: '1px solid rgba(245, 158, 11, 0.35)' }}
+                        />
+                        {promoProducts.length > 1 && (
+                            <Typography sx={{ fontSize: '0.6875rem', opacity: 0.7 }}>
+                                {promoIndex + 1}/{promoProducts.length}
+                            </Typography>
+                        )}
+                    </Box>
+                ) : (
+                    <Typography sx={{ fontSize: { xs: '0.8125rem', sm: '0.9375rem' } }}>🚀 Envío gratis en pedidos sobre $100.000</Typography>
+                )}
+            </Box>
+
+            {/* Top Bar */}
+            <AppBar position="sticky" color="inherit" elevation={0} sx={{
+                borderBottom: 1,
+                borderColor: 'divider',
+                bgcolor: theme.palette.mode === 'dark' ? 'rgba(15, 15, 40, 0.82)' : 'rgba(255, 255, 255, 0.82)',
+                backdropFilter: 'blur(20px)',
+            }}>
+                <Toolbar sx={{ gap: 1, minHeight: { xs: 56, md: 64 } }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, cursor: 'pointer', flexShrink: 0 }}>
+                        <Box sx={{
+                            width: { xs: 32, sm: 40 },
+                            height: { xs: 32, sm: 40 },
+                            borderRadius: 2,
+                            background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            color: 'white',
+                            boxShadow: '0 4px 12px rgba(99, 102, 241, 0.3)',
+                            transition: 'transform 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
+                            '&:hover': { transform: 'scale(1.08) rotate(-4deg)' },
+                        }}>
+                            {store.logo_url ? (
+                                <Box component="img" src={store.logo_url} alt={`${store.name} logo`} sx={{ width: '100%', height: '100%', objectFit: 'contain', borderRadius: 1 }} />
+                            ) : (
+                                <StorefrontIcon sx={{ fontSize: { xs: 16, sm: 20 } }} />
+                            )}
+                        </Box>
+                        <Typography variant="h6" sx={{ fontWeight: 800, fontSize: { xs: '1rem', sm: '1.25rem' }, display: { xs: 'none', sm: 'block' } }}>
+                            {store.name}<span style={{ color: '#6366f1' }}>.</span>
+                        </Typography>
+                    </Box>
+
+                    {/* Center Search - Desktop only */}
+                    <Box sx={{ flex: 1, display: { xs: 'none', md: 'flex' }, flexDirection: 'column', alignItems: 'center', maxWidth: 600, mx: 'auto' }}>
+                        <Box sx={{ position: 'relative', width: '100%', display: 'flex', alignItems: 'center' }}>
+                            <SearchIcon sx={{ position: 'absolute', left: 13, color: 'text.disabled', pointerEvents: 'none' }} fontSize="small" />
+                            <InputBase
                                 placeholder="Buscar productos..."
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
+                                sx={{
+                                    pl: 4.5,
+                                    pr: 2,
+                                    py: 0.75,
+                                    width: '100%',
+                                    border: '1.5px solid',
+                                    borderColor: 'divider',
+                                    borderRadius: 20,
+                                    bgcolor: 'background.paper',
+                                    fontSize: '0.875rem',
+                                    '&.Mui-focused': {
+                                        borderColor: 'primary.main',
+                                    },
+                                }}
                             />
-                        </div>
-                    </div>
+                        </Box>
+                    </Box>
 
-                    <div className="filter-group">
-                        <h3 className="filter-title">Categorías</h3>
-                        <div className="category-list">
-                            <div
-                                className={`category-item ${selectedCategory === 'all' ? 'active' : ''}`}
-                                onClick={() => { setSelectedCategory('all'); setSidebarOpen(false) }}
-                            >
-                                <span>Todos</span>
-                                <span className="count-badge">{categoryCounts.all}</span>
-                            </div>
-                            {categories.map(cat => (
-                                <div
-                                    key={cat.id}
-                                    className={`category-item ${selectedCategory === cat.id.toString() ? 'active' : ''}`}
-                                    onClick={() => { setSelectedCategory(cat.id.toString()); setSidebarOpen(false) }}
-                                >
-                                    <span>{cat.name}</span>
-                                    <span className="count-badge">{categoryCounts[cat.id] || 0}</span>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, ml: 'auto' }}>
+                        {/* Mobile filter button */}
+                        <IconButton onClick={() => setSidebarOpen(true)} sx={{ display: { md: 'none' } }}>
+                            <FilterListIcon />
+                        </IconButton>
+                        <IconButton onClick={() => setOnlyFavorites(!onlyFavorites)} color={onlyFavorites ? 'error' : 'default'} size="small">
+                            {onlyFavorites ? <FavoriteIcon fontSize="small" /> : <FavoriteBorderIcon fontSize="small" />}
+                        </IconButton>
+                        <IconButton onClick={toggleCart} size="small">
+                            <Badge badgeContent={cartTotalItems} color="error">
+                                <ShoppingCartIcon fontSize="small" />
+                            </Badge>
+                        </IconButton>
+                    </Box>
+                </Toolbar>
+            </AppBar>
 
-                    {/* Price Range – Modern Slider with filled track */}
-                    <div className="filter-group">
-                        <h3 className="filter-title">Precio</h3>
-                        <div className="price-range-container">
-                            <div className="price-slider-wrapper">
-                                {/* Custom track background that fills only the selected range */}
-                                <div
-                                    className="price-track-fill"
-                                    style={{
-                                        left: `${((priceRange[0] - priceBounds.min) / (priceBounds.max - priceBounds.min)) * 100}%`,
-                                        width: `${((priceRange[1] - priceRange[0]) / (priceBounds.max - priceBounds.min)) * 100}%`,
-                                    }}
-                                />
-                                <input
-                                    type="range"
-                                    className="price-slider"
-                                    min={priceBounds.min}
-                                    max={priceBounds.max}
-                                    step={1}
-                                    value={priceRange[0]}
-                                    onChange={(e) => {
-                                        const val = Math.min(Number(e.target.value), priceRange[1] - 1)
-                                        setPriceRange([val, priceRange[1]])
-                                    }}
-                                />
-                                <input
-                                    type="range"
-                                    className="price-slider"
-                                    min={priceBounds.min}
-                                    max={priceBounds.max}
-                                    step={1}
-                                    value={priceRange[1]}
-                                    onChange={(e) => {
-                                        const val = Math.max(Number(e.target.value), priceRange[0] + 1)
-                                        setPriceRange([priceRange[0], val])
-                                    }}
-                                />
-                            </div>
-                            <div className="price-labels">
-                                <span className="price-label-value">${priceRange[0].toLocaleString()}</span>
-                                <span className="price-label-sep">—</span>
-                                <span className="price-label-value">${priceRange[1].toLocaleString()}</span>
-                            </div>
-                        </div>
-                    </div>
+            <Box sx={{ display: 'flex', flex: 1 }}>
+                {/* Mobile overlay for sidebar */}
+                {sidebarOpen && (
+                    <Box sx={{ position: 'fixed', inset: 0, bgcolor: 'rgba(0,0,0,0.5)', zIndex: 998, display: { md: 'none' } }} onClick={() => setSidebarOpen(false)} />
+                )}
 
-                    {/* Promotions Switch – Improved */}
-                    <div className="filter-group">
-                        <h3 className="filter-title">Ofertas</h3>
-                        <div
-                            className={`switch-container ${onlyPromo ? 'active' : ''}`}
-                            onClick={() => setOnlyPromo(!onlyPromo)}
-                        >
-                            <span className="switch-label">
-                                <span className="switch-icon">{onlyPromo ? '🏷️' : '📋'}</span>
-                                Solo en promoción
-                            </span>
-                            <div className={`switch-track ${onlyPromo ? 'active' : ''}`}>
-                                <div className={`switch-thumb ${onlyPromo ? 'active' : ''}`} />
-                            </div>
-                        </div>
-                    </div>
+                {/* Desktop sidebar */}
+                <Drawer
+                    variant="permanent"
+                    sx={{
+                        display: { xs: 'none', md: 'block' },
+                        width: 280,
+                        flexShrink: 0,
+                        '& .MuiDrawer-paper': {
+                            width: 280,
+                            boxSizing: 'border-box',
+                            borderRight: 1,
+                            borderColor: 'divider',
+                            bgcolor: 'background.default',
+                            position: 'static',
+                        },
+                    }}
+                >
+                    {sidebarContent}
+                </Drawer>
 
-                    {/* Favorites Switch */}
-                    <div className="filter-group">
-                        <h3 className="filter-title">Favoritos</h3>
-                        <div
-                            className={`switch-container ${onlyFavorites ? 'active' : ''}`}
-                            onClick={() => setOnlyFavorites(!onlyFavorites)}
-                        >
-                            <span className="switch-label">
-                                <span className="switch-icon">{onlyFavorites ? '❤️' : '🤍'}</span>
-                                Solo mis favoritos
-                            </span>
-                            <div className={`switch-track ${onlyFavorites ? 'active' : ''}`}>
-                                <div className={`switch-thumb ${onlyFavorites ? 'active' : ''}`} />
-                            </div>
-                        </div>
-                    </div>
+                {/* Mobile sidebar drawer */}
+                <Drawer
+                    variant="temporary"
+                    open={sidebarOpen}
+                    onClose={() => setSidebarOpen(false)}
+                    sx={{ display: { xs: 'block', md: 'none' }, '& .MuiDrawer-paper': { width: 280 } }}
+                >
+                    {sidebarContent}
+                </Drawer>
 
-                    <button className="clear-btn" onClick={clearFilters}>
-                        Limpiar filtros
-                    </button>
-                </aside>
-
-                <section className="catalog-content">
-                    {/* Mobile Horizontal Category Chips */}
-                    <div className="mobile-category-scroll">
-                        <button
-                            className={`category-chip ${selectedCategory === 'all' ? 'active' : ''}`}
-                            onClick={() => setSelectedCategory('all')}
-                        >
-                            🏷️ Todos
-                        </button>
+                {/* Content */}
+                <Box sx={{ flex: 1, p: { xs: 2, md: 3.5 }, bgcolor: 'background.default', overflow: 'hidden' }}>
+                    {/* Mobile Category Chips */}
+                    <Box sx={{ display: { xs: 'flex', md: 'none' }, gap: 1, overflowX: 'auto', pb: 1.5, mb: 1.5, '&::-webkit-scrollbar': { display: 'none' } }}>
+                        <Chip label="🏷️ Todos" onClick={() => setSelectedCategory('all')} color={selectedCategory === 'all' ? 'primary' : 'default'} variant={selectedCategory === 'all' ? 'filled' : 'outlined'} size="small" sx={{ borderRadius: 20, flexShrink: 0 }} />
                         {categories.map(cat => (
-                            <button
-                                key={cat.id}
-                                className={`category-chip ${selectedCategory === cat.id.toString() ? 'active' : ''}`}
-                                onClick={() => setSelectedCategory(cat.id.toString())}
-                            >
-                                {cat.name === 'Ropa' ? '👕' : cat.name === 'Calzado' ? '👟' : cat.name === 'Accesorios' ? '👜' : '📦'} {cat.name}
-                            </button>
+                            <Chip key={cat.id} label={`${cat.name === 'Ropa' ? '👕' : cat.name === 'Calzado' ? '👟' : '📦'} ${cat.name}`} onClick={() => setSelectedCategory(cat.id.toString())} color={selectedCategory === cat.id.toString() ? 'primary' : 'default'} variant={selectedCategory === cat.id.toString() ? 'filled' : 'outlined'} size="small" sx={{ borderRadius: 20, flexShrink: 0 }} />
                         ))}
-                    </div>
+                    </Box>
 
-                    <div className="content-header">
-                        <div style={{ fontWeight: '700' }}>{filteredProducts.length} productos</div>
-                        <div style={{ fontSize: '13px', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <button
-                                className="btn btn-secondary"
-                                style={{ display: 'none', padding: '6px 12px', fontSize: '13px', alignItems: 'center', gap: '6px', borderRadius: '20px' }}
-                                onClick={() => setSidebarOpen(true)}
-                                id="mobile-filter-btn-2"
-                            >
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" style={{ width: '16px', height: '16px' }}>
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 13.5V3.75m0 9.75a1.5 1.5 0 010 3m0-3a1.5 1.5 0 000 3m0 0V21m6-7.5V3.75m0 9.75a1.5 1.5 0 010 3m0-3a1.5 1.5 0 000 3m0 0V21m6-9V3.75m0 9a1.5 1.5 0 010 3m0-3a1.5 1.5 0 000 3m0 0V21" />
-                                </svg>
-                                Filtrar {hasActiveFilters ? '✓' : ''}
-                            </button>
-                            Ordenar: <select className="sort-select"><option>Destacados</option></select>
-                        </div>
-                    </div>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2.5 }}>
+                        <Typography sx={{ fontWeight: 700, fontSize: { xs: '0.875rem', md: '1rem' } }}>{filteredProducts.length} productos</Typography>
+                        <Typography variant="caption" color="text.disabled">Ordenar: <strong>Destacados</strong></Typography>
+                    </Box>
 
-                    <div className="product-grid">
+                    <Box sx={{
+                        display: 'grid',
+                        gridTemplateColumns: {
+                            xs: 'repeat(2, 1fr)',
+                            sm: 'repeat(auto-fill, minmax(200px, 1fr))',
+                            md: 'repeat(auto-fill, minmax(240px, 1fr))',
+                        },
+                        gap: { xs: 1.5, md: 2.75 },
+                    }}>
                         {filteredProducts.map(product => {
                             const discount = product.promo_price ? Math.round(((product.price - product.promo_price) / product.price) * 100) : null
                             const isSoldOut = product.stock <= 0
 
                             return (
-                                <div key={product.id} className="product-card" style={{ opacity: isSoldOut ? 0.6 : 1, position: 'relative' }}>
+                                <Card
+                                    key={product.id}
+                                    sx={{
+                                        position: 'relative',
+                                        opacity: isSoldOut ? 0.6 : 1,
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        transition: 'box-shadow 0.25s cubic-bezier(0.4, 0, 0.2, 1), transform 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
+                                        '&:hover': {
+                                            transform: { xs: 'none', md: 'translateY(-6px)' },
+                                            boxShadow: { xs: 1, md: 6 },
+                                        },
+                                    }}
+                                >
                                     {isSoldOut ? (
-                                        <div className="badge" style={{ background: 'var(--error)' }}>Agotado</div>
-                                    ) : (
-                                        product.promo_price && <div className="badge">Oferta</div>
+                                        <Chip label="Agotado" size="small" color="error" sx={{ position: 'absolute', top: 1, left: 1, zIndex: 1, fontWeight: 700 }} />
+                                    ) : product.promo_price && (
+                                        <Chip label="Oferta" size="small" color="primary" sx={{ position: 'absolute', top: 1, left: 1, zIndex: 1, fontWeight: 700 }} />
                                     )}
 
-                                    {/* Botón Carrito sobre la imagen 🛒 */}
-                                    {!isSoldOut && (
-                                        <button
-                                            className="cart-overlay-btn"
-                                            onClick={(e) => { e.stopPropagation(); addToCart(product); }}
-                                            aria-label="Agregar al carrito"
-                                        >
-                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" style={{ width: '20px', height: '20px' }}>
-                                                <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 00-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 00-16.536-1.84M7.5 14.25L5.106 5.272M6 20.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm12.75 0a.75.75 0 11-1.5 0 .75.75 0 011.5 0z" />
-                                            </svg>
-                                        </button>
-                                    )}
-
-                                    {/* Botón Favorito Floating ❤️ */}
-                                    <button
-                                        className={`fav-btn ${favorites.includes(product.id) ? 'active' : ''}`}
+                                    <IconButton
                                         onClick={(e) => toggleFavorite(product.id, e)}
-                                        aria-label="Agregar a favoritos"
+                                        sx={{
+                                            position: 'absolute',
+                                            top: 1,
+                                            right: 1,
+                                            zIndex: 3,
+                                            color: favorites.includes(product.id) ? '#ef5350' : 'text.secondary',
+                                            bgcolor: 'background.paper',
+                                            boxShadow: 1,
+                                            '&:hover': { bgcolor: 'background.paper', transform: 'scale(1.15)' },
+                                            width: { xs: 32, md: 36 },
+                                            height: { xs: 32, md: 36 },
+                                        }}
+                                        size="small"
                                     >
-                                        <svg xmlns="http://www.w3.org/2000/svg" fill={favorites.includes(product.id) ? '#ef5350' : 'none'} viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" style={{ width: '18px', height: '18px' }}>
-                                            <path strokeLinecap="round" strokeLinejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
-                                        </svg>
-                                    </button>
+                                        {favorites.includes(product.id) ? <FavoriteIcon sx={{ fontSize: { xs: 16, md: 20 } }} /> : <FavoriteBorderIcon sx={{ fontSize: { xs: 16, md: 20 } }} />}
+                                    </IconButton>
 
-                                    <div className="img-wrapper" style={{ filter: isSoldOut ? 'grayscale(100%)' : 'none' }}>
-                                        {product.image_url ? (
-                                            <img src={product.image_url} alt={product.name} className="product-img" />
-                                        ) : (
-                                            <div style={{ fontSize: '40px' }}>📦</div>
-                                        )}
-                                    </div>
-                                    <div className="item-cat">{categories.find(c => c.id === product.category_id)?.name}</div>
-                                    <h4 className="item-name" style={{
-                                        textDecoration: isSoldOut ? 'line-through' : 'none',
-                                        color: isSoldOut ? 'var(--text-muted)' : 'var(--text-primary)'
-                                    }}>{product.name}</h4>
-
-                                    <div className="price-line">
-                                        <span className="curr-price">${(product.promo_price || product.price).toLocaleString()}</span>
-                                        {product.promo_price && (
-                                            <>
-                                                <span className="old-price">${product.price.toLocaleString()}</span>
-                                                <span className="discount">-{discount}%</span>
-                                            </>
-                                        )}
-                                    </div>
-
-                                    <div style={{
-                                        fontSize: '12px',
-                                        color: isSoldOut ? 'var(--error)' : 'var(--text-muted)',
-                                        marginBottom: '15px',
-                                        fontWeight: '600',
+                                    <Box sx={{
+                                        height: { xs: 140, sm: 160, md: 190 },
                                         display: 'flex',
                                         alignItems: 'center',
-                                        gap: '4px'
+                                        justifyContent: 'center',
+                                        bgcolor: 'background.default',
+                                        borderTopLeftRadius: 1,
+                                        borderTopRightRadius: 1,
+                                        position: 'relative',
+                                        filter: isSoldOut ? 'grayscale(100%)' : 'none',
                                     }}>
-                                        <span style={{
-                                            width: '8px',
-                                            height: '8px',
-                                            borderRadius: '50%',
-                                            background: isSoldOut ? 'var(--error)' : (product.stock < 5 ? 'var(--warning)' : 'var(--success)')
-                                        }}></span>
-                                        {isSoldOut ? 'Producto Agotado' : `Disponibles: ${product.stock} unidades`}
-                                    </div>
+                                        {product.image_url ? (
+                                            <Box component="img" src={product.image_url} alt={product.name} sx={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain', p: 1 }} />
+                                        ) : (
+                                            <Box sx={{ fontSize: { xs: '2rem', md: '2.5rem' } }}>📦</Box>
+                                        )}
 
-                                    {isSoldOut && (
-                                        <button className="buy-btn" style={{ background: 'var(--border)', color: 'var(--text-muted)', cursor: 'not-allowed', boxShadow: 'none', border: 'none', width: '100%' }} disabled>
-                                            Sin Stock
-                                        </button>
-                                    )}
-                                </div>
+                                        {!isSoldOut && (
+                                            <IconButton
+                                                onClick={(e) => { e.stopPropagation(); addToCart(product); }}
+                                                sx={{
+                                                    position: 'absolute',
+                                                    bottom: 1,
+                                                    right: 1,
+                                                    bgcolor: 'background.paper',
+                                                    boxShadow: 2,
+                                                    opacity: 0.85,
+                                                    width: { xs: 30, md: 36 },
+                                                    height: { xs: 30, md: 36 },
+                                                    '&:hover': { bgcolor: 'primary.main', color: 'white', opacity: 1, transform: 'scale(1.12)' },
+                                                }}
+                                                size="small"
+                                            >
+                                                <ShoppingCartIcon sx={{ fontSize: { xs: 14, md: 18 } }} />
+                                            </IconButton>
+                                        )}
+                                    </Box>
+
+                                    <CardContent sx={{ p: { xs: 1.5, md: 2 }, display: 'flex', flexDirection: 'column', flex: 1, '&:last-child': { pb: { xs: 1.5, md: 2 } } }}>
+                                        <Typography variant="caption" color="primary.main" sx={{ fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', mb: 0.5, fontSize: { xs: '0.625rem', md: '0.75rem' } }}>
+                                            {categories.find(c => c.id === product.category_id)?.name}
+                                        </Typography>
+                                        <Typography variant="body2" sx={{
+                                            fontWeight: 600,
+                                            mb: 1,
+                                            display: '-webkit-box',
+                                            WebkitLineClamp: 2,
+                                            WebkitBoxOrient: 'vertical',
+                                            overflow: 'hidden',
+                                            minHeight: { xs: 32, md: 40 },
+                                            lineHeight: 1.35,
+                                            textDecoration: isSoldOut ? 'line-through' : 'none',
+                                            color: isSoldOut ? 'text.disabled' : 'text.primary',
+                                            fontSize: { xs: '0.8125rem', md: '0.875rem' },
+                                        }}>
+                                            {product.name}
+                                        </Typography>
+
+                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5, flexWrap: 'wrap' }}>
+                                            <Typography sx={{
+                                                fontWeight: 800,
+                                                fontSize: { xs: '0.9375rem', md: '1.125rem' },
+                                                background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+                                                WebkitBackgroundClip: 'text',
+                                                WebkitTextFillColor: 'transparent',
+                                                backgroundClip: 'text',
+                                            }}>
+                                                ${(product.promo_price || product.price).toLocaleString()}
+                                            </Typography>
+                                            {product.promo_price && (
+                                                <>
+                                                    <Typography variant="caption" sx={{ textDecoration: 'line-through', color: 'text.disabled', fontSize: { xs: '0.625rem', md: '0.75rem' } }}>
+                                                        ${product.price.toLocaleString()}
+                                                    </Typography>
+                                                    <Typography variant="caption" sx={{ fontWeight: 700, fontSize: { xs: '0.625rem', md: '0.75rem' }, background: 'linear-gradient(135deg, #f59e0b, #d97706)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+                                                        -{discount}%
+                                                    </Typography>
+                                                </>
+                                            )}
+                                        </Box>
+
+                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 1.5, mt: 'auto' }}>
+                                            <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: isSoldOut ? 'error.main' : (product.stock < 5 ? 'warning.main' : 'success.main'), flexShrink: 0 }} />
+                                            <Typography variant="caption" color={isSoldOut ? 'error.main' : 'text.disabled'} sx={{ fontWeight: 600, fontSize: { xs: '0.625rem', md: '0.75rem' } }}>
+                                                {isSoldOut ? 'Agotado' : `Disponibles: ${product.stock} u.`}
+                                            </Typography>
+                                        </Box>
+
+                                        {isSoldOut ? (
+                                            <Button variant="contained" disabled fullWidth sx={{ bgcolor: 'action.disabledBackground', fontSize: { xs: '0.75rem', md: '0.875rem' }, py: { xs: 0.75, md: 1 } }}>
+                                                Sin Stock
+                                            </Button>
+                                        ) : (
+                                            <Button variant="contained" fullWidth onClick={(e) => { e.stopPropagation(); addToCart(product); }} sx={{ mt: 'auto', fontSize: { xs: '0.75rem', md: '0.875rem' }, py: { xs: 0.75, md: 1 } }}>
+                                                Carrito
+                                            </Button>
+                                        )}
+                                    </CardContent>
+                                </Card>
                             )
                         })}
-                    </div>
+                    </Box>
 
                     {filteredProducts.length === 0 && (
-                        <div style={{
-                            textAlign: 'center',
-                            padding: '60px 20px',
-                            background: 'var(--background)',
-                            borderRadius: '12px',
-                            border: '1px dashed var(--border)',
-                            display: 'flex',
-                            flexDirection: 'column',
-                            alignItems: 'center',
-                            gap: '12px',
-                            width: '100%',
-                            boxSizing: 'border-box',
-                            margin: '30px 0',
-                            gridColumn: '1 / -1'
-                        }}>
-                            <div style={{ fontSize: '54px', animation: 'float 3s ease-in-out infinite' }}>🔍</div>
-                            <h3 style={{ margin: '0', fontSize: '18px', fontWeight: '700', color: 'var(--text-primary)' }}>No se encontraron productos</h3>
-                            <p style={{ margin: '0', color: 'var(--text-secondary)', fontSize: '14px', maxWidth: '340px', lineHeight: '1.5' }}>
+                        <Box sx={{ textAlign: 'center', py: 7.5, px: 2.5, bgcolor: 'background.default', borderRadius: 2, border: '1px dashed', borderColor: 'divider', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1.5 }}>
+                            <Box sx={{ fontSize: '3.375rem' }}>🔍</Box>
+                            <Typography variant="h6" sx={{ fontWeight: 700 }}>No se encontraron productos</Typography>
+                            <Typography variant="body2" color="text.secondary" sx={{ maxWidth: 340 }}>
                                 Prueba cambiando de categoría, buscando otros términos o desactivando los filtros activos.
-                            </p>
+                            </Typography>
                             {hasActiveFilters && (
-                                <button
-                                    className="btn btn-secondary"
-                                    style={{ marginTop: '12px', padding: '10px 20px', fontSize: '13px', borderRadius: '30px', fontWeight: '600' }}
-                                    onClick={clearFilters}
-                                >
+                                <Button variant="outlined" onClick={clearFilters} sx={{ mt: 1, borderRadius: 20 }}>
                                     Restablecer Búsqueda
-                                </button>
+                                </Button>
                             )}
-                        </div>
+                        </Box>
                     )}
-                </section>
-            </main>
+                </Box>
+            </Box>
 
-            <footer className="catalog-footer">
-                <p>&copy; {new Date().getFullYear()} {store.name}. Todos los derechos reservados.</p>
-                <div className="powered">Powered by OSDOSOFT</div>
-            </footer>
+            {/* Footer */}
+            <Box sx={{ py: 2, px: { xs: 2, md: 3.5 }, borderTop: 1, borderColor: 'divider', textAlign: 'center', bgcolor: 'background.paper' }}>
+                <Typography variant="caption" color="text.disabled">
+                    &copy; {new Date().getFullYear()} {store.name}. Todos los derechos reservados.
+                </Typography>
+                <Typography variant="caption" sx={{ display: 'block', fontWeight: 600, background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+                    Powered by OSDOSOFT
+                </Typography>
+            </Box>
 
             {/* Floating Cart Button */}
             {cart.length > 0 && (
-                <button
+                <Fab
+                    color="success"
                     onClick={toggleCart}
-                    style={{
+                    sx={{
                         position: 'fixed',
-                        bottom: '24px',
-                        right: '24px',
-                        background: '#4caf50',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '50%',
-                        width: '60px',
-                        height: '60px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        cursor: 'pointer',
-                        boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
+                        bottom: { xs: 16, md: 24 },
+                        right: { xs: 16, md: 24 },
                         zIndex: 999,
-                        transition: 'all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)'
+                        width: { xs: 50, md: 60 },
+                        height: { xs: 50, md: 60 },
+                        boxShadow: 3,
+                        animation: 'cart-bounce 2.5s infinite ease-in-out',
+                        '@keyframes cart-bounce': {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-8px)' },
+                        },
+                        '&:hover': { animation: 'none', transform: 'scale(1.1) translateY(-5px)' },
                     }}
-                    className="floating-cart"
                 >
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" style={{ width: '28px', height: '28px' }}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007zM8.625 10.5a.375.375 0 11-.75 0 .375.375 0 01.75 0zm7.5 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
-                    </svg>
-                    <span style={{
-                        position: 'absolute',
-                        top: '-2px',
-                        right: '-2px',
-                        background: '#ef5350',
-                        color: 'white',
-                        borderRadius: '50%',
-                        width: '24px',
-                        height: '24px',
-                        fontSize: '12px',
-                        fontWeight: '700',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        border: '2px solid white',
-                        boxShadow: '0 2px 5px rgba(0,0,0,0.2)'
-                    }}>
-                        {cartTotalItems}
-                    </span>
-                </button>
+                    <Badge badgeContent={cartTotalItems} color="error">
+                        <ShoppingCartIcon />
+                    </Badge>
+                </Fab>
             )}
 
             {/* Cart Drawer */}
-            <div
-                style={{
-                    position: 'fixed',
-                    top: 0,
-                    right: cartOpen ? 0 : '-420px',
-                    width: '100%',
-                    maxWidth: '420px',
-                    height: '100vh',
-                    background: 'var(--surface)',
-                    boxShadow: '-4px 0 20px rgba(0,0,0,0.15)',
-                    zIndex: 1000,
-                    transition: 'right 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    backdropFilter: 'blur(10px)'
-                }}
+            <Drawer
+                anchor="right"
+                open={cartOpen}
+                onClose={toggleCart}
+                PaperProps={{ sx: { width: '100%', maxWidth: 420 } }}
             >
-                {/* Header */}
-                <div style={{ padding: '20px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <h3 style={{ margin: 0, fontSize: '18px', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        🛒 Mi Carrito <span style={{ fontSize: '13px', background: 'var(--primary-color)', color: 'white', padding: '2px 8px', borderRadius: '12px' }}>{cartTotalItems}</span>
-                    </h3>
-                    <button
-                        onClick={toggleCart}
-                        style={{ background: 'none', border: 'none', fontSize: '24px', cursor: 'pointer', color: 'var(--text-secondary)' }}
-                    >
-                        &times;
-                    </button>
-                </div>
+                <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+                    <Box sx={{ p: { xs: 2, md: 2.5 }, borderBottom: 1, borderColor: 'divider', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <Typography variant="h6" sx={{ fontWeight: 700, display: 'flex', alignItems: 'center', gap: 1, fontSize: { xs: '1rem', md: '1.25rem' } }}>
+                            🛒 Mi Carrito
+                            <Chip label={cartTotalItems} size="small" color="primary" sx={{ fontWeight: 700 }} />
+                        </Typography>
+                        <IconButton onClick={toggleCart} size="small"><CloseIcon /></IconButton>
+                    </Box>
 
-                {/* Items List */}
-                <div style={{ flex: 1, overflowY: 'auto', padding: '20px' }}>
-                    {cart.length === 0 ? (
-                        <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-muted)' }}>
-                            <div style={{ fontSize: '48px', marginBottom: '16px' }}>🛒</div>
-                            <p>Tu carrito está vacío</p>
-                            <button
-                                className="btn btn-primary"
-                                style={{ marginTop: '12px' }}
-                                onClick={toggleCart}
-                            >
-                                Seguir explorando
-                            </button>
-                        </div>
-                    ) : (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                            {cart.map((item, idx) => {
-                                const price = item.promo_price || item.price
-                                return (
-                                    <div key={`${item.id}-${item.selected_size}-${idx}`} style={{ display: 'flex', gap: '12px', paddingBottom: '16px', borderBottom: '1px solid var(--border)' }}>
-                                        <div style={{ width: '60px', height: '60px', borderRadius: '6px', overflow: 'hidden', background: 'var(--background)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                                            {item.image_url ? (
-                                                <img src={item.image_url} alt={item.name} style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
-                                            ) : (
-                                                <span style={{ fontSize: '24px' }}>📦</span>
-                                            )}
-                                        </div>
-                                        <div style={{ flex: 1 }}>
-                                            <h4 style={{ margin: '0 0 4px 0', fontSize: '14px', fontWeight: '600', color: 'var(--text-primary)' }}>{item.name}</h4>
-                                            {item.selected_size && (
-                                                <span style={{ display: 'inline-block', fontSize: '11px', background: 'var(--background)', border: '1px solid var(--border)', padding: '2px 8px', borderRadius: '12px', color: 'var(--text-secondary)', marginBottom: '8px', fontWeight: '600' }}>
-                                                    Talla: {item.selected_size}
-                                                </span>
-                                            )}
-                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                                <span style={{ fontSize: '14px', fontWeight: '700', color: 'var(--primary-dark)' }}>
-                                                    ${(price * item.quantity).toLocaleString()}
-                                                </span>
-                                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', border: '1px solid var(--border)', borderRadius: '20px', padding: '2px 8px', background: 'var(--background)' }}>
-                                                    <button
-                                                        onClick={() => updateCartItemQty(item.id, item.selected_size, -1)}
-                                                        style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '14px', fontWeight: '700', color: 'var(--text-secondary)' }}
-                                                    >
-                                                        -
-                                                    </button>
-                                                    <span style={{ fontSize: '13px', fontWeight: '700', minWidth: '16px', textAlign: 'center' }}>
-                                                        {item.quantity}
-                                                    </span>
-                                                    <button
-                                                        onClick={() => updateCartItemQty(item.id, item.selected_size, 1)}
-                                                        style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '14px', fontWeight: '700', color: 'var(--text-secondary)' }}
-                                                        disabled={item.quantity >= item.stock}
-                                                    >
-                                                        +
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <button
-                                            onClick={() => removeCartItem(item.id, item.selected_size)}
-                                            style={{ background: 'none', border: 'none', cursor: 'pointer', alignSelf: 'center', color: '#ef5350' }}
-                                            aria-label="Eliminar artículo"
-                                        >
-                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" style={{ width: '18px', height: '18px' }}>
-                                                <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
-                                            </svg>
-                                        </button>
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    )}
-                </div>
+                    <Box sx={{ flex: 1, overflowY: 'auto', p: { xs: 2, md: 2.5 } }}>
+                        {cart.length === 0 ? (
+                            <Box sx={{ textAlign: 'center', py: 5, color: 'text.disabled' }}>
+                                <Box sx={{ fontSize: '3rem', mb: 2 }}>🛒</Box>
+                                <Typography>Tu carrito está vacío</Typography>
+                                <Button variant="contained" onClick={toggleCart} sx={{ mt: 1.5 }}>Seguir explorando</Button>
+                            </Box>
+                        ) : (
+                            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                                {cart.map((item, idx) => {
+                                    const price = item.promo_price || item.price
+                                    return (
+                                        <Box key={`${item.id}-${item.selected_size}-${idx}`} sx={{ display: 'flex', gap: 1.5, pb: 2, borderBottom: 1, borderColor: 'divider' }}>
+                                            <Box sx={{ width: 60, height: 60, borderRadius: 1, overflow: 'hidden', bgcolor: 'background.default', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                                                {item.image_url ? (
+                                                    <Box component="img" src={item.image_url} alt={item.name} sx={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
+                                                ) : (
+                                                    <Box sx={{ fontSize: '1.5rem' }}>📦</Box>
+                                                )}
+                                            </Box>
+                                            <Box sx={{ flex: 1, minWidth: 0 }}>
+                                                <Typography variant="body2" sx={{ fontWeight: 600, mb: 0.5 }}>{item.name}</Typography>
+                                                {item.selected_size && (
+                                                    <Chip label={`Talla: ${item.selected_size}`} size="small" variant="outlined" sx={{ fontWeight: 600, fontSize: '0.6875rem', mb: 1 }} />
+                                                )}
+                                                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                    <Typography variant="body2" sx={{ fontWeight: 700, color: 'primary.dark' }}>
+                                                        ${(price * item.quantity).toLocaleString()}
+                                                    </Typography>
+                                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, border: 1, borderColor: 'divider', borderRadius: 20, px: 1, bgcolor: 'background.default' }}>
+                                                        <IconButton size="small" onClick={() => updateCartItemQty(item.id, item.selected_size, -1)}><RemoveIcon fontSize="small" /></IconButton>
+                                                        <Typography sx={{ fontWeight: 700, minWidth: 16, textAlign: 'center', fontSize: '0.8125rem' }}>{item.quantity}</Typography>
+                                                        <IconButton size="small" onClick={() => updateCartItemQty(item.id, item.selected_size, 1)} disabled={item.quantity >= item.stock}><AddIcon fontSize="small" /></IconButton>
+                                                    </Box>
+                                                </Box>
+                                            </Box>
+                                            <IconButton size="small" onClick={() => removeCartItem(item.id, item.selected_size)} sx={{ color: 'error.main', alignSelf: 'center' }}>
+                                                <DeleteIcon fontSize="small" />
+                                            </IconButton>
+                                        </Box>
+                                    )
+                                })}
+                            </Box>
+                        )}
+                    </Box>
 
-                {/* Footer / Summary */}
-                {cart.length > 0 && (
-                    <div style={{ padding: '20px', borderTop: '1px solid var(--border)', background: 'var(--background)' }}>
-                        <div style={{ marginBottom: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                            <div>
-                                <label style={{ display: 'block', fontSize: '12px', fontWeight: '700', color: 'var(--text-secondary)', marginBottom: '6px' }}>Nombre completo *</label>
-                                <input
-                                    type="text"
+                    {cart.length > 0 && (
+                        <Box sx={{ p: { xs: 2, md: 2.5 }, borderTop: 1, borderColor: 'divider', bgcolor: 'background.default' }}>
+                            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, mb: 2 }}>
+                                <TextField
+                                    size="small"
+                                    label="Nombre completo *"
                                     placeholder="Ej. Juan Pérez"
                                     value={customerName}
                                     onChange={(e) => setCustomerName(e.target.value)}
-                                    style={{ width: '100%', padding: '10px 12px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--text-primary)', fontSize: '13px', boxSizing: 'border-box' }}
+                                    fullWidth
                                 />
-                            </div>
-                            <div>
-                                <label style={{ display: 'block', fontSize: '12px', fontWeight: '700', color: 'var(--text-secondary)', marginBottom: '6px' }}>Teléfono móvil (opcional)</label>
-                                <input
-                                    type="tel"
+                                <TextField
+                                    size="small"
+                                    label="Teléfono móvil (opcional)"
                                     placeholder="Ej. +34 600 000 000"
                                     value={customerPhone}
                                     onChange={(e) => setCustomerPhone(e.target.value)}
-                                    style={{ width: '100%', padding: '10px 12px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--text-primary)', fontSize: '13px', boxSizing: 'border-box' }}
+                                    fullWidth
                                 />
-                            </div>
-                        </div>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', paddingTop: '10px', borderTop: '1px solid var(--border-light)' }}>
-                            <span style={{ fontSize: '14px', color: 'var(--text-secondary)', fontWeight: '600' }}>Total a pagar:</span>
-                            <span style={{ fontSize: '20px', fontWeight: '800', color: 'var(--primary-dark)' }}>
-                                ${cartSubtotal.toLocaleString()}
-                            </span>
-                        </div>
-                        <button
-                            onClick={handleCheckout}
-                            className="btn btn-primary"
-                            style={{ width: '100%', padding: '14px', fontSize: '15px', fontWeight: '700', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', background: '#25D366', borderColor: '#25D366', color: 'white', cursor: 'pointer', boxShadow: '0 4px 10px rgba(37, 211, 102, 0.3)' }}
-                        >
-                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16" style={{ marginRight: '4px' }}>
-                                <path d="M13.601 2.326A7.854 7.854 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.933 7.933 0 0 0 3.79.949h.004c4.368 0 7.926-3.558 7.93-7.93a7.896 7.896 0 0 0-2.33-5.593l.04-.025zM7.994 14.521a6.573 6.573 0 0 1-3.356-.92l-.24-.144-2.494.654.666-2.433-.156-.251a6.56 6.56 0 0 1-1.007-3.505c0-3.626 2.957-6.584 6.591-6.584a6.56 6.56 0 0 1 4.66 1.931 6.557 6.557 0 0 1 1.928 4.66c-.004 3.639-2.961 6.592-6.592 6.592zm3.69-4.98c-.202-.101-1.202-.594-1.392-.66-.189-.07-.327-.101-.466.101-.138.2-.536.66-.657.798-.12.137-.24.153-.442.052-1.92-.958-3.08-2.074-3.8-3.32-.202-.349.202-.324.577-1.072.077-.153.038-.288-.019-.389-.058-.1-.466-1.121-.639-1.543-.169-.408-.34-.352-.466-.358-.121-.006-.26-.006-.399-.006-.139 0-.365.052-.556.262-.19.201-.728.712-.728 1.74 0 1.026.748 2.017.852 2.158.104.14 1.472 2.25 3.566 3.15.498.214.887.342 1.19.438.502.16 1.002.137 1.38.08.42-.064 1.202-.492 1.373-.962.17-.47.17-.872.12-.962-.05-.09-.19-.14-.39-.241z" />
-                            </svg>
-                            Finalizar pedido por WhatsApp
-                        </button>
-                    </div>
-                )}
-            </div>
+                            </Box>
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2, pt: 1, borderTop: 1, borderColor: 'divider' }}>
+                                <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 600 }}>Total a pagar:</Typography>
+                                <Typography variant="h5" sx={{ fontWeight: 800, color: 'primary.dark' }}>
+                                    ${cartSubtotal.toLocaleString()}
+                                </Typography>
+                            </Box>
+                            <Button
+                                variant="contained"
+                                fullWidth
+                                onClick={handleCheckout}
+                                sx={{
+                                    bgcolor: '#25D366',
+                                    '&:hover': { bgcolor: '#128C7E' },
+                                    py: 1.75,
+                                    fontWeight: 700,
+                                    gap: 1,
+                                }}
+                            >
+                                Finalizar pedido por WhatsApp
+                            </Button>
+                        </Box>
+                    )}
+                </Box>
+            </Drawer>
 
             {/* Size Selection Modal */}
-            {sizeModalProduct && (
-                <div
-                    style={{
-                        position: 'fixed',
-                        top: 0,
-                        left: 0,
-                        width: '100%',
-                        height: '100vh',
-                        background: 'rgba(0,0,0,0.6)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        zIndex: 2000,
-                        backdropFilter: 'blur(4px)',
-                        padding: '16px'
-                    }}
-                >
-                    <div
-                        style={{
-                            background: 'var(--surface)',
-                            border: '1px solid var(--border)',
-                            borderRadius: '12px',
-                            width: '100%',
-                            maxWidth: '400px',
-                            padding: '24px',
-                            boxShadow: '0 10px 25px rgba(0,0,0,0.2)',
-                            position: 'relative'
-                        }}
-                    >
-                        <button
-                            onClick={() => setSizeModalProduct(null)}
-                            style={{
-                                position: 'absolute',
-                                top: '16px',
-                                right: '16px',
-                                background: 'none',
-                                border: 'none',
-                                fontSize: '24px',
-                                cursor: 'pointer',
-                                color: 'var(--text-secondary)'
-                            }}
-                        >
-                            &times;
-                        </button>
-
-                        <h3 style={{ margin: '0 0 8px 0', fontSize: '18px', fontWeight: '700', color: 'var(--text-primary)' }}>Seleccionar Talla</h3>
-                        <p style={{ margin: '0 0 20px 0', fontSize: '14px', color: 'var(--text-secondary)' }}>
-                            Elige una talla para <strong>{sizeModalProduct.name}</strong> antes de agregarlo al carrito.
-                        </p>
-
-                        {(() => {
+            <Dialog
+                open={!!sizeModalProduct}
+                onClose={() => setSizeModalProduct(null)}
+                maxWidth="xs"
+                fullWidth
+                PaperProps={{ sx: { borderRadius: 3 } }}
+            >
+                <DialogTitle sx={{ fontWeight: 700 }}>
+                    Seleccionar Talla
+                </DialogTitle>
+                <DialogContent>
+                    <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                        Elige una talla para <strong>{sizeModalProduct?.name}</strong> antes de agregarlo al carrito.
+                    </Typography>
+                    <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap' }}>
+                        {sizeModalProduct && (() => {
                             const parsedSizes = parseSizes(sizeModalProduct.sizes, sizeModalProduct.stock) || {}
                             const sizeKeys = Object.keys(parsedSizes).filter(Boolean)
-
-                            return (
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '24px' }}>
-                                    <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-                                        {sizeKeys.map(size => {
-                                            const sizeStock = parsedSizes[size] ?? 0
-                                            const isOutOfStock = sizeStock <= 0
-                                            const isSelected = selectedSizeForModal === size
-
-                                            return (
-                                                <button
-                                                    key={size}
-                                                    type="button"
-                                                    onClick={() => !isOutOfStock && setSelectedSizeForModal(size)}
-                                                    disabled={isOutOfStock}
-                                                    style={{
-                                                        minWidth: '60px',
-                                                        height: '48px',
-                                                        padding: '6px 8px',
-                                                        borderRadius: '8px',
-                                                        border: isSelected
-                                                            ? '2px solid #4caf50'
-                                                            : (isOutOfStock ? '1px dashed var(--border)' : '1px solid var(--border)'),
-                                                        background: isSelected
-                                                            ? '#e8f5e9'
-                                                            : (isOutOfStock ? 'rgba(0,0,0,0.03)' : 'var(--surface)'),
-                                                        color: isSelected
-                                                            ? '#2e7d32'
-                                                            : (isOutOfStock ? 'var(--text-muted)' : 'var(--text-primary)'),
-                                                        fontSize: '13px',
-                                                        fontWeight: '700',
-                                                        cursor: isOutOfStock ? 'not-allowed' : 'pointer',
-                                                        transition: 'all 0.2s ease',
-                                                        display: 'flex',
-                                                        flexDirection: 'column',
-                                                        alignItems: 'center',
-                                                        justifyContent: 'center',
-                                                        opacity: isOutOfStock ? 0.5 : 1,
-                                                        position: 'relative'
-                                                    }}
-                                                >
-                                                    <span style={{ fontSize: '13px' }}>{size}</span>
-                                                    <span style={{ fontSize: '9px', fontWeight: '500', marginTop: '2px', color: isSelected ? '#2e7d32' : (isOutOfStock ? 'var(--error)' : 'var(--text-muted)') }}>
-                                                        {isOutOfStock ? 'Agotado' : `${sizeStock} u.`}
-                                                    </span>
-                                                </button>
-                                            )
-                                        })}
-                                    </div>
-                                </div>
-                            )
+                            return sizeKeys.map(size => {
+                                const sizeStock = parsedSizes[size] ?? 0
+                                const isOutOfStock = sizeStock <= 0
+                                const isSelected = selectedSizeForModal === size
+                                return (
+                                    <Chip
+                                        key={size}
+                                        label={<Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', py: 0.5 }}><span>{size}</span><span style={{ fontSize: '0.5625rem', fontWeight: 500, marginTop: 2, color: isSelected ? '#2e7d32' : (isOutOfStock ? '#ef4444' : 'inherit') }}>{isOutOfStock ? 'Agotado' : `${sizeStock} u.`}</span></Box>}
+                                        onClick={() => !isOutOfStock && setSelectedSizeForModal(size)}
+                                        disabled={isOutOfStock}
+                                        color={isSelected ? 'success' : 'default'}
+                                        variant={isSelected ? 'filled' : 'outlined'}
+                                        sx={{ minWidth: 60, height: 'auto', py: 0.5, opacity: isOutOfStock ? 0.5 : 1 }}
+                                    />
+                                )
+                            })
                         })()}
-
-                        <button
-                            onClick={() => addToCart(sizeModalProduct, selectedSizeForModal)}
-                            className="btn btn-primary"
-                            style={{ width: '100%', padding: '12px', fontSize: '14px', fontWeight: '700', borderRadius: '8px', cursor: 'pointer' }}
-                            disabled={!selectedSizeForModal}
-                        >
-                            Confirmar y Agregar
-                        </button>
-                    </div>
-                </div>
-            )}
-        </div>
+                    </Box>
+                </DialogContent>
+                <DialogActions sx={{ px: 3, pb: 3 }}>
+                    <Button
+                        variant="contained"
+                        fullWidth
+                        onClick={() => addToCart(sizeModalProduct, selectedSizeForModal)}
+                        disabled={!selectedSizeForModal}
+                        sx={{ py: 1.5 }}
+                    >
+                        Confirmar y Agregar
+                    </Button>
+                </DialogActions>
+            </Dialog>
+        </Box>
     )
 }
 

@@ -1,5 +1,12 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import Box from '@mui/material/Box'
+import Paper from '@mui/material/Paper'
+import Typography from '@mui/material/Typography'
+import TextField from '@mui/material/TextField'
+import Button from '@mui/material/Button'
+import LinkMui from '@mui/material/Link'
+import Alert from '@mui/material/Alert'
 
 function Login({ onLogin }) {
     const [email, setEmail] = useState('')
@@ -30,7 +37,6 @@ function Login({ onLogin }) {
 
             onLogin(data.user, data.token)
 
-            // Redirect based on role
             if (data.user.role === 'SUPERADMIN') {
                 navigate('/admin/super')
             } else {
@@ -44,52 +50,83 @@ function Login({ onLogin }) {
     }
 
     return (
-        <div className="login-container">
-            <div className="card login-card">
-                <h1>Bienvenido</h1>
-                <p>Inicia sesión en tu panel de control</p>
+        <Box
+            sx={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                minHeight: '100vh',
+                p: 2.5,
+                background: (theme) => theme.palette.mode === 'dark'
+                    ? 'linear-gradient(135deg, #080818 0%, #0f0f28 50%, #080818 100%)'
+                    : 'linear-gradient(135deg, #f5f5ff 0%, #eef2ff 50%, #f5f5ff 100%)',
+            }}
+        >
+            <Paper elevation={3} sx={{ width: '100%', maxWidth: 420, p: 4, borderRadius: 3 }}>
+                <Typography
+                    variant="h4"
+                    sx={{
+                        fontWeight: 800,
+                        textAlign: 'center',
+                        mb: 1,
+                        background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+                        WebkitBackgroundClip: 'text',
+                        WebkitTextFillColor: 'transparent',
+                        backgroundClip: 'text',
+                    }}
+                >
+                    Bienvenido
+                </Typography>
+                <Typography variant="body2" color="text.secondary" textAlign="center" sx={{ mb: 3.5 }}>
+                    Inicia sesión en tu panel de control
+                </Typography>
 
-                {error && <div className="error-message">{error}</div>}
+                {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
 
-                <form onSubmit={handleSubmit}>
-                    <div className="input-group">
-                        <label htmlFor="email">Correo Electrónico</label>
-                        <input
-                            type="email"
-                            id="email"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            placeholder="vendedor@tienda.com"
-                            required
-                        />
-                    </div>
-                    <div className="input-group">
-                        <label htmlFor="password">Contraseña</label>
-                        <input
-                            type="password"
-                            id="password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            placeholder="••••••••"
-                            required
-                        />
-                    </div>
-                    <button
+                <Box component="form" onSubmit={handleSubmit}>
+                    <TextField
+                        fullWidth
+                        label="Correo Electrónico"
+                        type="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        placeholder="vendedor@tienda.com"
+                        required
+                        sx={{ mb: 2 }}
+                    />
+                    <TextField
+                        fullWidth
+                        label="Contraseña"
+                        type="password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        placeholder="••••••••"
+                        required
+                        sx={{ mb: 2.5 }}
+                    />
+                    <Button
                         type="submit"
-                        className="btn btn-primary submit-btn"
+                        variant="contained"
+                        fullWidth
                         disabled={loading}
+                        sx={{ py: 1.5, fontSize: '0.9375rem' }}
                     >
                         {loading ? 'Ingresando...' : 'Ingresar'}
-                    </button>
-                </form>
+                    </Button>
+                </Box>
 
-                <div style={{ textAlign: 'center', marginTop: '16px' }}>
-                    <Link to="/forgot-password" style={{ fontSize: '14px', color: 'var(--primary-dark)' }}>
+                <Box sx={{ textAlign: 'center', mt: 2 }}>
+                    <LinkMui
+                        component={Link}
+                        to="/forgot-password"
+                        variant="body2"
+                        sx={{ color: 'primary.dark', fontWeight: 500 }}
+                    >
                         ¿Olvidaste tu contraseña?
-                    </Link>
-                </div>
-            </div>
-        </div>
+                    </LinkMui>
+                </Box>
+            </Paper>
+        </Box>
     )
 }
 

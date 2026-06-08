@@ -1,5 +1,12 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
+import Box from '@mui/material/Box'
+import Paper from '@mui/material/Paper'
+import Typography from '@mui/material/Typography'
+import TextField from '@mui/material/TextField'
+import Button from '@mui/material/Button'
+import LinkMui from '@mui/material/Link'
+import Alert from '@mui/material/Alert'
 
 function ForgotPassword() {
     const [email, setEmail] = useState('')
@@ -32,7 +39,6 @@ function ForgotPassword() {
             setSent(true)
             setMessage(data.message)
 
-            // If reset_token is returned (no email service configured), store it temporarily
             if (data.reset_token) {
                 sessionStorage.setItem('reset_token', data.reset_token)
                 sessionStorage.setItem('reset_email', data.email)
@@ -46,59 +52,86 @@ function ForgotPassword() {
     }
 
     return (
-        <div className="login-container">
-            <div className="card login-card">
-                <h1>Recuperar Contraseña</h1>
+        <Box
+            sx={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                minHeight: '100vh',
+                p: 2.5,
+                background: (theme) => theme.palette.mode === 'dark'
+                    ? 'linear-gradient(135deg, #080818 0%, #0f0f28 50%, #080818 100%)'
+                    : 'linear-gradient(135deg, #f5f5ff 0%, #eef2ff 50%, #f5f5ff 100%)',
+            }}
+        >
+            <Paper elevation={3} sx={{ width: '100%', maxWidth: 420, p: 4, borderRadius: 3 }}>
+                <Typography variant="h4" sx={{ fontWeight: 800, textAlign: 'center', mb: 1 }}>
+                    Recuperar Contraseña
+                </Typography>
 
                 {!sent ? (
                     <>
-                        <p>Ingresa tu correo electrónico para recibir instrucciones de recuperación</p>
+                        <Typography variant="body2" color="text.secondary" textAlign="center" sx={{ mb: 3 }}>
+                            Ingresa tu correo electrónico para recibir instrucciones de recuperación
+                        </Typography>
 
-                        {error && <div className="error-message">{error}</div>}
-                        {message && <div className="success-message">{message}</div>}
+                        {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+                        {message && <Alert severity="success" sx={{ mb: 2 }}>{message}</Alert>}
 
-                        <form onSubmit={handleSubmit}>
-                            <div className="input-group">
-                                <label htmlFor="email">Correo Electrónico</label>
-                                <input
-                                    type="email"
-                                    id="email"
-                                    value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
-                                    placeholder="vendedor@tienda.com"
-                                    required
-                                />
-                            </div>
-                            <button
+                        <Box component="form" onSubmit={handleSubmit}>
+                            <TextField
+                                fullWidth
+                                label="Correo Electrónico"
+                                type="email"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                placeholder="vendedor@tienda.com"
+                                required
+                                sx={{ mb: 2.5 }}
+                            />
+                            <Button
                                 type="submit"
-                                className="btn btn-primary submit-btn"
+                                variant="contained"
+                                fullWidth
                                 disabled={loading}
+                                sx={{ py: 1.5 }}
                             >
                                 {loading ? 'Enviando...' : 'Enviar Instrucciones'}
-                            </button>
-                        </form>
+                            </Button>
+                        </Box>
                     </>
                 ) : (
-                    <div style={{ textAlign: 'center' }}>
-                        <div className="success-message" style={{ marginTop: '16px' }}>
+                    <Box sx={{ textAlign: 'center' }}>
+                        <Alert severity="success" sx={{ mt: 2, mb: 2 }}>
                             {message || 'Correo enviado exitosamente'}
-                        </div>
-                        <p style={{ marginTop: '16px', fontSize: '14px', color: 'var(--text-secondary)' }}>
+                        </Alert>
+                        <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
                             Revisa tu bandeja de entrada y sigue las instrucciones.
-                        </p>
-                        <Link to="/login" className="btn btn-primary submit-btn" style={{ marginTop: '24px', textDecoration: 'none' }}>
+                        </Typography>
+                        <Button
+                            component={Link}
+                            to="/login"
+                            variant="contained"
+                            fullWidth
+                            sx={{ textDecoration: 'none' }}
+                        >
                             Volver al Inicio de Sesión
-                        </Link>
-                    </div>
+                        </Button>
+                    </Box>
                 )}
 
-                <div style={{ textAlign: 'center', marginTop: '16px' }}>
-                    <Link to="/login" style={{ fontSize: '14px', color: 'var(--primary-dark)' }}>
+                <Box sx={{ textAlign: 'center', mt: 2 }}>
+                    <LinkMui
+                        component={Link}
+                        to="/login"
+                        variant="body2"
+                        sx={{ color: 'primary.dark', fontWeight: 500 }}
+                    >
                         ← Volver al inicio de sesión
-                    </Link>
-                </div>
-            </div>
-        </div>
+                    </LinkMui>
+                </Box>
+            </Paper>
+        </Box>
     )
 }
 

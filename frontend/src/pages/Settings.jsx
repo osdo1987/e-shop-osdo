@@ -2,6 +2,14 @@ import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import AdminLayout from '../components/AdminLayout'
 import { useToast } from '../components/Toast'
+import Box from '@mui/material/Box'
+import Card from '@mui/material/Card'
+import CardContent from '@mui/material/CardContent'
+import Typography from '@mui/material/Typography'
+import TextField from '@mui/material/TextField'
+import Button from '@mui/material/Button'
+import Switch from '@mui/material/Switch'
+import FormControlLabel from '@mui/material/FormControlLabel'
 
 function Settings({ user, onLogout, darkMode, setDarkMode }) {
     const [store, setStore] = useState(null)
@@ -68,158 +76,153 @@ function Settings({ user, onLogout, darkMode, setDarkMode }) {
     return (
         <AdminLayout title="Configuración" user={user} onLogout={onLogout}>
             {store && (
-                <div className="card" style={{ marginBottom: '24px' }}>
-                    <h3 style={{ marginBottom: '16px' }}>Información Pública de la Tienda</h3>
-                    <p style={{ fontSize: '14px', color: 'var(--text-secondary)', marginBottom: '16px' }}>
-                        Configura el WhatsApp para recibir pedidos y el logo que se mostrará en el catálogo.
-                        {store.slug && (
-                            <span style={{ display: 'block', marginTop: '4px' }}>
-                                Catálogo: <a href={`/${store.slug}`} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--primary-color)' }}>
-                                    /{store.slug}
-                                </a>
-                            </span>
-                        )}
-                    </p>
-                    <form onSubmit={handleSaveStoreInfo} style={{ display: 'flex', gap: '12px', alignItems: 'flex-end', flexWrap: 'wrap' }}>
-                        <div className="input-group" style={{ flex: 1, minWidth: '200px', marginBottom: 0 }}>
-                            <label>Número de WhatsApp</label>
-                            <input
-                                type="text"
+                <Card sx={{ mb: 3 }}>
+                    <CardContent sx={{ p: 3, '&:last-child': { pb: 3 } }}>
+                        <Typography variant="h6" sx={{ fontWeight: 700, mb: 1 }}>
+                            Información Pública de la Tienda
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                            Configura el WhatsApp para recibir pedidos y el logo que se mostrará en el catálogo.
+                            {store.slug && (
+                                <Typography component="span" variant="body2" sx={{ display: 'block', mt: 0.5 }}>
+                                    Catálogo: <Link to={`/${store.slug}`} target="_blank" style={{ color: '#6366f1' }}>/{store.slug}</Link>
+                                </Typography>
+                            )}
+                        </Typography>
+                        <Box component="form" onSubmit={handleSaveStoreInfo} sx={{ display: 'flex', gap: 1.5, alignItems: 'flex-end', flexWrap: 'wrap' }}>
+                            <TextField
+                                label="Número de WhatsApp"
                                 value={whatsapp}
                                 onChange={(e) => setWhatsapp(e.target.value)}
                                 placeholder="+573001234567"
                                 required
+                                size="small"
+                                sx={{ flex: 1, minWidth: 200 }}
                             />
-                        </div>
-                        <div className="input-group" style={{ flex: 1, minWidth: '200px', marginBottom: 0 }}>
-                            <label>Logo de la Tienda</label>
-                            <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '8px' }}>
-                                Puedes pegar una URL o subir una imagen desde tu computador
-                            </p>
-                            <input
-                                type="url"
-                                value={logoUrl}
-                                onChange={(e) => setLogoUrl(e.target.value)}
-                                placeholder="https://ejemplo.com/logo.png"
-                                style={{ marginBottom: '8px' }}
-                            />
-                            <label className="image-upload-zone" style={{
-                                border: '2px dashed var(--border)',
-                                borderRadius: '8px',
-                                padding: '16px',
-                                textAlign: 'center',
-                                color: 'var(--text-muted)',
-                                fontSize: '13px',
-                                cursor: 'pointer',
-                                transition: 'all 0.2s',
-                                background: 'var(--background)',
-                                display: 'block'
-                            }}>
-                                📸 Arrastra una imagen aquí o haz clic para seleccionar
-                                <input
-                                    type="file"
-                                    accept="image/*"
-                                    style={{ display: 'none' }}
-                                    onChange={(e) => {
-                                        const file = e.target.files[0]
-                                        if (file) {
-                                            const reader = new FileReader()
-                                            reader.onload = (ev) => {
-                                                setLogoUrl(ev.target.result)
-                                            }
-                                            reader.readAsDataURL(file)
-                                        }
-                                    }}
+                            <Box sx={{ flex: 1, minWidth: 200 }}>
+                                <TextField
+                                    fullWidth
+                                    label="Logo de la Tienda"
+                                    value={logoUrl}
+                                    onChange={(e) => setLogoUrl(e.target.value)}
+                                    placeholder="https://ejemplo.com/logo.png"
+                                    size="small"
+                                    sx={{ mb: 1 }}
                                 />
-                            </label>
-                            {logoUrl && (
-                                <div style={{ marginTop: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                    <img src={logoUrl} alt="Preview logo" style={{ width: '60px', height: '60px', objectFit: 'cover', borderRadius: '4px' }} />
-                                    <button
-                                        type="button"
-                                        className="btn btn-secondary"
-                                        style={{ padding: '4px 8px', fontSize: '12px' }}
-                                        onClick={() => setLogoUrl('')}
-                                    >
-                                        Quitar imagen
-                                    </button>
-                                </div>
-                            )}
-                        </div>
-                        <button
-                            type="submit"
-                            className="btn btn-primary"
-                            disabled={saving}
-                            style={{ whiteSpace: 'nowrap' }}
-                        >
-                            {saving ? 'Guardando...' : 'Guardar Cambios'}
-                        </button>
-                    </form>
-                </div>
+                                <Typography variant="caption" color="text.disabled" sx={{ display: 'block', mb: 0.5 }}>
+                                    Puedes pegar una URL o subir una imagen desde tu computador
+                                </Typography>
+                                <Box
+                                    component="label"
+                                    sx={{
+                                        border: '2px dashed',
+                                        borderColor: 'divider',
+                                        borderRadius: 1,
+                                        p: 2,
+                                        textAlign: 'center',
+                                        color: 'text.disabled',
+                                        fontSize: '0.8125rem',
+                                        cursor: 'pointer',
+                                        display: 'block',
+                                        bgcolor: 'background.default',
+                                        transition: 'all 0.2s',
+                                        '&:hover': { borderColor: 'primary.main' },
+                                    }}
+                                >
+                                    📸 Arrastra una imagen aquí o haz clic para seleccionar
+                                    <input
+                                        type="file"
+                                        accept="image/*"
+                                        style={{ display: 'none' }}
+                                        onChange={(e) => {
+                                            const file = e.target.files[0]
+                                            if (file) {
+                                                const reader = new FileReader()
+                                                reader.onload = (ev) => {
+                                                    setLogoUrl(ev.target.result)
+                                                }
+                                                reader.readAsDataURL(file)
+                                            }
+                                        }}
+                                    />
+                                </Box>
+                                {logoUrl && (
+                                    <Box sx={{ mt: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
+                                        <Box component="img" src={logoUrl} alt="Preview logo" sx={{ width: 60, height: 60, objectFit: 'cover', borderRadius: 1 }} />
+                                        <Button variant="outlined" size="small" onClick={() => setLogoUrl('')}>
+                                            Quitar imagen
+                                        </Button>
+                                    </Box>
+                                )}
+                            </Box>
+                            <Button type="submit" variant="contained" disabled={saving} sx={{ whiteSpace: 'nowrap' }}>
+                                {saving ? 'Guardando...' : 'Guardar Cambios'}
+                            </Button>
+                        </Box>
+                    </CardContent>
+                </Card>
             )}
 
             {/* Dark Mode Toggle */}
-            <div className="card" style={{ marginBottom: '24px' }}>
-                <h3 style={{ marginBottom: '16px' }}>Apariencia</h3>
-                <div style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    padding: '12px 0'
-                }}>
-                    <div>
-                        <p style={{ fontWeight: '500' }}>Modo Oscuro</p>
-                        <p style={{ fontSize: '13px', color: 'var(--text-muted)' }}>
-                            Activa el modo oscuro para reducir la fatiga visual
-                        </p>
-                    </div>
-                    <label className="toggle-switch">
-                        <input
-                            type="checkbox"
-                            checked={darkMode}
-                            onChange={() => setDarkMode(!darkMode)}
+            <Card sx={{ mb: 3 }}>
+                <CardContent sx={{ p: 3, '&:last-child': { pb: 3 } }}>
+                    <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>Apariencia</Typography>
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', py: 1.5 }}>
+                        <Box>
+                            <Typography variant="body2" sx={{ fontWeight: 500 }}>Modo Oscuro</Typography>
+                            <Typography variant="caption" color="text.disabled">
+                                Activa el modo oscuro para reducir la fatiga visual
+                            </Typography>
+                        </Box>
+                        <FormControlLabel
+                            control={
+                                <Switch
+                                    checked={darkMode}
+                                    onChange={() => setDarkMode(!darkMode)}
+                                />
+                            }
+                            label=""
+                            sx={{ mr: 0 }}
                         />
-                        <span className="toggle-slider" />
-                    </label>
-                </div>
-            </div>
+                    </Box>
+                </CardContent>
+            </Card>
 
             {/* Change Password */}
-            <div className="card" style={{ marginBottom: '24px' }}>
-                <h3 style={{ marginBottom: '16px' }}>Seguridad</h3>
-                <div style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    padding: '12px 0'
-                }}>
-                    <div>
-                        <p style={{ fontWeight: '500' }}>Contraseña</p>
-                        <p style={{ fontSize: '13px', color: 'var(--text-muted)' }}>
-                            Cambia tu contraseña de acceso al panel
-                        </p>
-                    </div>
-                    <Link to="/admin/change-password" className="btn btn-secondary" style={{ textDecoration: 'none' }}>
-                        Cambiar Contraseña
-                    </Link>
-                </div>
-            </div>
+            <Card sx={{ mb: 3 }}>
+                <CardContent sx={{ p: 3, '&:last-child': { pb: 3 } }}>
+                    <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>Seguridad</Typography>
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', py: 1.5 }}>
+                        <Box>
+                            <Typography variant="body2" sx={{ fontWeight: 500 }}>Contraseña</Typography>
+                            <Typography variant="caption" color="text.disabled">
+                                Cambia tu contraseña de acceso al panel
+                            </Typography>
+                        </Box>
+                        <Button component={Link} to="/admin/change-password" variant="outlined" sx={{ textDecoration: 'none' }}>
+                            Cambiar Contraseña
+                        </Button>
+                    </Box>
+                </CardContent>
+            </Card>
 
-            <div className="card">
-                <h3 style={{ marginBottom: '16px' }}>Información de la Cuenta</h3>
-                <div style={{ display: 'grid', gap: '8px' }}>
-                    <p><strong>Email:</strong> {user?.email}</p>
-                    <p><strong>Rol:</strong> {user?.role === 'SUPERADMIN' ? 'Super Administrador' : 'Vendedor'}</p>
-                    <p><strong>ID de Tienda:</strong> {user?.storeId || 'N/A'}</p>
-                    {store && (
-                        <>
-                            <p><strong>Nombre de Tienda:</strong> {store.name}</p>
-                            <p><strong>Slug:</strong> /{store.slug}</p>
-                            {store.whatsapp && <p><strong>WhatsApp Configurado:</strong> {store.whatsapp}</p>}
-                        </>
-                    )}
-                </div>
-            </div>
+            <Card>
+                <CardContent sx={{ p: 3, '&:last-child': { pb: 3 } }}>
+                    <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>Información de la Cuenta</Typography>
+                    <Box sx={{ display: 'grid', gap: 1 }}>
+                        <Typography variant="body2"><strong>Email:</strong> {user?.email}</Typography>
+                        <Typography variant="body2"><strong>Rol:</strong> {user?.role === 'SUPERADMIN' ? 'Super Administrador' : 'Vendedor'}</Typography>
+                        <Typography variant="body2"><strong>ID de Tienda:</strong> {user?.storeId || 'N/A'}</Typography>
+                        {store && (
+                            <>
+                                <Typography variant="body2"><strong>Nombre de Tienda:</strong> {store.name}</Typography>
+                                <Typography variant="body2"><strong>Slug:</strong> /{store.slug}</Typography>
+                                {store.whatsapp && <Typography variant="body2"><strong>WhatsApp Configurado:</strong> {store.whatsapp}</Typography>}
+                            </>
+                        )}
+                    </Box>
+                </CardContent>
+            </Card>
         </AdminLayout>
     )
 }

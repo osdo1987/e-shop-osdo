@@ -15,13 +15,9 @@ import Catalog from './pages/Catalog'
 import SuperAdmin from './pages/SuperAdmin'
 import NotFound from './pages/NotFound'
 import Orders from './pages/Orders'
-import './App.css'
 
-function App() {
+function App({ darkMode, setDarkMode }) {
     const [user, setUser] = useState(null)
-    const [darkMode, setDarkMode] = useState(() => {
-        return localStorage.getItem('darkMode') === 'true'
-    })
 
     useEffect(() => {
         const storedUser = localStorage.getItem('user')
@@ -29,11 +25,6 @@ function App() {
             setUser(JSON.parse(storedUser))
         }
     }, [])
-
-    useEffect(() => {
-        document.documentElement.setAttribute('data-theme', darkMode ? 'dark' : 'light')
-        localStorage.setItem('darkMode', darkMode)
-    }, [darkMode])
 
     const handleLogin = (userData, token) => {
         localStorage.setItem('user', JSON.stringify(userData))

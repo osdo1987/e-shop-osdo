@@ -1,14 +1,15 @@
-import './Skeleton.css'
+import SkeletonMui from '@mui/material/Skeleton'
+import Box from '@mui/material/Box'
 
 function Skeleton({ width, height, borderRadius = '6px', style }) {
     return (
-        <div
-            className="skeleton"
-            style={{
-                width: width || '100%',
-                height: height || '20px',
+        <SkeletonMui
+            variant="rectangular"
+            width={width || '100%'}
+            height={height || '20px'}
+            sx={{
                 borderRadius,
-                ...style
+                ...style,
             }}
         />
     )
@@ -16,31 +17,54 @@ function Skeleton({ width, height, borderRadius = '6px', style }) {
 
 export function TableSkeleton({ rows = 5, cols = 5 }) {
     return (
-        <div className="skeleton-table">
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.75, pt: 1 }}>
             {Array.from({ length: rows }).map((_, i) => (
-                <div key={i} className="skeleton-row">
+                <Box
+                    key={i}
+                    sx={{
+                        display: 'grid',
+                        gridTemplateColumns: `repeat(${cols}, 1fr)`,
+                        gap: 2,
+                        py: 1,
+                        borderBottom: '1px solid',
+                        borderColor: 'divider',
+                    }}
+                >
                     {Array.from({ length: cols }).map((_, j) => (
-                        <Skeleton key={j} height="16px" />
+                        <SkeletonMui key={j} variant="rectangular" height="16px" sx={{ borderRadius: 1 }} />
                     ))}
-                </div>
+                </Box>
             ))}
-        </div>
+        </Box>
     )
 }
 
 export function GridSkeleton({ count = 8 }) {
     return (
-        <div className="product-grid">
+        <Box sx={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))',
+            gap: 2.75,
+        }}>
             {Array.from({ length: count }).map((_, i) => (
-                <div key={i} className="skeleton-card">
-                    <Skeleton height="180px" borderRadius="4px" />
-                    <Skeleton height="12px" width="60%" style={{ marginTop: '12px' }} />
-                    <Skeleton height="16px" width="80%" style={{ marginTop: '8px' }} />
-                    <Skeleton height="18px" width="40%" style={{ marginTop: '8px' }} />
-                    <Skeleton height="40px" style={{ marginTop: '12px' }} borderRadius="6px" />
-                </div>
+                <Box
+                    key={i}
+                    sx={{
+                        border: 1,
+                        borderColor: 'divider',
+                        borderRadius: 3,
+                        p: 2,
+                        bgcolor: 'background.paper',
+                    }}
+                >
+                    <SkeletonMui variant="rectangular" height="180px" sx={{ borderRadius: 1 }} />
+                    <SkeletonMui variant="text" width="60%" sx={{ mt: 1.5 }} />
+                    <SkeletonMui variant="text" width="80%" sx={{ mt: 1 }} />
+                    <SkeletonMui variant="text" width="40%" sx={{ mt: 1 }} />
+                    <SkeletonMui variant="rectangular" height="40px" sx={{ mt: 1.5, borderRadius: 1 }} />
+                </Box>
             ))}
-        </div>
+        </Box>
     )
 }
 
