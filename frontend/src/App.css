@@ -134,27 +134,74 @@
 }
 
 .promo-banner {
-    background: #111827;
+    background: linear-gradient(90deg, #111827 0%, #1e3a5f 50%, #111827 100%);
+    background-size: 200% 100%;
+    animation: promo-gradient-shift 3s ease infinite;
     color: white;
     text-align: center;
-    padding: 8px 16px;
-    font-size: 13px;
-    font-weight: 600;
+    padding: 22px 24px;
+    font-size: 17px;
+    font-weight: 700;
     letter-spacing: 0.5px;
     overflow: hidden;
+    position: relative;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    min-height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.promo-banner::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    animation: promo-shine 3s ease-in-out infinite;
+}
+
+@keyframes promo-gradient-shift {
+
+    0%,
+    100% {
+        background-position: 0% 50%;
+    }
+
+    50% {
+        background-position: 100% 50%;
+    }
+}
+
+@keyframes promo-shine {
+    0% {
+        left: -100%;
+    }
+
+    50%,
+    100% {
+        left: 200%;
+    }
 }
 
 [data-theme="dark"] .promo-banner {
-    background: #3b82f6;
+    background: linear-gradient(90deg, #1e3a8a 0%, #3b82f6 50%, #1e3a8a 100%);
+    background-size: 200% 100%;
+    animation: promo-gradient-shift 3s ease infinite;
     color: white;
+    box-shadow: 0 4px 20px rgba(59, 130, 246, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.15);
 }
 
 .promo-banner-content {
     display: inline-flex;
     align-items: center;
-    gap: 10px;
+    gap: 14px;
     white-space: nowrap;
     animation: promo-slide-in 0.5s ease-out;
+    position: relative;
+    z-index: 1;
 }
 
 @keyframes promo-slide-in {
@@ -171,15 +218,16 @@
 
 .promo-banner .promo-badge {
     display: inline-block;
-    background: #ef4444;
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
     color: white;
-    padding: 1px 8px;
-    border-radius: 4px;
-    font-size: 11px;
-    font-weight: 800;
-    letter-spacing: 0.5px;
+    padding: 4px 12px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 900;
+    letter-spacing: 1px;
     text-transform: uppercase;
-    animation: promo-pulse 2s infinite;
+    animation: promo-pulse 1.5s ease-in-out infinite;
+    box-shadow: 0 2px 8px rgba(239, 68, 68, 0.5);
 }
 
 @keyframes promo-pulse {
@@ -187,51 +235,63 @@
     0%,
     100% {
         transform: scale(1);
+        box-shadow: 0 2px 8px rgba(239, 68, 68, 0.5);
     }
 
     50% {
-        transform: scale(1.05);
+        transform: scale(1.1);
+        box-shadow: 0 4px 15px rgba(239, 68, 68, 0.8);
     }
 }
 
 .promo-banner .promo-name {
-    font-weight: 700;
-    max-width: 200px;
+    font-weight: 800;
+    max-width: 250px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    font-size: 16px;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
 }
 
 .promo-banner .promo-price-old {
     text-decoration: line-through;
-    opacity: 0.6;
-    font-size: 12px;
+    opacity: 0.7;
+    font-size: 13px;
+    font-weight: 500;
 }
 
 .promo-banner .promo-price-new {
     color: #4ade80;
-    font-weight: 800;
-    font-size: 14px;
+    font-weight: 900;
+    font-size: 17px;
+    text-shadow: 0 0 10px rgba(74, 222, 128, 0.5);
 }
 
 [data-theme="dark"] .promo-banner .promo-price-new {
     color: #fde047;
+    text-shadow: 0 0 10px rgba(253, 224, 71, 0.5);
 }
 
 .promo-banner .promo-discount {
     display: inline-block;
-    background: rgba(239, 68, 68, 0.2);
-    color: #ef4444;
-    padding: 1px 6px;
-    border-radius: 4px;
-    font-size: 11px;
-    font-weight: 800;
+    background: rgba(239, 68, 68, 0.3);
+    color: #fca5a5;
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 900;
+    border: 1px solid rgba(239, 68, 68, 0.4);
 }
 
 .promo-banner .promo-counter {
-    font-size: 11px;
-    opacity: 0.5;
-    margin-left: 4px;
+    font-size: 12px;
+    opacity: 0.7;
+    margin-left: 6px;
+    background: rgba(255, 255, 255, 0.15);
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-weight: 600;
 }
 
 .catalog-top-bar {
