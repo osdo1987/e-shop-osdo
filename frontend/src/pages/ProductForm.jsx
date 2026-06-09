@@ -191,7 +191,7 @@ function ProductForm({ user }) {
     if (loading) {
         return (
             <AdminLayout title="Cargando..." user={user}>
-                <Typography color="text.secondary" textAlign="center" sx={{ py: 5 }}>Cargando producto...</Typography>
+                <Typography color="text.secondary" sx={{ py: 5, textAlign: 'center' }}>Cargando producto...</Typography>
             </AdminLayout>
         )
     }

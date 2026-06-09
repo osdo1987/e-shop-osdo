@@ -1,6 +1,20 @@
 from marshmallow import fields, validate
 from app.extensions import ma
-from app.models.order import Order, OrderItem
+from app.models.order import Order, OrderItem, OrderStatusHistory, VALID_STATUSES
+
+class OrderStatusHistorySchema(ma.SQLAlchemyAutoSchema):
+    class Meta:
+        model = OrderStatusHistory
+        load_instance = True
+        include_fk = True
+        
+    id = fields.Int(dump_only=True)
+    order_id = fields.Int(dump_only=True)
+    old_status = fields.String(allow_none=True)
+    new_status = fields.String(required=True)
+    changed_by = fields.String(allow_none=True)
+    notes = fields.String(allow_none=True)
+    created_at = fields.DateTime(dump_only=True)
 
 class OrderItemSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
@@ -26,7 +40,13 @@ class OrderSchema(ma.SQLAlchemyAutoSchema):
     customer_name = fields.String(required=True, validate=validate.Length(min=1, max=200))
     customer_phone = fields.String(allow_none=True)
     total_price = fields.Float(required=True, validate=validate.Range(min=0))
-    status = fields.String(validate=validate.OneOf(['PENDIENTE', 'ENTREGADO', 'CANCELADO']))
+    status = fields.String(validate=validate.OneOf(VALID_STATUSES))
     items = fields.Nested(OrderItemSchema, many=True, required=True)
+    status_history = fields.Nested(OrderStatusHistorySchema, many=True, dump_only=True)
+    delivery_address = fields.String(allow_none=True)
+    customer_notes = fields.String(allow_none=True)
+    seller_notes = fields.String(allow_none=True)
+    estimated_delivery = fields.DateTime(allow_none=True)
+    tracking_token = fields.String(dump_only=True)
     created_at = fields.DateTime(dump_only=True)
     updated_at = fields.DateTime(dump_only=True)

@@ -47,17 +47,17 @@ function StatCard({ title, value, icon, color = '#6366f1', subtitle }) {
                 },
             }}
         >
-            <CardContent sx={{ display: 'flex', alignItems: 'center', gap: 2.5, p: 3, '&:last-child': { pb: 3 } }}>
+            <CardContent sx={{ display: 'flex', alignItems: 'center', gap: 1.5, p: 1.75, '&:last-child': { pb: 1.75 } }}>
                 <Box
                     className="stat-card-icon"
                     sx={{
-                        width: 58,
-                        height: 58,
-                        borderRadius: 2,
+                        width: 40,
+                        height: 40,
+                        borderRadius: 1.5,
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        fontSize: 26,
+                        fontSize: 18,
                         flexShrink: 0,
                         background: `${color}15`,
                         color: color,
@@ -68,7 +68,6 @@ function StatCard({ title, value, icon, color = '#6366f1', subtitle }) {
                 </Box>
                 <Box sx={{ minWidth: 0, flex: 1, zIndex: 1 }}>
                     <Typography
-                        variant="h4"
                         sx={{
                             fontWeight: 800,
                             lineHeight: 1.2,
@@ -76,7 +75,7 @@ function StatCard({ title, value, icon, color = '#6366f1', subtitle }) {
                             whiteSpace: 'nowrap',
                             overflow: 'hidden',
                             textOverflow: 'ellipsis',
-                            fontSize: { xs: '1.25rem', md: '1.625rem' },
+                            fontSize: { xs: '1.1rem', md: '1.25rem' },
                         }}
                     >
                         {value}
@@ -87,26 +86,14 @@ function StatCard({ title, value, icon, color = '#6366f1', subtitle }) {
                             fontWeight: 600,
                             textTransform: 'uppercase',
                             letterSpacing: '0.04em',
+                            fontSize: '0.625rem',
                             display: 'block',
                             color: 'text.secondary',
-                            mt: 0.25,
+                            mt: 0.15,
                         }}
                     >
                         {title}
                     </Typography>
-                    {subtitle && (
-                        <Typography
-                            variant="caption"
-                            sx={{
-                                color: 'text.disabled',
-                                fontWeight: 500,
-                                display: 'block',
-                                mt: 0.25,
-                            }}
-                        >
-                            {subtitle}
-                        </Typography>
-                    )}
                 </Box>
             </CardContent>
         </Card>

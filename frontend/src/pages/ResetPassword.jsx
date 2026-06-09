@@ -102,7 +102,7 @@ function ResetPassword() {
 
         return (
             <>
-                <Typography variant="body2" color="text.secondary" textAlign="center" sx={{ mb: 3 }}>
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 3, textAlign: 'center' }}>
                     Ingresa tu nueva contraseña
                 </Typography>
 

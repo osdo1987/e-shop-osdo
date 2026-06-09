@@ -93,6 +93,8 @@ function Catalog() {
     const [selectedSizeForModal, setSelectedSizeForModal] = useState('')
     const [customerName, setCustomerName] = useState('')
     const [customerPhone, setCustomerPhone] = useState('')
+    const [deliveryAddress, setDeliveryAddress] = useState('')
+    const [customerNotes, setCustomerNotes] = useState('')
     const [toastOpen, setToastOpen] = useState(false)
     const [toastMessage, setToastMessage] = useState('')
 
@@ -297,6 +299,8 @@ function Catalog() {
             store_id: store.id,
             customer_name: customerName.trim(),
             customer_phone: customerPhone.trim(),
+            delivery_address: deliveryAddress.trim(),
+            customer_notes: customerNotes.trim(),
             total_price: cartSubtotal,
             items: cart.map(item => ({
                 product_id: item.id,
@@ -353,6 +357,8 @@ function Catalog() {
         setCart([])
         setCustomerName('')
         setCustomerPhone('')
+        setDeliveryAddress('')
+        setCustomerNotes('')
         setCartOpen(false)
     }
 
@@ -1010,6 +1016,24 @@ function Catalog() {
                                     value={customerPhone}
                                     onChange={(e) => setCustomerPhone(e.target.value)}
                                     fullWidth
+                                />
+                                <TextField
+                                    size="small"
+                                    label="Dirección de entrega"
+                                    placeholder="Calle 123 #45-67, Barrio, Ciudad"
+                                    value={deliveryAddress}
+                                    onChange={(e) => setDeliveryAddress(e.target.value)}
+                                    fullWidth
+                                />
+                                <TextField
+                                    size="small"
+                                    label="Notas adicionales (opcional)"
+                                    placeholder="Ej. Sin cebolla, timbre 3A, etc."
+                                    value={customerNotes}
+                                    onChange={(e) => setCustomerNotes(e.target.value)}
+                                    fullWidth
+                                    multiline
+                                    minRows={2}
                                 />
                             </Box>
                             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2, pt: 1, borderTop: 1, borderColor: 'divider' }}>

@@ -71,7 +71,7 @@ function ForgotPassword() {
 
                 {!sent ? (
                     <>
-                        <Typography variant="body2" color="text.secondary" textAlign="center" sx={{ mb: 3 }}>
+                        <Typography variant="body2" color="text.secondary" sx={{ mb: 3, textAlign: 'center' }}>
                             Ingresa tu correo electrónico para recibir instrucciones de recuperación
                         </Typography>
 

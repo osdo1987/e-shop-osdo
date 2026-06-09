@@ -139,8 +139,9 @@ function Dashboard({ user, onLogout }) {
                             <Box sx={{ minWidth: 'fit-content' }}>
                                 <Button
                                     variant="outlined"
-                                    size="medium"
+                                    size="small"
                                     onClick={() => { setSelectedCategory(''); setSearchTerm('') }}
+                                    sx={{ fontSize: '0.75rem', py: 0.5 }}
                                 >
                                     Limpiar filtros
                                 </Button>
@@ -161,15 +162,15 @@ function Dashboard({ user, onLogout }) {
                                     </Typography>
                                 )}
                             </Typography>
-                            <Button component={Link} to="/admin/products/new" variant="contained" size="small">
-                                + Nuevo Producto
+                            <Button component={Link} to="/admin/products/new" variant="contained" size="small" sx={{ fontSize: '0.75rem', py: 0.5, px: 1.5 }}>
+                                + Nuevo
                             </Button>
                         </Box>
 
                         {loading ? (
                             <TableSkeleton rows={5} cols={5} />
                         ) : filteredProducts.length === 0 ? (
-                            <Typography color="text.secondary" textAlign="center" sx={{ py: 5 }}>
+                            <Typography color="text.secondary" sx={{ py: 5, textAlign: 'center' }}>
                                 {products.length === 0
                                     ? 'No hay productos registrados. Crea tu primer producto.'
                                     : 'No se encontraron productos con los filtros aplicados.'}
@@ -237,22 +238,23 @@ function Dashboard({ user, onLogout }) {
                                                         <TableCell>{categories.find(c => c.id === product.category_id)?.name || 'Sin categoría'}</TableCell>
                                                         <TableCell>
                                                             <Box sx={{ display: 'flex', gap: 0.75 }}>
-                                                                <Button
+                                                                <Chip
+                                                                    icon={<span style={{ fontSize: '0.7rem' }}>✏️</span>}
+                                                                    label="Editar"
+                                                                    size="small"
+                                                                    variant="outlined"
                                                                     component={Link}
                                                                     to={`/admin/products/edit/${product.id}`}
-                                                                    variant="outlined"
+                                                                    sx={{ cursor: 'pointer', height: 24, fontSize: '0.625rem', textDecoration: 'none' }}
+                                                                />
+                                                                <Chip
+                                                                    icon={<span style={{ fontSize: '0.7rem' }}>🗑️</span>}
+                                                                    label="Eliminar"
                                                                     size="small"
-                                                                >
-                                                                    ✏️ Editar
-                                                                </Button>
-                                                                <Button
-                                                                    variant="contained"
                                                                     color="error"
-                                                                    size="small"
                                                                     onClick={() => setDeleteTarget(product)}
-                                                                >
-                                                                    🗑️ Eliminar
-                                                                </Button>
+                                                                    sx={{ cursor: 'pointer', height: 24, fontSize: '0.625rem' }}
+                                                                />
                                                             </Box>
                                                         </TableCell>
                                                     </TableRow>
@@ -281,9 +283,24 @@ function Dashboard({ user, onLogout }) {
                                                             Categoría: {categories.find(c => c.id === product.category_id)?.name || 'Sin categoría'}
                                                         </Typography>
                                                     </Box>
-                                                    <Box sx={{ display: 'flex', gap: 0.75 }}>
-                                                        <Button component={Link} to={`/admin/products/edit/${product.id}`} variant="outlined" size="small" sx={{ flex: 1 }}>✏️ Editar</Button>
-                                                        <Button variant="contained" color="error" size="small" sx={{ flex: 1 }} onClick={() => setDeleteTarget(product)}>🗑️ Eliminar</Button>
+                                                    <Box sx={{ display: 'flex', gap: 0.5 }}>
+                                                        <Chip
+                                                            icon={<span style={{ fontSize: '0.65rem' }}>✏️</span>}
+                                                            label="Editar"
+                                                            size="small"
+                                                            variant="outlined"
+                                                            component={Link}
+                                                            to={`/admin/products/edit/${product.id}`}
+                                                            sx={{ cursor: 'pointer', height: 24, fontSize: '0.625rem', textDecoration: 'none', flex: 1 }}
+                                                        />
+                                                        <Chip
+                                                            icon={<span style={{ fontSize: '0.65rem' }}>🗑️</span>}
+                                                            label="Eliminar"
+                                                            size="small"
+                                                            color="error"
+                                                            onClick={() => setDeleteTarget(product)}
+                                                            sx={{ cursor: 'pointer', height: 24, fontSize: '0.625rem', flex: 1 }}
+                                                        />
                                                     </Box>
                                                 </CardContent>
                                             </Card>

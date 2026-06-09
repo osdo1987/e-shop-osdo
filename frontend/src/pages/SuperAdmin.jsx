@@ -373,7 +373,7 @@ function SuperAdmin({ user, onLogout }) {
                         {loading ? (
                             <Typography color="text.secondary">Cargando...</Typography>
                         ) : filteredStores.length === 0 ? (
-                            <Typography color="text.secondary" textAlign="center" sx={{ py: 5 }}>
+                            <Typography color="text.secondary" sx={{ py: 5, textAlign: 'center' }}>
                                 {stores.length === 0 ? 'No hay negocios registrados.' : 'No se encontraron negocios con ese filtro.'}
                             </Typography>
                         ) : (

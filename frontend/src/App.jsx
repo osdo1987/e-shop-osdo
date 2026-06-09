@@ -15,6 +15,7 @@ import Catalog from './pages/Catalog'
 import SuperAdmin from './pages/SuperAdmin'
 import NotFound from './pages/NotFound'
 import Orders from './pages/Orders'
+import OrderTracking from './pages/OrderTracking'
 
 function App({ darkMode, setDarkMode }) {
     const [user, setUser] = useState(null)
@@ -74,6 +75,7 @@ function App({ darkMode, setDarkMode }) {
                 <Route path="/admin/super" element={
                     user && user.role === 'SUPERADMIN' ? <SuperAdmin user={user} onLogout={handleLogout} /> : <Navigate to="/login" />
                 } />
+                <Route path="/track/:token" element={<OrderTracking />} />
                 <Route path="/:slug" element={<Catalog />} />
                 <Route path="*" element={<NotFound />} />
             </Routes>

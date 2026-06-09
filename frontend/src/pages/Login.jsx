@@ -77,7 +77,7 @@ function Login({ onLogin }) {
                 >
                     Bienvenido
                 </Typography>
-                <Typography variant="body2" color="text.secondary" textAlign="center" sx={{ mb: 3.5 }}>
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 3.5, textAlign: 'center' }}>
                     Inicia sesión en tu panel de control
                 </Typography>
 
