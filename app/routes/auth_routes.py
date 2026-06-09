@@ -98,7 +98,10 @@ def register_seller():
         'name': data.get('storeName'),
         'slug': data.get('slug'),
         'whatsapp': data.get('whatsapp'),
-        'logo_url': data.get('logo_url')
+        'logo_url': data.get('logo_url'),
+        'business_type': data.get('business_type', 'store'),
+        'address': data.get('address'),
+        'schedule': data.get('schedule')
     }
     
     user_data = {

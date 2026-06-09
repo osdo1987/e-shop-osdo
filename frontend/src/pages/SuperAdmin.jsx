@@ -19,6 +19,10 @@ import DialogTitle from '@mui/material/DialogTitle'
 import DialogContent from '@mui/material/DialogContent'
 import DialogActions from '@mui/material/DialogActions'
 import Alert from '@mui/material/Alert'
+import FormControl from '@mui/material/FormControl'
+import InputLabel from '@mui/material/InputLabel'
+import Select from '@mui/material/Select'
+import MenuItem from '@mui/material/MenuItem'
 
 function SuperAdmin({ user, onLogout }) {
     const [stores, setStores] = useState([])
@@ -33,6 +37,9 @@ function SuperAdmin({ user, onLogout }) {
         slug: '',
         whatsapp: '',
         logo_url: '',
+        business_type: 'store',
+        address: '',
+        schedule: '',
         email: '',
         password: ''
     })
@@ -40,7 +47,10 @@ function SuperAdmin({ user, onLogout }) {
         name: '',
         slug: '',
         whatsapp: '',
-        logo_url: ''
+        logo_url: '',
+        business_type: 'store',
+        address: '',
+        schedule: ''
     })
     const [modalError, setModalError] = useState('')
     const toast = useToast()
@@ -85,9 +95,9 @@ function SuperAdmin({ user, onLogout }) {
             const data = await res.json()
 
             if (res.ok) {
-                toast.success('Tienda y vendedor creados exitosamente')
+                toast.success('Negocio y vendedor creados exitosamente')
                 setShowCreateModal(false)
-                setNewStore({ storeName: '', slug: '', whatsapp: '', logo_url: '', email: '', password: '' })
+                setNewStore({ storeName: '', slug: '', whatsapp: '', logo_url: '', business_type: 'store', address: '', schedule: '', email: '', password: '' })
                 fetchStores()
             } else {
                 setModalError(data.error || 'Error al crear la tienda')
@@ -105,7 +115,10 @@ function SuperAdmin({ user, onLogout }) {
             name: store.name,
             slug: store.slug,
             whatsapp: store.whatsapp || '',
-            logo_url: store.logo_url || ''
+            logo_url: store.logo_url || '',
+            business_type: store.business_type || 'store',
+            address: store.address || '',
+            schedule: store.schedule || ''
         })
         setModalError('')
         setShowEditModal(true)
@@ -184,8 +197,20 @@ function SuperAdmin({ user, onLogout }) {
 
     const renderStoreForm = (form, setForm, includePassword = false) => (
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <FormControl fullWidth>
+                <InputLabel id="business-type-label">Tipo de Negocio</InputLabel>
+                <Select
+                    labelId="business-type-label"
+                    value={form.business_type || 'store'}
+                    label="Tipo de Negocio"
+                    onChange={(e) => setForm({ ...form, business_type: e.target.value })}
+                >
+                    <MenuItem value="store">🏪 Tienda</MenuItem>
+                    <MenuItem value="restaurant">🍽️ Restaurante / Negocio de Comida</MenuItem>
+                </Select>
+            </FormControl>
             <TextField
-                label="Nombre de la Tienda"
+                label={form.business_type === 'restaurant' ? 'Nombre del Restaurante' : 'Nombre de la Tienda'}
                 value={form.storeName || form.name}
                 onChange={(e) => setForm({ ...form, [includePassword ? 'storeName' : 'name']: e.target.value })}
                 required
@@ -206,6 +231,24 @@ function SuperAdmin({ user, onLogout }) {
                 placeholder="+1234567890"
                 fullWidth
             />
+            {form.business_type === 'restaurant' && (
+                <>
+                    <TextField
+                        label="Dirección"
+                        value={form.address || ''}
+                        onChange={(e) => setForm({ ...form, address: e.target.value })}
+                        placeholder="Calle 123 #45-67, Ciudad"
+                        fullWidth
+                    />
+                    <TextField
+                        label="Horario"
+                        value={form.schedule || ''}
+                        onChange={(e) => setForm({ ...form, schedule: e.target.value })}
+                        placeholder="Lun-Vie 8am-8pm, Sáb 9am-6pm"
+                        fullWidth
+                    />
+                </>
+            )}
             <Box>
                 <TextField
                     label="Logo de la Tienda (opcional)"
@@ -296,7 +339,7 @@ function SuperAdmin({ user, onLogout }) {
                         gap: 2,
                         mb: 3
                     }}>
-                        <StatCard title="Tiendas" value={stats.total} icon="🏪" color="#6366f1" />
+                        <StatCard title="Negocios" value={stats.total} icon="🏪" color="#6366f1" />
                         <StatCard title="Con WhatsApp" value={stats.withWhatsapp} icon="💬" color="#10b981" />
                         <StatCard title="Productos" value={stats.totalProducts} icon="📦" color="#f59e0b" />
                     </Box>
@@ -315,7 +358,7 @@ function SuperAdmin({ user, onLogout }) {
                             />
                             <Box sx={{ alignSelf: 'flex-end' }}>
                                 <Button variant="contained" onClick={() => setShowCreateModal(true)} sx={{ whiteSpace: 'nowrap' }}>
-                                    + Nueva Tienda
+                                    + Nuevo Negocio
                                 </Button>
                             </Box>
                         </Box>
@@ -325,13 +368,13 @@ function SuperAdmin({ user, onLogout }) {
                 <Card>
                     <CardContent sx={{ p: 3, '&:last-child': { pb: 3 } }}>
                         <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>
-                            Tiendas ({filteredStores.length})
+                            Negocios ({filteredStores.length})
                         </Typography>
                         {loading ? (
                             <Typography color="text.secondary">Cargando...</Typography>
                         ) : filteredStores.length === 0 ? (
                             <Typography color="text.secondary" textAlign="center" sx={{ py: 5 }}>
-                                {stores.length === 0 ? 'No hay tiendas registradas.' : 'No se encontraron tiendas con ese filtro.'}
+                                {stores.length === 0 ? 'No hay negocios registrados.' : 'No se encontraron negocios con ese filtro.'}
                             </Typography>
                         ) : (
                             <>
@@ -340,6 +383,7 @@ function SuperAdmin({ user, onLogout }) {
                                         <TableHead>
                                             <TableRow>
                                                 <TableCell>Nombre</TableCell>
+                                                <TableCell>Tipo</TableCell>
                                                 <TableCell>Slug/URL</TableCell>
                                                 <TableCell>WhatsApp</TableCell>
                                                 <TableCell>Vendedor</TableCell>
@@ -350,6 +394,9 @@ function SuperAdmin({ user, onLogout }) {
                                             {filteredStores.map(store => (
                                                 <TableRow key={store.id} hover>
                                                     <TableCell sx={{ fontWeight: 600 }}>{store.name}</TableCell>
+                                                    <TableCell>
+                                                        {store.business_type === 'restaurant' ? '🍽️ Restaurante' : '🏪 Tienda'}
+                                                    </TableCell>
                                                     <TableCell>
                                                         <a href={`/${store.slug}`} target="_blank" rel="noopener noreferrer" style={{ color: '#6366f1' }}>
                                                             /{store.slug}
@@ -412,7 +459,7 @@ function SuperAdmin({ user, onLogout }) {
                 fullWidth
                 PaperProps={{ sx: { borderRadius: 3 } }}
             >
-                <DialogTitle sx={{ fontWeight: 700, fontSize: '1.25rem' }}>Crear Nueva Tienda</DialogTitle>
+                <DialogTitle sx={{ fontWeight: 700, fontSize: '1.25rem' }}>Crear Nuevo Negocio</DialogTitle>
                 <DialogContent>
                     {modalError && <Alert severity="error" sx={{ mb: 2, mt: 1 }}>{modalError}</Alert>}
                     <Box component="form" onSubmit={handleCreateStore} id="create-store-form" sx={{ mt: 1 }}>
@@ -424,7 +471,7 @@ function SuperAdmin({ user, onLogout }) {
                         Cancelar
                     </Button>
                     <Button type="submit" form="create-store-form" variant="contained" fullWidth disabled={loading}>
-                        {loading ? 'Creando...' : 'Crear Tienda'}
+                        {loading ? 'Creando...' : 'Crear Negocio'}
                     </Button>
                 </DialogActions>
             </Dialog>
@@ -438,7 +485,7 @@ function SuperAdmin({ user, onLogout }) {
                 PaperProps={{ sx: { borderRadius: 3 } }}
             >
                 <DialogTitle sx={{ fontWeight: 700, fontSize: '1.25rem' }}>
-                    Editar Tienda: {editingStore?.name}
+                    Editar Negocio: {editingStore?.name}
                 </DialogTitle>
                 <DialogContent>
                     {modalError && <Alert severity="error" sx={{ mb: 2, mt: 1 }}>{modalError}</Alert>}
@@ -458,9 +505,9 @@ function SuperAdmin({ user, onLogout }) {
 
             <ConfirmModal
                 isOpen={!!deleteTarget}
-                title="Eliminar Tienda"
-                message={`¿Estás seguro de eliminar la tienda "${deleteTarget?.name}"? Esta acción eliminará todos los productos, categorías y el vendedor asociado.`}
-                confirmText="Eliminar Tienda"
+                title="Eliminar Negocio"
+                message={`¿Estás seguro de eliminar el negocio "${deleteTarget?.name}"? Esta acción eliminará todos los productos, categorías y el vendedor asociado.`}
+                confirmText="Eliminar Negocio"
                 cancelText="Cancelar"
                 danger
                 onConfirm={handleDeleteStore}

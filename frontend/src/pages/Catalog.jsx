@@ -26,6 +26,8 @@ import Card from '@mui/material/Card'
 import CardContent from '@mui/material/CardContent'
 import Chip from '@mui/material/Chip'
 import TextField from '@mui/material/TextField'
+import Snackbar from '@mui/material/Snackbar'
+import MuiAlert from '@mui/material/Alert'
 import SearchIcon from '@mui/icons-material/Search'
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart'
 import FavoriteIcon from '@mui/icons-material/Favorite'
@@ -35,6 +37,8 @@ import AddIcon from '@mui/icons-material/Add'
 import RemoveIcon from '@mui/icons-material/Remove'
 import DeleteIcon from '@mui/icons-material/Delete'
 import StorefrontIcon from '@mui/icons-material/Storefront'
+import LocationOnIcon from '@mui/icons-material/LocationOn'
+import ScheduleIcon from '@mui/icons-material/Schedule'
 import FilterListIcon from '@mui/icons-material/FilterList'
 import { useTheme } from '@mui/material/styles'
 
@@ -89,6 +93,8 @@ function Catalog() {
     const [selectedSizeForModal, setSelectedSizeForModal] = useState('')
     const [customerName, setCustomerName] = useState('')
     const [customerPhone, setCustomerPhone] = useState('')
+    const [toastOpen, setToastOpen] = useState(false)
+    const [toastMessage, setToastMessage] = useState('')
 
     useEffect(() => {
         localStorage.setItem(`favorites_${slug}`, JSON.stringify(favorites))
@@ -241,7 +247,8 @@ function Catalog() {
 
         setSizeModalProduct(null)
         setSelectedSizeForModal('')
-        setCartOpen(true)
+        setToastMessage(`"${product.name}" agregado al carrito`)
+        setToastOpen(true)
     }
 
     const updateCartItemQty = (productId, size, change) => {
@@ -373,7 +380,7 @@ function Catalog() {
         return (
             <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', textAlign: 'center', p: 2.5 }}>
                 <Box sx={{ fontSize: '4rem', mb: 1 }}>🔍</Box>
-                <Typography variant="h5" sx={{ fontWeight: 700, mb: 1.5 }}>Tienda no encontrada</Typography>
+                <Typography variant="h5" sx={{ fontWeight: 700, mb: 1.5 }}>Negocio no encontrado</Typography>
                 <Typography color="text.secondary">El catálogo que buscas no existe o fue eliminado.</Typography>
             </Box>
         )
@@ -591,9 +598,32 @@ function Catalog() {
                                 <StorefrontIcon sx={{ fontSize: { xs: 16, sm: 20 } }} />
                             )}
                         </Box>
-                        <Typography variant="h6" sx={{ fontWeight: 800, fontSize: { xs: '1rem', sm: '1.25rem' }, display: { xs: 'none', sm: 'block' } }}>
-                            {store.name}<span style={{ color: '#6366f1' }}>.</span>
-                        </Typography>
+                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+                                <Typography variant="h6" sx={{ fontWeight: 800, fontSize: { xs: '1rem', sm: '1.25rem' }, display: { xs: 'none', sm: 'block' } }}>
+                                    {store.name}<span style={{ color: '#6366f1' }}>.</span>
+                                </Typography>
+                                {store.business_type === 'restaurant' && (
+                                    <Chip label="🍽️ Restaurante" size="small" sx={{ bgcolor: '#fff3e0', color: '#e65100', fontWeight: 700, fontSize: '0.625rem', height: 20, display: { xs: 'none', sm: 'flex' } }} />
+                                )}
+                            </Box>
+                            {store.business_type === 'restaurant' && (store.address || store.schedule) && (
+                                <Box sx={{ display: { xs: 'none', sm: 'flex' }, gap: 1.5, alignItems: 'center' }}>
+                                    {store.address && (
+                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.3 }}>
+                                            <LocationOnIcon sx={{ fontSize: 12, color: 'text.disabled' }} />
+                                            <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.6875rem' }}>{store.address}</Typography>
+                                        </Box>
+                                    )}
+                                    {store.schedule && (
+                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.3 }}>
+                                            <ScheduleIcon sx={{ fontSize: 12, color: 'text.disabled' }} />
+                                            <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.6875rem' }}>{store.schedule}</Typography>
+                                        </Box>
+                                    )}
+                                </Box>
+                            )}
+                        </Box>
                     </Box>
 
                     {/* Center Search - Desktop only */}
@@ -1057,6 +1087,23 @@ function Catalog() {
                     </Button>
                 </DialogActions>
             </Dialog>
+
+            {/* Add to Cart Toast */}
+            <Snackbar
+                open={toastOpen}
+                autoHideDuration={2000}
+                onClose={() => setToastOpen(false)}
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+            >
+                <MuiAlert
+                    onClose={() => setToastOpen(false)}
+                    severity="success"
+                    variant="filled"
+                    sx={{ width: '100%', fontWeight: 600 }}
+                >
+                    🛒 {toastMessage}
+                </MuiAlert>
+            </Snackbar>
         </Box>
     )
 }
