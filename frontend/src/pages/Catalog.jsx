@@ -1039,12 +1039,15 @@ function Catalog() {
                                     minRows={2}
                                 />
                             </Box>
-                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2, pt: 1, borderTop: 1, borderColor: 'divider' }}>
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1, pt: 1, borderTop: 1, borderColor: 'divider' }}>
                                 <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 600 }}>Total a pagar:</Typography>
                                 <Typography variant="h5" sx={{ fontWeight: 800, color: 'primary.dark' }}>
                                     ${cartSubtotal.toLocaleString()}
                                 </Typography>
                             </Box>
+                            <Typography variant="caption" color="text.disabled" sx={{ display: 'block', mb: 1.5, textAlign: 'center', fontSize: '0.6875rem' }}>
+                                * El valor no contempla los costos de envío o domicilio
+                            </Typography>
                             <Button
                                 variant="contained"
                                 fullWidth
