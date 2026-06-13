@@ -5,6 +5,7 @@ from app.extensions import db
 from app.models.order import Order, OrderItem, OrderStatusHistory, STATUS_TRANSITIONS
 from app.models.product import Product
 from app.schemas.order_schema import OrderSchema
+from sqlalchemy.orm import joinedload
 
 order_schema = OrderSchema()
 orders_schema = OrderSchema(many=True)
@@ -146,7 +147,9 @@ class OrderService:
     @staticmethod
     def get_order_by_token(tracking_token):
         """Get order by tracking token (public access)"""
-        order = Order.query.filter_by(tracking_token=tracking_token).first()
+        order = Order.query.options(
+            joinedload(Order.store)
+        ).filter_by(tracking_token=tracking_token).first()
         if not order:
             return None
         return order_schema.dump(order)

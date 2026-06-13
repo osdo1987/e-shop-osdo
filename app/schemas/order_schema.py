@@ -1,6 +1,7 @@
 from marshmallow import fields, validate
 from app.extensions import ma
 from app.models.order import Order, OrderItem, OrderStatusHistory, VALID_STATUSES
+from app.models.store import Store
 
 class OrderStatusHistorySchema(ma.SQLAlchemyAutoSchema):
     class Meta:
@@ -29,6 +30,20 @@ class OrderItemSchema(ma.SQLAlchemyAutoSchema):
     price = fields.Float(required=True, validate=validate.Range(min=0))
     selected_size = fields.String(allow_none=True)
 
+class StoreBriefSchema(ma.SQLAlchemyAutoSchema):
+    class Meta:
+        model = Store
+        load_instance = True
+        include_fk = True
+        
+    id = fields.Int(dump_only=True)
+    name = fields.String(dump_only=True)
+    slug = fields.String(dump_only=True)
+    logo_url = fields.String(dump_only=True)
+    whatsapp = fields.String(dump_only=True)
+    address = fields.String(dump_only=True)
+    schedule = fields.String(dump_only=True)
+
 class OrderSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
         model = Order
@@ -48,5 +63,6 @@ class OrderSchema(ma.SQLAlchemyAutoSchema):
     seller_notes = fields.String(allow_none=True)
     estimated_delivery = fields.DateTime(allow_none=True)
     tracking_token = fields.String(dump_only=True)
+    store = fields.Nested(StoreBriefSchema, dump_only=True)
     created_at = fields.DateTime(dump_only=True)
     updated_at = fields.DateTime(dump_only=True)

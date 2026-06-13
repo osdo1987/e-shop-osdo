@@ -116,6 +116,67 @@ def register_seller():
     result, status = AuthService.create_seller(store_data, user_data)
     return jsonify(result), status
 
+@auth_bp.route('/users/<int:user_id>/email', methods=['PUT'])
+@jwt_required()
+def update_seller_email(user_id):
+    """
+    Update a seller's email (SUPERADMIN only)
+    ---
+    tags:
+      - Auth
+    parameters:
+      - name: user_id
+        in: path
+        required: true
+        type: integer
+      - name: body
+        in: body
+        required: true
+        schema:
+          type: object
+          properties:
+            email:
+              type: string
+              example: "nuevo@correo.com"
+    responses:
+      200:
+        description: Email updated successfully
+      400:
+        description: Validation error
+      403:
+        description: Not authorized
+      404:
+        description: User not found
+    """
+    current_user_id = get_jwt_identity()
+    current_user = User.query.get(current_user_id)
+    
+    if not current_user or current_user.role != 'SUPERADMIN':
+        return jsonify({'error': 'No autorizado'}), 403
+    
+    data = request.get_json()
+    new_email = data.get('email')
+    
+    if not new_email:
+        return jsonify({'error': 'El correo electrónico es requerido'}), 400
+    
+    # Check if email already exists (exclude current user)
+    existing_user = User.query.filter(User.email == new_email, User.id != user_id).first()
+    if existing_user:
+        return jsonify({'error': 'El correo electrónico ya está en uso'}), 400
+    
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify({'error': 'Usuario no encontrado'}), 404
+    
+    if user.role != 'SELLER':
+        return jsonify({'error': 'Solo se pueden modificar correos de vendedores'}), 400
+    
+    user.email = new_email
+    db.session.commit()
+    
+    return jsonify({'message': 'Correo electrónico actualizado exitosamente', 'user': user_schema.dump(user)}), 200
+
 @auth_bp.route('/me', methods=['GET'])
 @jwt_required()
 def get_current_user():

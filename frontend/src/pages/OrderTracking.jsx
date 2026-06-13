@@ -120,11 +120,21 @@ function OrderTracking() {
                     bgcolor: 'rgba(255,255,255,0.2)',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     mx: 'auto', mb: 2,
+                    overflow: 'hidden',
                 }}>
-                    <StorefrontIcon sx={{ fontSize: 28 }} />
+                    {order.store?.logo_url ? (
+                        <Box
+                            component="img"
+                            src={order.store.logo_url}
+                            alt={`${order.store.name || ''} logo`}
+                            sx={{ width: '100%', height: '100%', objectFit: 'contain', borderRadius: '50%' }}
+                        />
+                    ) : (
+                        <StorefrontIcon sx={{ fontSize: 28 }} />
+                    )}
                 </Box>
                 <Typography variant="h5" sx={{ fontWeight: 800, mb: 0.5 }}>
-                    Seguimiento de Pedido
+                    {order.store?.name || 'Seguimiento de Pedido'}
                 </Typography>
                 <Typography variant="body2" sx={{ opacity: 0.85 }}>
                     Pedido #{order.id}
@@ -280,9 +290,18 @@ function OrderTracking() {
                     <Typography variant="caption" color="text.disabled">
                         Se actualiza automáticamente cada 15 segundos
                     </Typography>
-                    <Typography variant="caption" sx={{ display: 'block', fontWeight: 600, mt: 0.5, background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-                        Powered by OSDOSOFT
-                    </Typography>
+                    {order.store?.logo_url ? (
+                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1, mt: 0.5 }}>
+                            <Box component="img" src={order.store.logo_url} alt="Logo" sx={{ height: 18, maxWidth: 80, objectFit: 'contain' }} />
+                            <Typography variant="caption" sx={{ fontWeight: 600, color: 'text.secondary' }}>
+                                {order.store.name}
+                            </Typography>
+                        </Box>
+                    ) : (
+                        <Typography variant="caption" sx={{ display: 'block', fontWeight: 600, mt: 0.5, background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+                            Powered by OSDOSOFT
+                        </Typography>
+                    )}
                 </Box>
             </Box>
         </Box>

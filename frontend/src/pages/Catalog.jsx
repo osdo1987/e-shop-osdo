@@ -737,7 +737,8 @@ function Catalog() {
                     }}>
                         {filteredProducts.map(product => {
                             const discount = product.promo_price ? Math.round(((product.price - product.promo_price) / product.price) * 100) : null
-                            const isSoldOut = product.stock <= 0
+                            const isRestaurant = store?.business_type === 'restaurant'
+                            const isSoldOut = !isRestaurant && product.stock <= 0
 
                             return (
                                 <Card
@@ -860,12 +861,14 @@ function Catalog() {
                                             )}
                                         </Box>
 
-                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 1.5, mt: 'auto' }}>
-                                            <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: isSoldOut ? 'error.main' : (product.stock < 5 ? 'warning.main' : 'success.main'), flexShrink: 0 }} />
-                                            <Typography variant="caption" color={isSoldOut ? 'error.main' : 'text.disabled'} sx={{ fontWeight: 600, fontSize: { xs: '0.625rem', md: '0.75rem' } }}>
-                                                {isSoldOut ? 'Agotado' : `Disponibles: ${product.stock} u.`}
-                                            </Typography>
-                                        </Box>
+                                        {!isRestaurant && (
+                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 1.5, mt: 'auto' }}>
+                                                <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: isSoldOut ? 'error.main' : (product.stock < 5 ? 'warning.main' : 'success.main'), flexShrink: 0 }} />
+                                                <Typography variant="caption" color={isSoldOut ? 'error.main' : 'text.disabled'} sx={{ fontWeight: 600, fontSize: { xs: '0.625rem', md: '0.75rem' } }}>
+                                                    {isSoldOut ? 'Agotado' : `Disponibles: ${product.stock} u.`}
+                                                </Typography>
+                                            </Box>
+                                        )}
 
                                         {isSoldOut ? (
                                             <Button variant="contained" disabled fullWidth sx={{ bgcolor: 'action.disabledBackground', fontSize: { xs: '0.75rem', md: '0.875rem' }, py: { xs: 0.75, md: 1 } }}>
@@ -873,7 +876,7 @@ function Catalog() {
                                             </Button>
                                         ) : (
                                             <Button variant="contained" fullWidth onClick={(e) => { e.stopPropagation(); addToCart(product); }} sx={{ mt: 'auto', fontSize: { xs: '0.75rem', md: '0.875rem' }, py: { xs: 0.75, md: 1 } }}>
-                                                Carrito
+                                                {isRestaurant ? 'Ordenar' : 'Carrito'}
                                             </Button>
                                         )}
                                     </CardContent>

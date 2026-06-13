@@ -50,7 +50,8 @@ function SuperAdmin({ user, onLogout }) {
         logo_url: '',
         business_type: 'store',
         address: '',
-        schedule: ''
+        schedule: '',
+        email: ''
     })
     const [modalError, setModalError] = useState('')
     const toast = useToast()
@@ -110,6 +111,7 @@ function SuperAdmin({ user, onLogout }) {
     }
 
     const openEditModal = (store) => {
+        const sellerEmail = store.users?.find(u => u.role === 'SELLER')?.email || ''
         setEditingStore(store)
         setEditForm({
             name: store.name,
@@ -118,7 +120,8 @@ function SuperAdmin({ user, onLogout }) {
             logo_url: store.logo_url || '',
             business_type: store.business_type || 'store',
             address: store.address || '',
-            schedule: store.schedule || ''
+            schedule: store.schedule || '',
+            email: sellerEmail
         })
         setModalError('')
         setShowEditModal(true)
@@ -131,25 +134,56 @@ function SuperAdmin({ user, onLogout }) {
 
         try {
             const token = localStorage.getItem('token')
-            const res = await fetch(`/api/stores/${editingStore.id}`, {
+            const headers = {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+
+            // Update store info
+            const storeRes = await fetch(`/api/stores/${editingStore.id}`, {
                 method: 'PUT',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(editForm)
+                headers,
+                body: JSON.stringify({
+                    name: editForm.name,
+                    slug: editForm.slug,
+                    whatsapp: editForm.whatsapp,
+                    logo_url: editForm.logo_url,
+                    business_type: editForm.business_type,
+                    address: editForm.address,
+                    schedule: editForm.schedule
+                })
             })
 
-            const data = await res.json()
+            const storeData = await storeRes.json()
 
-            if (res.ok) {
-                toast.success('Tienda actualizada exitosamente')
-                setShowEditModal(false)
-                setEditingStore(null)
-                fetchStores()
-            } else {
-                setModalError(data.error || 'Error al actualizar la tienda')
+            if (!storeRes.ok) {
+                setModalError(storeData.error || 'Error al actualizar la tienda')
+                setLoading(false)
+                return
             }
+
+            // Update seller email if it changed
+            const seller = editingStore.users?.find(u => u.role === 'SELLER')
+            if (seller && editForm.email !== seller.email) {
+                const emailRes = await fetch(`/api/auth/users/${seller.id}/email`, {
+                    method: 'PUT',
+                    headers,
+                    body: JSON.stringify({ email: editForm.email })
+                })
+
+                const emailData = await emailRes.json()
+
+                if (!emailRes.ok) {
+                    setModalError(emailData.error || 'Error al actualizar el correo del vendedor')
+                    setLoading(false)
+                    return
+                }
+            }
+
+            toast.success('Tienda actualizada exitosamente')
+            setShowEditModal(false)
+            setEditingStore(null)
+            fetchStores()
         } catch (error) {
             setModalError('Error de conexión')
         } finally {
@@ -325,6 +359,16 @@ function SuperAdmin({ user, onLogout }) {
                         fullWidth
                     />
                 </>
+            )}
+            {!includePassword && (
+                <TextField
+                    label="Email del Vendedor"
+                    type="email"
+                    value={form.email}
+                    onChange={(e) => setForm({ ...form, email: e.target.value })}
+                    fullWidth
+                    helperText="Actualizará el correo del vendedor asociado"
+                />
             )}
         </Box>
     )
