@@ -19,6 +19,10 @@ class AuthService:
         if not user or not user.check_password(password):
             return {'error': 'Credenciales inválidas'}, 401
         
+        # Update last login timestamp
+        user.last_login = datetime.utcnow()
+        db.session.commit()
+        
         # Create JWT token
         additional_claims = {
             'role': user.role,

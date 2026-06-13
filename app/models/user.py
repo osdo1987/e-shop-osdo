@@ -14,6 +14,7 @@ class User(db.Model):
     
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    last_login = db.Column(db.DateTime, nullable=True)
     
     # Password reset fields
     reset_token = db.Column(db.String(256), nullable=True, index=True)
