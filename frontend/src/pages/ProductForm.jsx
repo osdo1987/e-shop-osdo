@@ -15,6 +15,7 @@ import Chip from '@mui/material/Chip'
 import Checkbox from '@mui/material/Checkbox'
 import FormControlLabel from '@mui/material/FormControlLabel'
 import IconButton from '@mui/material/IconButton'
+import Divider from '@mui/material/Divider'
 
 function ProductForm({ user }) {
     const navigate = useNavigate()
@@ -39,6 +40,10 @@ function ProductForm({ user }) {
     const [sizeStockMap, setSizeStockMap] = useState({})
     const [customSize, setCustomSize] = useState('')
 
+    // Toppings state
+    const [hasToppings, setHasToppings] = useState(false)
+    const [toppingGroups, setToppingGroups] = useState([])
+
     useEffect(() => {
         const fetchCategories = async () => {
             const token = localStorage.getItem('token')
@@ -62,6 +67,21 @@ function ProductForm({ user }) {
                 })
                 if (res.ok) {
                     const product = await res.json()
+
+                    // Parse toppings config
+                    let parsedToppings = []
+                    if (product.toppings_config) {
+                        try {
+                            const config = JSON.parse(product.toppings_config)
+                            if (config.groups) {
+                                parsedToppings = config.groups
+                                setHasToppings(true)
+                            }
+                        } catch (e) {
+                            console.error("Error parsing toppings_config:", e)
+                        }
+                    }
+
                     setForm({
                         name: product.name || '',
                         description: product.description || '',
@@ -73,6 +93,8 @@ function ProductForm({ user }) {
                         image_url: product.image_url || '',
                         sizes: product.sizes || ''
                     })
+
+                    setToppingGroups(parsedToppings)
 
                     let parsedSizes = {}
                     if (product.sizes) {
@@ -142,6 +164,69 @@ function ProductForm({ user }) {
         setForm({ ...form, [e.target.name]: e.target.value })
     }
 
+    // Toppings handlers
+    const handleToggleHasToppings = () => {
+        if (hasToppings) {
+            setToppingGroups([])
+        }
+        setHasToppings(!hasToppings)
+    }
+
+    const addToppingGroup = () => {
+        setToppingGroups(prev => [...prev, {
+            id: `group_${Date.now()}`,
+            label: '',
+            max: 0,
+            min: 0,
+            required: false,
+            options: []
+        }])
+    }
+
+    const updateToppingGroup = (index, field, value) => {
+        setToppingGroups(prev => {
+            const updated = [...prev]
+            updated[index] = { ...updated[index], [field]: value }
+            return updated
+        })
+    }
+
+    const removeToppingGroup = (index) => {
+        setToppingGroups(prev => prev.filter((_, i) => i !== index))
+    }
+
+    const addToppingOption = (groupIndex) => {
+        setToppingGroups(prev => {
+            const updated = [...prev]
+            updated[groupIndex] = {
+                ...updated[groupIndex],
+                options: [...updated[groupIndex].options, { name: '', price: 0 }]
+            }
+            return updated
+        })
+    }
+
+    const updateToppingOption = (groupIndex, optIndex, field, value) => {
+        setToppingGroups(prev => {
+            const updated = [...prev]
+            const options = [...updated[groupIndex].options]
+            options[optIndex] = { ...options[optIndex], [field]: value }
+            updated[groupIndex] = { ...updated[groupIndex], options }
+            return updated
+        })
+    }
+
+    const removeToppingOption = (groupIndex, optIndex) => {
+        setToppingGroups(prev => {
+            const updated = [...prev]
+            updated[groupIndex] = {
+                ...updated[groupIndex],
+                options: updated[groupIndex].options.filter((_, i) => i !== optIndex)
+            }
+            return updated
+        })
+    }
+
     const handleSubmit = async (e) => {
         e.preventDefault()
         setError('')
@@ -156,6 +241,12 @@ function ProductForm({ user }) {
                 ? Object.values(sizeStockMap).reduce((a, b) => a + b, 0)
                 : parseInt(form.stock)
 
+            // Build toppings_config JSON
+            let toppingsConfig = null
+            if (hasToppings && toppingGroups.length > 0) {
+                toppingsConfig = JSON.stringify({ groups: toppingGroups })
+            }
+
             const res = await fetch(url, {
                 method,
                 headers: {
@@ -169,6 +260,7 @@ function ProductForm({ user }) {
                     purchase_price: form.purchase_price ? parseFloat(form.purchase_price) : null,
                     stock: finalStock,
                     sizes: hasSizes ? JSON.stringify(sizeStockMap) : '',
+                    toppings_config: toppingsConfig,
                     category_id: parseInt(form.category_id),
                     store_id: user.storeId
                 })
@@ -266,15 +358,15 @@ function ProductForm({ user }) {
                             <Grid item xs={12} sm={6}>
                                 <TextField
                                     fullWidth
-                                    label={`Stock ${hasSizes ? '(Calculado de las tallas)' : ''}`}
+                                    label={`Stock ${hasSizes ? '(Calculado de las tallas)' : '(0 = sin control de stock)'}`}
                                     name="stock"
                                     value={hasSizes ? Object.values(sizeStockMap).reduce((a, b) => a + b, 0) : form.stock}
                                     onChange={handleChange}
-                                    required
                                     disabled={hasSizes}
                                     type="number"
                                     inputProps={{ min: 0 }}
-                                    placeholder="50"
+                                    placeholder="0"
+                                    helperText={!hasSizes ? "Deja en 0 si es comida que se prepara al momento" : ""}
                                     sx={hasSizes ? { '& .MuiInputBase-root': { opacity: 0.7 } } : {}}
                                 />
                             </Grid>
@@ -416,6 +508,154 @@ function ProductForm({ user }) {
                                             </Box>
                                         </Box>
                                     )}
+                                </Box>
+                            )}
+                        </Box>
+
+                        {/* Toppings / Personalizaciones */}
+                        <Box sx={{ mb: 2.5 }}>
+                            <Divider sx={{ mb: 2 }} />
+                            <FormControlLabel
+                                control={
+                                    <Checkbox
+                                        checked={hasToppings}
+                                        onChange={handleToggleHasToppings}
+                                    />
+                                }
+                                label={<Typography variant="body2" sx={{ fontWeight: 600 }}>🍕 ¿Este producto tiene toppings o personalizaciones?</Typography>}
+                            />
+
+                            {hasToppings && (
+                                <Box sx={{ mt: 2 }}>
+                                    <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 2 }}>
+                                        Configura grupos de opciones personalizables (ej: Proteínas, Salsas, Extras)
+                                    </Typography>
+
+                                    {toppingGroups.map((group, gIndex) => (
+                                        <Box
+                                            key={group.id}
+                                            sx={{
+                                                mb: 2,
+                                                p: 2,
+                                                border: 1,
+                                                borderColor: 'divider',
+                                                borderRadius: 2,
+                                                bgcolor: 'background.default',
+                                            }}
+                                        >
+                                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1.5 }}>
+                                                <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
+                                                    Grupo {gIndex + 1}
+                                                </Typography>
+                                                <IconButton size="small" onClick={() => removeToppingGroup(gIndex)} sx={{ color: 'error.main' }}>
+                                                    🗑️
+                                                </IconButton>
+                                            </Box>
+
+                                            <TextField
+                                                fullWidth
+                                                size="small"
+                                                label="Nombre del grupo"
+                                                placeholder="Ej: Proteínas, Salsas, Extras"
+                                                value={group.label}
+                                                onChange={(e) => updateToppingGroup(gIndex, 'label', e.target.value)}
+                                                sx={{ mb: 1.5 }}
+                                            />
+
+                                            <Grid container spacing={1.5} sx={{ mb: 1.5 }}>
+                                                <Grid item xs={4}>
+                                                    <TextField
+                                                        fullWidth
+                                                        size="small"
+                                                        label="Mínimo"
+                                                        type="number"
+                                                        inputProps={{ min: 0 }}
+                                                        value={group.min}
+                                                        onChange={(e) => updateToppingGroup(gIndex, 'min', parseInt(e.target.value) || 0)}
+                                                    />
+                                                </Grid>
+                                                <Grid item xs={4}>
+                                                    <TextField
+                                                        fullWidth
+                                                        size="small"
+                                                        label="Máximo (0 = sin límite)"
+                                                        type="number"
+                                                        inputProps={{ min: 0 }}
+                                                        value={group.max}
+                                                        onChange={(e) => updateToppingGroup(gIndex, 'max', parseInt(e.target.value) || 0)}
+                                                    />
+                                                </Grid>
+                                                <Grid item xs={4}>
+                                                    <FormControlLabel
+                                                        control={
+                                                            <Checkbox
+                                                                checked={group.required}
+                                                                onChange={(e) => updateToppingGroup(gIndex, 'required', e.target.checked)}
+                                                                size="small"
+                                                            />
+                                                        }
+                                                        label={<Typography variant="caption" sx={{ fontWeight: 500 }}>Obligatorio</Typography>}
+                                                        sx={{ mx: 0, mt: 0.5 }}
+                                                    />
+                                                </Grid>
+                                            </Grid>
+
+                                            {/* Opciones del grupo */}
+                                            <Typography variant="caption" color="text.secondary" sx={{ display: 'block', fontWeight: 600, mb: 1 }}>
+                                                Opciones
+                                            </Typography>
+
+                                            {group.options.map((opt, oIndex) => (
+                                                <Box
+                                                    key={oIndex}
+                                                    sx={{ display: 'flex', gap: 1, alignItems: 'center', mb: 1 }}
+                                                >
+                                                    <TextField
+                                                        size="small"
+                                                        label="Nombre"
+                                                        placeholder="Ej: Pollo"
+                                                        value={opt.name}
+                                                        onChange={(e) => updateToppingOption(gIndex, oIndex, 'name', e.target.value)}
+                                                        sx={{ flex: 1 }}
+                                                    />
+                                                    <TextField
+                                                        size="small"
+                                                        label="Precio extra $"
+                                                        type="number"
+                                                        inputProps={{ min: 0, step: 100 }}
+                                                        value={opt.price}
+                                                        onChange={(e) => updateToppingOption(gIndex, oIndex, 'price', parseInt(e.target.value) || 0)}
+                                                        sx={{ width: 130 }}
+                                                    />
+                                                    <IconButton
+                                                        size="small"
+                                                        onClick={() => removeToppingOption(gIndex, oIndex)}
+                                                        sx={{ color: 'error.main' }}
+                                                    >
+                                                        ✕
+                                                    </IconButton>
+                                                </Box>
+                                            ))}
+
+                                            <Button
+                                                variant="text"
+                                                size="small"
+                                                onClick={() => addToppingOption(gIndex)}
+                                                sx={{ mt: 0.5 }}
+                                            >
+                                                + Agregar opción
+                                            </Button>
+                                        </Box>
+                                    ))}
+
+                                    <Button
+                                        variant="outlined"
+                                        size="small"
+                                        onClick={addToppingGroup}
+                                        startIcon={<span>+</span>}
+                                    >
+                                        Agregar grupo de toppings
+                                    </Button>
                                 </Box>
                             )}
                         </Box>

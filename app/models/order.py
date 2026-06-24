@@ -40,6 +40,8 @@ class OrderItem(db.Model):
     quantity = db.Column(db.Integer, nullable=False, default=1)
     price = db.Column(db.Float, nullable=False)
     selected_size = db.Column(db.String(50), nullable=True)
+    selected_toppings = db.Column(db.Text, nullable=True)
+    extra_price = db.Column(db.Float, nullable=False, default=0)
     
     product = db.relationship('Product')
 

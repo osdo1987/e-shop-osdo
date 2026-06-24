@@ -13,6 +13,7 @@ class Product(db.Model):
     image_url = db.Column(db.Text, nullable=True)
     stock = db.Column(db.Integer, default=0)
     sizes = db.Column(db.String(500), nullable=True)
+    toppings_config = db.Column(db.Text, nullable=True)
     
     category_id = db.Column(db.Integer, db.ForeignKey('categories.id'), nullable=False)
     

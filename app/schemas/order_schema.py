@@ -29,6 +29,8 @@ class OrderItemSchema(ma.SQLAlchemyAutoSchema):
     quantity = fields.Int(required=True, validate=validate.Range(min=1))
     price = fields.Float(required=True, validate=validate.Range(min=0))
     selected_size = fields.String(allow_none=True)
+    selected_toppings = fields.String(allow_none=True)
+    extra_price = fields.Float(allow_none=True, default=0)
 
 class StoreBriefSchema(ma.SQLAlchemyAutoSchema):
     class Meta:

@@ -35,6 +35,7 @@ class ProductService:
             image_url=data.get('image_url'),
             stock=data.get('stock', 0),
             sizes=data.get('sizes'),
+            toppings_config=data.get('toppings_config'),
             category_id=data['category_id'],
             store_id=store_id
         )
@@ -65,6 +66,8 @@ class ProductService:
             product.stock = data['stock']
         if 'sizes' in data:
             product.sizes = data['sizes']
+        if 'toppings_config' in data:
+            product.toppings_config = data['toppings_config']
         if 'category_id' in data:
             product.category_id = data['category_id']
         

@@ -17,6 +17,7 @@ class ProductSchema(ma.SQLAlchemyAutoSchema):
     image_url = fields.String(allow_none=True)
     stock = fields.Int(validate=validate.Range(min=0))
     sizes = fields.String(allow_none=True)
+    toppings_config = fields.String(allow_none=True)
     category_id = fields.Int(required=True)
     store_id = fields.Int(required=True)
     created_at = fields.DateTime(dump_only=True)

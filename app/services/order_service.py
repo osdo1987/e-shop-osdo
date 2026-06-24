@@ -56,6 +56,9 @@ class OrderService:
                     size=item_data.get('selected_size'),
                     decrease=True
                 )
+            elif not product_id:
+                # For items without product_id (custom items), skip stock validation
+                pass
                 
             item = OrderItem(
                 order_id=order.id,
@@ -63,7 +66,9 @@ class OrderService:
                 product_name=item_data['product_name'],
                 quantity=item_data['quantity'],
                 price=item_data['price'],
-                selected_size=item_data.get('selected_size')
+                selected_size=item_data.get('selected_size'),
+                selected_toppings=item_data.get('selected_toppings'),
+                extra_price=item_data.get('extra_price', 0)
             )
             db.session.add(item)
             
@@ -174,10 +179,15 @@ class OrderService:
         Locks the product row using with_for_update, validates stock availability if decreasing,
         and adjusts the stock global and size values.
         Raises ValueError if stock is insufficient.
+        If stock is 0, it means no stock control (e.g., restaurant food made to order).
         """
         product = Product.query.with_for_update().get(product_id)
         if not product:
             raise ValueError(f"El producto con ID {product_id} no existe.")
+
+        # If stock is 0, it means "sin control de stock" (food prepared on demand)
+        if product.stock == 0 and not product.sizes:
+            return
 
         qty_change = quantity if decrease else -quantity
 

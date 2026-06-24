@@ -103,7 +103,7 @@ function Dashboard({ user, onLogout }) {
     }, [selectedCategory, searchTerm])
 
     const getStockBadge = (stock) => {
-        if (stock <= 0) return { color: 'error', label: 'Agotado' }
+        if (stock <= 0) return { color: 'default', label: 'Sin control' }
         if (stock < 5) return { color: 'warning', label: 'Stock bajo' }
         return { color: 'success', label: 'Disponible' }
     }
