@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>E-Shop · Plataforma de gestión para tiendas y restaurantes</title>
+    <meta name="description"
+        content="Gestiona productos, pedidos y métricas en tiempo real. Carrito con variantes, seguimiento por token y Socket.IO.">
+
+    <!-- Tipografías: DM Serif Display (títulos) y DM Sans (cuerpo) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap"
+        rel="stylesheet">
+
+    <style>
+        /* ---------- PALETA DE COLORES (Basada en tu logo) ---------- */
+        :root {
+            --azul-oscuro: #193C6B;
+            /* Azul de las asas y el swoosh */
+            --verde-logo: #1BAA62;
+            /* Verde de la bolsa */
+            --verde-claro-bg: #E6F4E9;
+            /* Fondo del círculo del logo */
+            --blanco: #FFFFFF;
+            --texto-oscuro: #0F1923;
+            --texto-gris: #64748B;
+            --borde-claro: #d1e1d6;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background-color: var(--blanco);
+            color: var(--texto-oscuro);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        /* ---------- TIPOGRAFÍA ---------- */
+        h1,
+        h2,
+        h3 {
+            font-family: 'DM Serif Display', Georgia, serif;
+            font-weight: 400;
+            letter-spacing: -0.02em;
+        }
+
+        .section-label {
+            font-weight: 600;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--verde-logo);
+            display: block;
+            margin-bottom: 8px;
+            text-align: center;
+        }
+
+        .section-title {
+            font-size: 2.8rem;
+            line-height: 1.1;
+            margin-bottom: 16px;
+            color: var(--azul-oscuro);
+            text-align: center;
+        }
+
+        .section-subtitle {
+            font-size: 1.15rem;
+            font-weight: 400;
+            color: var(--texto-gris);
+            max-width: 640px;
+            margin: 0 auto 40px auto;
+            text-align: center;
+        }
+
+        /* ---------- HEADER ---------- */
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(12px);
+            border-bottom: 2px solid var(--verde-claro-bg);
+            z-index: 1000;
+            padding: 10px 0;
+        }
+
+        .header-inner {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .logo-wrap {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+        }
+
+        /* IMPORTANTE: Reemplaza el src con la imagen de tu logo */
+        .logo-img {
+            height: 45px;
+            width: auto;
+            object-fit: contain;
+        }
+
+        .logo-text {
+            font-family: 'DM Serif Display', serif;
+            font-size: 1.4rem;
+            color: var(--azul-oscuro);
+            letter-spacing: -0.02em;
+        }
+
+        nav {
+            display: flex;
+            align-items: center;
+            gap: 28px;
+        }
+
+        nav a {
+            font-weight: 500;
+            color: var(--texto-gris);
+            text-decoration: none;
+            font-size: 0.95rem;
+            transition: color 0.2s;
+        }
+
+        nav a:hover {
+            color: var(--verde-logo);
+        }
+
+        .btn-cta-header {
+            background: var(--verde-logo);
+            color: var(--blanco) !important;
+            padding: 8px 24px;
+            border-radius: 100px;
+            border: 2px solid var(--verde-logo);
+            transition: background 0.2s;
+        }
+
+        .btn-cta-header:hover {
+            background: #158a4d !important;
+            border-color: #158a4d !important;
+        }
+
+        /* ---------- HERO ---------- */
+        .hero {
+            padding: 140px 0 80px;
+            background: var(--blanco);
+            border-bottom: 2px solid var(--verde-claro-bg);
+        }
+
+        .hero-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 60px;
+            align-items: center;
+        }
+
+        .hero-text h1 {
+            font-size: 3.8rem;
+            line-height: 1.05;
+            margin-bottom: 16px;
+            color: var(--azul-oscuro);
+        }
+
+        .hero-text h1 .highlight {
+            color: var(--verde-logo);
+        }
+
+        .hero-text p {
+            font-size: 1.15rem;
+            color: var(--texto-gris);
+            max-width: 480px;
+            margin-bottom: 32px;
+        }
+
+        .hero-badges {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            margin-bottom: 32px;
+        }
+
+        .hero-badges span {
+            background: var(--verde-claro-bg);
+            color: var(--azul-oscuro);
+            padding: 6px 16px;
+            border-radius: 100px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 16px;
+        }
+
+        .btn-primary {
+            background: var(--verde-logo);
+            color: var(--blanco);
+            padding: 16px 36px;
+            border-radius: 100px;
+            font-weight: 600;
+            text-decoration: none;
+            border: 2px solid var(--verde-logo);
+            transition: background 0.2s, transform 0.1s;
+            display: inline-block;
+        }
+
+        .btn-primary:hover {
+            background: #158a4d;
+            border-color: #158a4d;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--azul-oscuro);
+            padding: 16px 36px;
+            border-radius: 100px;
+            font-weight: 600;
+            text-decoration: none;
+            border: 2px solid var(--azul-oscuro);
+            transition: background 0.2s, color 0.2s;
+            display: inline-block;
+        }
+
+        .btn-secondary:hover {
+            background: var(--azul-oscuro);
+            color: var(--blanco);
+        }
+
+        /* Simulación visual de un carrito en el Hero */
+        .hero-visual {
+            background: var(--verde-claro-bg);
+            border-radius: 40px;
+            padding: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            min-height: 320px;
+        }
+
+        .hero-visual .big-icon {
+            font-size: 8rem;
+            line-height: 1;
+            color: var(--verde-logo);
+            filter: drop-shadow(0 20px 40px rgba(27, 170, 98, 0.2));
+        }
+
+        /* ---------- CARACTERÍSTICAS PRINCIPALES ---------- */
+        .features {
+            padding: 80px 0;
+            background: var(--blanco);
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 28px;
+        }
+
+        .feature-card {
+            background: var(--blanco);
+            padding: 32px 24px;
+            border-radius: 20px;
+            border: 2px solid var(--verde-claro-bg);
+            transition: border-color 0.3s, transform 0.2s, box-shadow 0.3s;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
+        }
+
+        .feature-card:hover {
+            border-color: var(--verde-logo);
+            transform: translateY(-6px);
+            box-shadow: 0 12px 32px rgba(27, 170, 98, 0.08);
+        }
+
+        .feature-card .icon {
+            background: var(--verde-claro-bg);
+            width: 56px;
+            height: 56px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            margin-bottom: 16px;
+            color: var(--verde-logo);
+        }
+
+        .feature-card h3 {
+            font-family: 'DM Sans', sans-serif;
+            font-weight: 600;
+            font-size: 1.15rem;
+            margin-bottom: 8px;
+            color: var(--azul-oscuro);
+        }
+
+        .feature-card p {
+            color: var(--texto-gris);
+            font-size: 0.95rem;
+        }
+
+        /* ---------- SECCIÓN DE GESTIÓN Y ROLES ---------- */
+        .roles-section {
+            background: var(--verde-claro-bg);
+            padding: 80px 0;
+        }
+
+        .roles-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            margin-top: 20px;
+        }
+
+        .role-box {
+            background: var(--blanco);
+            padding: 32px;
+            border-radius: 20px;
+            border: 1px solid rgba(25, 60, 107, 0.08);
+            text-align: center;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.02);
+        }
+
+        .role-box h3 {
+            color: var(--azul-oscuro);
+            font-family: 'DM Serif Display', serif;
+            font-size: 1.6rem;
+            margin-bottom: 8px;
+        }
+
+        .role-box .role-tag {
+            display: inline-block;
+            background: var(--azul-oscuro);
+            color: var(--blanco);
+            padding: 2px 14px;
+            border-radius: 100px;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+
+        .role-box p {
+            color: var(--texto-gris);
+        }
+
+        /* ---------- FEATURE DE PEDIDOS Y SEGUIMIENTO ---------- */
+        .workflow {
+            padding: 80px 0;
+            background: var(--blanco);
+        }
+
+        .workflow-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 24px;
+        }
+
+        .workflow-item {
+            background: var(--blanco);
+            padding: 24px;
+            border-radius: 16px;
+            border: 2px solid var(--verde-claro-bg);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
+        .workflow-item .num {
+            background: var(--verde-logo);
+            color: var(--blanco);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.2rem;
+            margin-bottom: 12px;
+        }
+
+        .workflow-item h4 {
+            color: var(--azul-oscuro);
+            margin-bottom: 4px;
+        }
+
+        .workflow-item p {
+            color: var(--texto-gris);
+            font-size: 0.9rem;
+        }
+
+        /* ---------- CTA FINAL ---------- */
+        .cta-bottom {
+            background: var(--azul-oscuro);
+            padding: 80px 0;
+            text-align: center;
+        }
+
+        .cta-bottom h2 {
+            color: var(--blanco);
+            margin-bottom: 16px;
+            font-size: 3rem;
+        }
+
+        .cta-bottom p {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 1.15rem;
+            margin-bottom: 32px;
+        }
+
+        .cta-bottom .btn-primary {
+            background: var(--blanco);
+            color: var(--azul-oscuro);
+            border-color: var(--blanco);
+        }
+
+        .cta-bottom .btn-primary:hover {
+            background: var(--verde-claro-bg);
+            border-color: var(--verde-claro-bg);
+        }
+
+        /* ---------- FOOTER ---------- */
+        footer {
+            background: var(--blanco);
+            padding: 40px 0 24px;
+            border-top: 2px solid var(--verde-claro-bg);
+        }
+
+        .footer-grid {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+
+        .footer-brand p {
+            color: var(--texto-gris);
+            font-size: 0.9rem;
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 32px;
+        }
+
+        .footer-links a {
+            color: var(--azul-oscuro);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.9rem;
+            transition: color 0.2s;
+        }
+
+        .footer-links a:hover {
+            color: var(--verde-logo);
+        }
+
+        .footer-bottom {
+            border-top: 2px solid var(--verde-claro-bg);
+            padding-top: 20px;
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            font-size: 0.85rem;
+            color: var(--texto-gris);
+        }
+
+        /* ---------- RESPONSIVE ---------- */
+        @media (max-width: 1024px) {
+            .hero-grid {
+                grid-template-columns: 1fr;
+                text-align: center;
+            }
+
+            .hero-text h1 {
+                font-size: 3rem;
+            }
+
+            .hero-text p,
+            .hero-badges,
+            .hero-buttons {
+                justify-content: center;
+                margin-left: auto;
+                margin-right: auto;
+            }
+
+            .hero-badges {
+                justify-content: center;
+            }
+
+            .hero-visual {
+                max-width: 400px;
+                margin: 0 auto;
+                width: 100%;
+            }
+
+            .roles-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .section-title {
+                font-size: 2.4rem;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .header-inner {
+                flex-wrap: wrap;
+                gap: 12px;
+            }
+
+            nav {
+                display: none;
+            }
+
+            .hero-text h1 {
+                font-size: 2.2rem;
+            }
+
+            .hero-visual {
+                min-height: 200px;
+                padding: 20px;
+            }
+
+            .hero-visual .big-icon {
+                font-size: 5rem;
+            }
+
+            .footer-grid {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .footer-links {
+                justify-content: center;
+                flex-wrap: wrap;
+            }
+
+            .footer-bottom {
+                flex-direction: column;
+                text-align: center;
+                gap: 8px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- HEADER -->
+    <header>
+        <div class="container header-inner">
+            <a href="#" class="logo-wrap">
+                <!-- CAMBIO IMPORTANTE: Reemplaza 'tu-logo-e-shop.png' con la ruta de tu imagen -->
+                <img src="./frontend/public/e-shop-logo.png" alt="E-Shop Logo" class="logo-img">
+                <span class="logo-text">E-Shop</span>
+            </a>
+            <nav>
+                <a href="#features">Funcionalidades</a>
+                <a href="#roles">Roles</a>
+                <a href="#workflow">Seguimiento</a>
+                <a href="#contacto" class="btn-cta-header">Comenzar ventas</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- HERO -->
+    <section class="hero">
+        <div class="container hero-grid">
+
+            <!-- Lado Izquierdo -->
+            <div class="hero-text">
+                <span class="section-label" style="text-align:left;">★ E-Shop by Osdosoft</span>
+                <h1>
+                    Gestiona tiendas y pedidos <br>
+                    <span class="highlight">en tiempo real.</span>
+                </h1>
+                <p>
+                    Plataforma SaaS para tiendas y restaurantes. Controla productos, gestiona pedidos con 6 estados y
+                    ofrece una experiencia de compra sin fricciones.
+                </p>
+                <div class="hero-badges">
+                    <span>👥 SUPERADMIN & SELLER</span>
+                    <span>🚀 Socket.IO en vivo</span>
+                    <span>🔗 Seguimiento por token</span>
+                </div>
+                <div class="hero-buttons">
+                    <a href="#contacto" class="btn-primary">Crear mi tienda</a>
+                    <a href="#features" class="btn-secondary">Ver módulos</a>
+                </div>
+            </div>
+
+            <!-- Lado Derecho -->
+            <div class="hero-visual">
+                <!-- Ilustración de una bolsa de compras que represente el E-Shop -->
+                <div class="big-icon">🛍️</div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- CARACTERÍSTICAS -->
+    <section id="features" class="features">
+        <div class="container">
+            <span class="section-label">Módulos integrados</span>
+            <h2 class="section-title">Todo lo que necesitas para vender</h2>
+            <p class="section-subtitle">Desde el catálogo público hasta el dashboard financiero. Diseñado para que
+                administres tu negocio desde un solo lugar.</p>
+
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="icon">🛒</div>
+                    <h3>Catálogo y Carrito</h3>
+                    <p>Productos con categorías y variantes avanzadas (tallas, toppings, extras). El carrito se adapta a
+                        tiendas y restaurantes.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="icon">📦</div>
+                    <h3>Sistema de Pedidos</h3>
+                    <p>Flujo robusto de 6 estados con transiciones validadas. Desde "Recibido" hasta "Entregado", con
+                        control total del proceso.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="icon">🔗</div>
+                    <h3>Seguimiento Público</h3>
+                    <p>Generación de tokens de seguimiento. Tus clientes pueden ver el estado de su pedido en tiempo
+                        real sin necesidad de tener cuenta.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="icon">📊</div>
+                    <h3>Dashboard y Métricas</h3>
+                    <p>Visualiza tus ventas, ingresos, pedidos y métricas clave con gráficos interactivos. Conectado con
+                        Socket.IO para actualizaciones en vivo.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ROLES -->
+    <section id="roles" class="roles-section">
+        <div class="container">
+            <span class="section-label">Seguridad y jerarquía</span>
+            <h2 class="section-title">Dos roles, un ecosistema</h2>
+            <p class="section-subtitle">Diseñado para franquicias o marcas con múltiples puntos de venta.</p>
+            <div class="roles-grid">
+                <div class="role-box">
+                    <div class="role-tag">Super Admin</div>
+                    <h3>Control total</h3>
+                    <p>Gestiona todas las tiendas, usuarios, productos y métricas globales de la plataforma. Supervisa
+                        el rendimiento de todos los SELLERS.</p>
+                </div>
+                <div class="role-box">
+                    <div class="role-tag">Seller</div>
+                    <h3>Tu propia tienda</h3>
+                    <p>Administra tu catálogo de productos, gestiona tus propios pedidos, controla tu stock y accede a
+                        tu dashboard personal de ventas.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FLUJO DE PEDIDOS (TRANSICIONES) -->
+    <section id="workflow" class="workflow">
+        <div class="container">
+            <span class="section-label">Experiencia del cliente</span>
+            <h2 class="section-title">Pedidos sin perder el rastro</h2>
+            <p class="section-subtitle">Transiciones validadas y notificaciones en vivo para que siempre sepas dónde
+                está cada pedido.</p>
+
+            <div class="workflow-grid">
+                <div class="workflow-item">
+                    <div class="num">1</div>
+                    <h4>Recibido</h4>
+                    <p>El cliente realiza la compra. El vendedor recibe una notificación instantánea con Socket.IO.</p>
+                </div>
+                <div class="workflow-item">
+                    <div class="num">2</div>
+                    <h4>En Preparación</h4>
+                    <p>El cocinero o encargado de logística inicia el proceso.</p>
+                </div>
+                <div class="workflow-item">
+                    <div class="num">3</div>
+                    <h4>Listo / Armado</h4>
+                    <p>El pedido está terminado y listo para entrega o recogida.</p>
+                </div>
+                <div class="workflow-item">
+                    <div class="num">4</div>
+                    <h4>En Camino / Recogido</h4>
+                    <p>Seguimiento público activo. El cliente conoce en tiempo real la ubicación o el estado.</p>
+                </div>
+                <div class="workflow-item">
+                    <div class="num">5</div>
+                    <h4>Entregado</h4>
+                    <p>El cliente confirma la recepción. Las métricas de ventas se actualizan automáticamente.</p>
+                </div>
+                <div class="workflow-item">
+                    <div class="num">6</div>
+                    <h4>Cancelado</h4>
+                    <p>Los flujos de validación aseguran que solo se pueda cancelar en estados permitidos (ej: antes de
+                        estar "En Camino").</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA FINAL -->
+    <section id="contacto" class="cta-bottom">
+        <div class="container">
+            <h2>Lanza tu tienda digital hoy</h2>
+            <p>No necesitas equipo de desarrollo. Nosotros te damos la plataforma, tú solo enfócate en vender.</p>
+            <a href="#" class="btn-primary">Solicitar demo empresarial</a>
+            <div style="margin-top: 16px; color: rgba(255,255,255,0.5); font-size:0.8rem;">
+                * Soporte para tiendas físicas, restaurantes y e-commerce puro.
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer>
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-brand">
+                    <div class="logo-wrap" style="margin-bottom: 4px;">
+                        <img src="./frontend/public/e-shop-logo.png" alt="E-Shop Logo"
+                            style="height: 32px; width: auto; object-fit: contain;">
+                        <span class="logo-text" style="font-size:1.2rem;">E-Shop</span>
+                    </div>
+                    <p>Desarrollado por Osdosoft · Software que impulsa tu negocio.</p>
+                </div>
+                <div class="footer-links">
+                    <a href="#features">Características</a>
+                    <a href="#">Política de privacidad</a>
+                    <a href="#">Términos de uso</a>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <span>© 2026 E-Shop · Todos los derechos reservados.</span>
+                <span>Hecho con ⚡ en Colombia</span>
+            </div>
+        </div>
+    </footer>
+
+</body>
+
+</html>

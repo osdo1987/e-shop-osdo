@@ -19,18 +19,43 @@ class OrderService:
 
     @staticmethod
     def create_order(store_id, data):
-        """Create a new order starting as PENDIENTE, reserving stock immediately"""
+        """Create a new order, reserving stock immediately"""
         tracking_token = secrets.token_urlsafe(48)
         
+        origin = data.get('origin', 'WEB')
+        payment_method = data.get('payment_method')
+        status = data.get('status', 'ENTREGADO' if origin == 'LOCAL' else 'PENDIENTE')
+        
+        # If order is local, we must associate it with the active cash register session
+        cash_register_session_id = None
+        if origin == 'LOCAL':
+            from app.services.cash_register_service import CashRegisterService
+            active_session = CashRegisterService.get_active_session(store_id)
+            if not active_session:
+                raise ValueError("No hay una sesión de caja abierta para registrar ventas locales.")
+            cash_register_session_id = active_session.id
+            
+            # Update cash register session totals
+            total_price = data['total_price']
+            if payment_method == 'EFECTIVO':
+                active_session.cash_sales += total_price
+            elif payment_method == 'TARJETA':
+                active_session.card_sales += total_price
+            elif payment_method == 'TRANSFERENCIA':
+                active_session.transfer_sales += total_price
+
         order = Order(
             store_id=store_id,
             customer_name=data['customer_name'],
             customer_phone=data.get('customer_phone'),
             total_price=data['total_price'],
-            status='PENDIENTE',
+            status=status,
             delivery_address=data.get('delivery_address'),
             customer_notes=data.get('customer_notes'),
-            tracking_token=tracking_token
+            tracking_token=tracking_token,
+            origin=origin,
+            payment_method=payment_method,
+            cash_register_session_id=cash_register_session_id
         )
         
         db.session.add(order)
@@ -40,7 +65,7 @@ class OrderService:
         history_entry = OrderStatusHistory(
             order_id=order.id,
             old_status=None,
-            new_status='PENDIENTE',
+            new_status=status,
             changed_by='Sistema',
             notes='Pedido creado'
         )
@@ -71,6 +96,16 @@ class OrderService:
                 extra_price=item_data.get('extra_price', 0)
             )
             db.session.add(item)
+            
+        # Automatically generate invoice for LOCAL orders
+        if origin == 'LOCAL':
+            from app.services.invoice_service import InvoiceService
+            InvoiceService.generate_invoice(
+                store_id=store_id,
+                order_id=order.id,
+                customer_name=order.customer_name,
+                customer_document=data.get('customer_document')
+            )
             
         db.session.commit()
         return order_schema.dump(order)

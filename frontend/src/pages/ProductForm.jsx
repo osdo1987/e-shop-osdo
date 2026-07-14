@@ -316,7 +316,7 @@ function ProductForm({ user }) {
                             sx={{ mb: 2 }}
                         />
                         <Grid container spacing={2} sx={{ mb: 2 }}>
-                            <Grid item xs={12} sm={4}>
+                            <Grid size={{ xs: 12, sm: 4 }}>
                                 <TextField
                                     fullWidth
                                     label="Precio de Venta"
@@ -329,7 +329,7 @@ function ProductForm({ user }) {
                                     placeholder="45000"
                                 />
                             </Grid>
-                            <Grid item xs={12} sm={4}>
+                            <Grid size={{ xs: 12, sm: 4 }}>
                                 <TextField
                                     fullWidth
                                     label="Precio Promocional"
@@ -341,7 +341,7 @@ function ProductForm({ user }) {
                                     placeholder="35000"
                                 />
                             </Grid>
-                            <Grid item xs={12} sm={4}>
+                            <Grid size={{ xs: 12, sm: 4 }}>
                                 <TextField
                                     fullWidth
                                     label="Precio de Compra (Costo)"
@@ -355,7 +355,7 @@ function ProductForm({ user }) {
                             </Grid>
                         </Grid>
                         <Grid container spacing={2} sx={{ mb: 2 }}>
-                            <Grid item xs={12} sm={6}>
+                            <Grid size={{ xs: 12, sm: 6 }}>
                                 <TextField
                                     fullWidth
                                     label={`Stock ${hasSizes ? '(Calculado de las tallas)' : '(0 = sin control de stock)'}`}
@@ -370,7 +370,7 @@ function ProductForm({ user }) {
                                     sx={hasSizes ? { '& .MuiInputBase-root': { opacity: 0.7 } } : {}}
                                 />
                             </Grid>
-                            <Grid item xs={12} sm={6}>
+                            <Grid size={{ xs: 12, sm: 6 }}>
                                 <TextField
                                     fullWidth
                                     select
@@ -563,7 +563,7 @@ function ProductForm({ user }) {
                                             />
 
                                             <Grid container spacing={1.5} sx={{ mb: 1.5 }}>
-                                                <Grid item xs={4}>
+                                                <Grid size={{ xs: 4 }}>
                                                     <TextField
                                                         fullWidth
                                                         size="small"
@@ -574,7 +574,7 @@ function ProductForm({ user }) {
                                                         onChange={(e) => updateToppingGroup(gIndex, 'min', parseInt(e.target.value) || 0)}
                                                     />
                                                 </Grid>
-                                                <Grid item xs={4}>
+                                                <Grid size={{ xs: 4 }}>
                                                     <TextField
                                                         fullWidth
                                                         size="small"
@@ -585,7 +585,7 @@ function ProductForm({ user }) {
                                                         onChange={(e) => updateToppingGroup(gIndex, 'max', parseInt(e.target.value) || 0)}
                                                     />
                                                 </Grid>
-                                                <Grid item xs={4}>
+                                                <Grid size={{ xs: 4 }}>
                                                     <FormControlLabel
                                                         control={
                                                             <Checkbox
@@ -725,12 +725,12 @@ function ProductForm({ user }) {
                         </Box>
 
                         <Grid container spacing={1.5} sx={{ mt: 1 }}>
-                            <Grid item xs={6}>
+                            <Grid size={{ xs: 6 }}>
                                 <Button type="submit" variant="contained" fullWidth disabled={saving} sx={{ py: 1.5 }}>
                                     {saving ? 'Guardando...' : (isEditing ? 'Actualizar Producto' : 'Guardar Producto')}
                                 </Button>
                             </Grid>
-                            <Grid item xs={6}>
+                            <Grid size={{ xs: 6 }}>
                                 <Button component={Link} to="/admin" variant="outlined" fullWidth sx={{ py: 1.5 }}>
                                     Cancelar
                                 </Button>

@@ -32,7 +32,6 @@ import AccordionDetails from '@mui/material/AccordionDetails'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import Divider from '@mui/material/Divider'
 import Paper from '@mui/material/Paper'
-import Grid from '@mui/material/Grid'
 import { useTheme } from '@mui/material/styles'
 
 const MONTHS = [

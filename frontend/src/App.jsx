@@ -16,6 +16,9 @@ import SuperAdmin from './pages/SuperAdmin'
 import NotFound from './pages/NotFound'
 import Orders from './pages/Orders'
 import OrderTracking from './pages/OrderTracking'
+import POS from './pages/POS'
+import CashRegister from './pages/CashRegister'
+import Invoices from './pages/Invoices'
 
 function App({ darkMode, setDarkMode }) {
     const [user, setUser] = useState(null)
@@ -68,6 +71,15 @@ function App({ darkMode, setDarkMode }) {
                 } />
                 <Route path="/admin/orders" element={
                     user ? <Orders user={user} onLogout={handleLogout} /> : <Navigate to="/login" />
+                } />
+                <Route path="/admin/pos" element={
+                    user ? <POS user={user} /> : <Navigate to="/login" />
+                } />
+                <Route path="/admin/cash-register" element={
+                    user ? <CashRegister user={user} /> : <Navigate to="/login" />
+                } />
+                <Route path="/admin/invoices" element={
+                    user ? <Invoices user={user} /> : <Navigate to="/login" />
                 } />
                 <Route path="/admin/settings" element={
                     user ? <Settings user={user} onLogout={handleLogout} darkMode={darkMode} setDarkMode={setDarkMode} /> : <Navigate to="/login" />

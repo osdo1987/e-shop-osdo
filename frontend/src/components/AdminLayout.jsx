@@ -22,6 +22,9 @@ import StoreIcon from '@mui/icons-material/Store'
 import LogoutIcon from '@mui/icons-material/Logout'
 import { useTheme } from '@mui/material/styles'
 import useMediaQuery from '@mui/material/useMediaQuery'
+import PointOfSaleIcon from '@mui/icons-material/PointOfSale'
+import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet'
+import ReceiptLongIcon from '@mui/icons-material/ReceiptLong'
 
 function AdminLayout({ title, children, user, onLogout, superadmin = false, showBack = false }) {
     const displayName = superadmin ? 'Super Admin' : (user?.storeName || 'Mi Tienda')
@@ -47,7 +50,10 @@ function AdminLayout({ title, children, user, onLogout, superadmin = false, show
             { path: '/admin/dashboard', label: 'Dashboard', icon: <DashboardIcon /> },
             { path: '/admin', label: 'Productos', icon: <Inventory2Icon /> },
             { path: '/admin/categories', label: 'Categorías', icon: <CategoryIcon /> },
-            { path: '/admin/orders', label: 'Pedidos', icon: <ShoppingCartIcon /> },
+            { path: '/admin/pos', label: 'POS / Venta Local', icon: <PointOfSaleIcon /> },
+            { path: '/admin/cash-register', label: 'Control de Caja', icon: <AccountBalanceWalletIcon /> },
+            { path: '/admin/invoices', label: 'Facturas', icon: <ReceiptLongIcon /> },
+            { path: '/admin/orders', label: 'Pedidos Web', icon: <ShoppingCartIcon /> },
             { path: '/admin/settings', label: 'Configuración', icon: <SettingsIcon /> }
         ], [superadmin])
 

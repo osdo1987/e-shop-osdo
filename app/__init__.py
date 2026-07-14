@@ -32,12 +32,16 @@ def create_app(config_class=Config):
     from app.routes.category_routes import category_bp
     from app.routes.product_routes import product_bp
     from app.routes.order_routes import order_bp
+    from app.routes.cash_register_routes import cash_register_bp
+    from app.routes.invoice_routes import invoice_bp
 
     app.register_blueprint(auth_bp, url_prefix='/api/auth')
     app.register_blueprint(store_bp, url_prefix='/api/stores')
     app.register_blueprint(category_bp, url_prefix='/api/categories')
     app.register_blueprint(product_bp, url_prefix='/api/products')
     app.register_blueprint(order_bp, url_prefix='/api/orders')
+    app.register_blueprint(cash_register_bp, url_prefix='/api/cash-register')
+    app.register_blueprint(invoice_bp, url_prefix='/api/invoices')
 
     # Global Error Handler
     @app.errorhandler(Exception)

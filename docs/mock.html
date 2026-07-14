@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UI Premium Multi-Tenant - Sabores del Valle</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Fuentes: Inter para texto, JetBrains Mono para números/precios -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400..700&family=JetBrains+Mono:wght@400;700&display=swap"
+        rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f1f5f9;
+            color: #0f172a;
+        }
+
+        /* Estilos para el área numérica con JetBrains Mono */
+        .font-mono-numbers {
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* Lógica para cambiar de vistas */
+        .view {
+            display: none;
+        }
+
+        .view.active {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            height: 100%;
+        }
+
+        .sidebar-item {
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.65rem 1rem;
+            border-radius: 0.5rem;
+            transition: all 0.15s;
+        }
+
+        .sidebar-item.active {
+            background-color: rgba(255, 255, 255, 0.08);
+            color: #ffffff;
+        }
+
+        .sidebar-item:hover:not(.active) {
+            background-color: rgba(255, 255, 255, 0.04);
+            color: #e2e8f0;
+        }
+
+        /* Scrollbar clean */
+        ::-webkit-scrollbar {
+            width: 4px;
+            height: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #94a3b8;
+            border-radius: 4px;
+        }
+
+        /* Dropdown multitenant */
+        .tenant-active {
+            background-color: #134e4a;
+            color: #5eead4;
+        }
+    </style>
+</head>
+
+<body class="h-screen flex overflow-hidden bg-slate-50 text-slate-800">
+
+    <!-- SIDEBAR (Modo Oscuro Premium) -->
+    <aside class="w-[220px] bg-slate-900 border-r border-slate-800 flex-shrink-0 flex flex-col p-4 z-20 h-full">
+        <!-- Logo -->
+        <div class="flex items-center gap-2.5 mb-8 px-2 mt-1">
+            <div
+                class="w-9 h-9 bg-teal-500 text-white rounded-xl flex items-center justify-center shadow-md shadow-teal-900/30">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4">
+                    </path>
+                </svg>
+            </div>
+            <div>
+                <h1 class="font-bold text-sm leading-tight text-white tracking-tight">Sabores<br>del Valle</h1>
+            </div>
+        </div>
+
+        <!-- Menú Navegación -->
+        <nav class="space-y-1 flex-1">
+            <div onclick="changeView('view-dashboard', this)" class="sidebar-item active text-slate-300">
+                <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z">
+                    </path>
+                </svg> Dashboard
+            </div>
+            <div onclick="changeView('view-pos', this)" class="sidebar-item text-slate-400">
+                <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2z">
+                    </path>
+                </svg> POS Local
+            </div>
+            <div onclick="changeView('view-orders', this)" class="sidebar-item text-slate-400">
+                <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
+                </svg> Pedidos
+            </div>
+            <div class="pt-4 mt-4 border-t border-slate-800">
+                <div onclick="changeView('view-products', this)" class="sidebar-item text-slate-400">
+                    <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+                    </svg> Productos
+                </div>
+                <div onclick="changeView('view-cash', this)" class="sidebar-item text-slate-400">
+                    <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z">
+                        </path>
+                    </svg> Caja
+                </div>
+            </div>
+        </nav>
+    </aside>
+
+    <!-- MAIN AREA -->
+    <main class="flex-1 flex flex-col h-full overflow-hidden relative bg-slate-50">
+
+        <!-- HEADER SUPERIOR (Con Multi-Tenant Switcher) -->
+        <header
+            class="bg-white border-b border-slate-200 px-6 py-3 flex justify-between items-center sticky top-0 z-10 shadow-sm h-16 shrink-0">
+            <h2 id="page-title" class="text-lg font-bold text-slate-900 tracking-tight">Dashboard Global</h2>
+
+            <div class="flex items-center gap-4">
+                <!-- Selector Multi-Tenant (Sucursales) -->
+                <div class="relative group">
+                    <button
+                        class="flex items-center gap-3 px-3 py-1.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg transition shadow-sm">
+                        <div
+                            class="w-6 h-6 rounded-full bg-teal-100 text-teal-700 flex items-center justify-center text-[10px] font-bold">
+                            PN</div>
+                        <div class="text-left">
+                            <p class="text-[11px] font-semibold text-slate-800 leading-tight">Sucursal Principal</p>
+                            <p class="text-[9px] text-slate-500">ID: T-1002</p>
+                        </div>
+                        <svg class="w-3 h-3 text-slate-400 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7">
+                            </path>
+                        </svg>
+                    </button>
+                    <!-- Dropdown Mockup (Simulado) -->
+                    <div
+                        class="absolute right-0 top-12 w-48 bg-white border border-slate-200 shadow-xl rounded-lg p-1 hidden group-hover:block">
+                        <div class="flex items-center gap-2 p-2 hover:bg-slate-50 rounded cursor-pointer">
+                            <div
+                                class="w-5 h-5 rounded-full bg-teal-100 text-teal-700 text-[8px] flex items-center justify-center font-bold">
+                                PN</div><span class="text-xs font-medium text-slate-700">Sucursal Principal</span><span
+                                class="ml-auto text-[8px] text-teal-600">● Activo</span>
+                        </div>
+                        <div class="flex items-center gap-2 p-2 hover:bg-slate-50 rounded cursor-pointer">
+                            <div
+                                class="w-5 h-5 rounded-full bg-slate-200 text-slate-700 text-[8px] flex items-center justify-center font-bold">
+                                SN</div><span class="text-xs font-medium text-slate-500">Sucursal Norte</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Perfil Usuario -->
+                <div
+                    class="w-8 h-8 rounded-full bg-slate-900 text-white text-[10px] flex items-center justify-center font-bold">
+                    JV</div>
+            </div>
+        </header>
+
+        <!-- CONTENEDOR DE VISTAS (Scrollable) -->
+        <div class="flex-1 overflow-y-auto p-6 w-full max-w-[1600px] mx-auto">
+
+            <!-- ======================= -->
+            <!-- VISTA 1: DASHBOARD -->
+            <!-- ======================= -->
+            <div id="view-dashboard" class="view active gap-6 pb-10">
+                <!-- Métricas Modernas con Fondos -->
+                <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
+                    <div
+                        class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm flex flex-col justify-between relative overflow-hidden">
+                        <div class="absolute -right-6 -top-6 w-20 h-20 bg-emerald-50 rounded-full opacity-70"></div>
+                        <p class="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1 relative z-10">
+                            Ingresos Totales</p>
+                        <div class="flex items-end justify-between relative z-10">
+                            <span
+                                class="text-2xl font-bold font-mono-numbers text-slate-900 tracking-tight">$14.6M</span>
+                            <span
+                                class="text-[10px] bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full font-bold">+12.5%</span>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm relative overflow-hidden">
+                        <p class="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">Productos</p>
+                        <div class="flex items-end justify-between"><span
+                                class="text-2xl font-bold font-mono-numbers text-slate-900 tracking-tight">26</span>
+                        </div>
+                    </div>
+                    <div
+                        class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm border-l-4 border-red-500 relative overflow-hidden">
+                        <p class="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">Stock Crítico</p>
+                        <div class="flex items-end justify-between"><span
+                                class="text-2xl font-bold font-mono-numbers text-red-600 tracking-tight">1</span><span
+                                class="text-[10px] text-red-600 font-medium">Alerta inmediata</span></div>
+                    </div>
+                    <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm border-l-4 border-amber-500">
+                        <p class="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">Stock Bajo</p>
+                        <div class="flex items-end justify-between"><span
+                                class="text-2xl font-bold font-mono-numbers text-amber-600 tracking-tight">0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Gráficas y Tabla de Actividad (Layout UI) -->
+                <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+                    <div class="xl:col-span-2 bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
+                        <div class="flex justify-between items-center mb-6">
+                            <h4 class="font-semibold text-slate-800 text-sm">Resumen de Ventas (Esta semana)</h4><span
+                                class="text-xs text-slate-400">Últimos 7 días</span>
+                        </div>
+                        <div
+                            class="flex items-end h-40 gap-2 md:gap-4 justify-between px-1 pb-2 border-b border-slate-100">
+                            <div class="flex-1 flex flex-col items-center gap-1">
+                                <div class="w-full bg-slate-100 rounded-lg h-24 relative">
+                                    <div class="absolute bottom-0 w-full bg-teal-500 rounded-lg h-18"></div>
+                                </div><span class="text-[10px] font-medium text-slate-400">Lun</span>
+                            </div>
+                            <div class="flex-1 flex flex-col items-center gap-1">
+                                <div class="w-full bg-slate-100 rounded-lg h-32 relative">
+                                    <div class="absolute bottom-0 w-full bg-teal-500 rounded-lg h-28"></div>
+                                </div><span class="text-[10px] font-medium text-slate-400">Mar</span>
+                            </div>
+                            <div class="flex-1 flex flex-col items-center gap-1">
+                                <div class="w-full bg-slate-100 rounded-lg h-40 relative">
+                                    <div class="absolute bottom-0 w-full bg-teal-500 rounded-lg h-38"></div>
+                                </div><span class="text-[10px] font-medium text-slate-400">Mié</span>
+                            </div>
+                            <div class="flex-1 flex flex-col items-center gap-1">
+                                <div class="w-full bg-slate-100 rounded-lg h-20 relative">
+                                    <div class="absolute bottom-0 w-full bg-teal-500 rounded-lg h-14"></div>
+                                </div><span class="text-[10px] font-medium text-slate-400">Jue</span>
+                            </div>
+                            <div class="flex-1 flex flex-col items-center gap-1">
+                                <div class="w-full bg-slate-100 rounded-lg h-44 relative">
+                                    <div class="absolute bottom-0 w-full bg-teal-500 rounded-lg h-42"></div>
+                                </div><span class="text-[10px] font-medium text-slate-400">Vie</span>
+                            </div>
+                            <div class="flex-1 flex flex-col items-center gap-1">
+                                <div class="w-full bg-slate-100 rounded-lg h-28 relative">
+                                    <div class="absolute bottom-0 w-full bg-teal-500 rounded-lg h-24"></div>
+                                </div><span class="text-[10px] font-medium text-slate-400">Sáb</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
+                        <h4 class="font-semibold text-slate-800 text-sm mb-4">Órdenes Recientes</h4>
+                        <div class="space-y-3">
+                            <div
+                                class="flex justify-between items-center bg-slate-50 p-2.5 rounded-lg border border-slate-100">
+                                <div>
+                                    <p class="text-xs font-bold text-slate-700">#47 - Oscar Dorado</p>
+                                    <p class="text-[10px] text-slate-400">Hace 4 min</p>
+                                </div><span
+                                    class="bg-sky-100 text-sky-700 text-[10px] px-1.5 py-0.5 rounded-full font-bold">Confirmado</span>
+                            </div>
+                            <div
+                                class="flex justify-between items-center bg-slate-50 p-2.5 rounded-lg border border-slate-100">
+                                <div>
+                                    <p class="text-xs font-bold text-slate-700">#45 - Juan Test</p>
+                                    <p class="text-[10px] text-slate-400">Hace 1 h</p>
+                                </div><span
+                                    class="bg-amber-100 text-amber-700 text-[10px] px-1.5 py-0.5 rounded-full font-bold">Pendiente</span>
+                            </div>
+                            <div
+                                class="flex justify-between items-center bg-slate-50 p-2.5 rounded-lg border border-slate-100">
+                                <div>
+                                    <p class="text-xs font-bold text-slate-700 text-opacity-60">#41 - Oscar D.</p>
+                                    <p class="text-[10px] text-slate-400">Hace 3 h</p>
+                                </div><span
+                                    class="bg-red-100 text-red-700 text-[10px] px-1.5 py-0.5 rounded-full font-bold">Cancelado</span>
+                            </div>
+                        </div>
+                        <div class="mt-4 border-t border-slate-100 pt-3 text-center"><span
+                                class="text-[11px] text-slate-400 hover:text-slate-700 cursor-pointer font-medium">Ver
+                                todas las órdenes →</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ======================= -->
+            <!-- VISTA 2: POS / VENTA LOCAL -->
+            <!-- ======================= -->
+            <div id="view-pos" class="view gap-0 w-full flex-1 h-full pb-4">
+                <div class="flex flex-col xl:flex-row gap-4 h-full">
+                    <!-- Catálogo (8 columnas) -->
+                    <div
+                        class="flex-1 bg-white rounded-2xl border border-slate-200 shadow-sm p-5 overflow-y-auto xl:max-h-[calc(100vh-120px)]">
+                        <div class="flex gap-3 mb-5 sticky top-0 bg-white pb-2 z-10">
+                            <input type="text"
+                                class="flex-1 border border-slate-200 rounded-xl px-4 py-2.5 text-sm placeholder:text-slate-400 focus:border-teal-500 focus:ring-1 focus:ring-teal-500 outline-none transition"
+                                placeholder="🔍 Buscar en el menú...">
+                            <select
+                                class="border border-slate-200 rounded-xl px-3 py-2.5 text-sm bg-white focus:border-teal-500 outline-none">
+                                <option>Categoría</option>
+                            </select>
+                        </div>
+                        <div class="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-6 gap-3">
+                            <div
+                                class="border border-slate-200 rounded-xl p-3 hover:border-teal-500 cursor-pointer transition bg-white shadow-sm group">
+                                <div
+                                    class="aspect-[3/2] bg-gradient-to-br from-slate-100 to-slate-200 rounded-lg mb-2 group-hover:shadow-inner transition">
+                                </div>
+                                <p class="font-semibold text-slate-800 text-[13px]">Limonada Coco</p>
+                                <p class="font-mono-numbers text-xs text-slate-400">Stock: 60</p>
+                                <p class="font-mono-numbers text-teal-600 font-bold text-sm mt-1">$8.000</p>
+                            </div>
+                            <div
+                                class="border border-slate-200 rounded-xl p-3 hover:border-teal-500 cursor-pointer transition bg-white shadow-sm group">
+                                <div class="aspect-[3/2] bg-gradient-to-br from-slate-100 to-slate-200 rounded-lg mb-2">
+                                </div>
+                                <p class="font-semibold text-slate-800 text-[13px]">Jugo de Lulo</p>
+                                <p class="font-mono-numbers text-xs text-slate-400">Stock: 50</p>
+                                <p class="font-mono-numbers text-teal-600 font-bold text-sm mt-1">$6.000</p>
+                            </div>
+                            <div
+                                class="border border-slate-200 rounded-xl p-3 hover:border-teal-500 cursor-pointer transition bg-white shadow-sm group">
+                                <div class="aspect-[3/2] bg-gradient-to-br from-slate-100 to-slate-200 rounded-lg mb-2">
+                                </div>
+                                <p class="font-semibold text-slate-800 text-[13px]">Patacones Hogao</p>
+                                <p class="font-mono-numbers text-xs text-slate-400">Stock: 40</p>
+                                <p class="font-mono-numbers text-teal-600 font-bold text-sm mt-1">$13.000</p>
+                            </div>
+                            <div
+                                class="border border-slate-200 rounded-xl p-3 hover:border-teal-500 cursor-pointer transition bg-white shadow-sm group">
+                                <div class="aspect-[3/2] bg-gradient-to-br from-slate-100 to-slate-200 rounded-lg mb-2">
+                                </div>
+                                <p class="font-semibold text-slate-800 text-[13px]">Empanadas x6</p>
+                                <p class="font-mono-numbers text-xs text-slate-400">Stock: 50</p>
+                                <p class="font-mono-numbers text-teal-600 font-bold text-sm mt-1">$12.000</p>
+                            </div>
+                            <div
+                                class="border border-slate-200 rounded-xl p-3 hover:border-teal-500 cursor-pointer transition bg-white shadow-sm group">
+                                <div class="aspect-[3/2] bg-gradient-to-br from-slate-100 to-slate-200 rounded-lg mb-2">
+                                </div>
+                                <p class="font-semibold text-slate-800 text-[13px]">Bandeja Paisa</p>
+                                <p class="font-mono-numbers text-xs text-slate-400">Stock: 30</p>
+                                <p class="font-mono-numbers text-teal-600 font-bold text-sm mt-1">$32.000</p>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Carrito (Barra lateral flotante) -->
+                    <div
+                        class="w-full xl:w-[340px] bg-white rounded-2xl border border-slate-200 shadow-sm p-5 flex flex-col shrink-0 xl:max-h-[calc(100vh-120px)]">
+                        <div class="flex justify-between items-center border-b border-slate-100 pb-3 mb-4">
+                            <h3 class="font-bold text-slate-800 text-base"><span
+                                    class="bg-teal-500 text-white text-[10px] w-5 h-5 rounded-full inline-flex items-center justify-center mr-2">0</span>
+                                Carrito</h3><span class="text-[10px] text-slate-500 font-medium">Pos #22</span>
+                        </div>
+                        <div
+                            class="flex-1 flex flex-col items-center justify-center text-slate-400 border-2 border-dashed border-slate-200 rounded-xl bg-slate-50/50">
+                            <span class="text-xs font-medium">Añade productos para iniciar</span></div>
+                        <div class="pt-4 border-t border-slate-100 mt-4 space-y-3">
+                            <div class="flex justify-between text-sm"><span class="text-slate-600">Subtotal</span><span
+                                    class="font-mono-numbers font-medium">$0</span></div>
+                            <div class="flex justify-between text-sm"><span class="text-slate-600">IVA (19%)</span><span
+                                    class="font-mono-numbers font-medium">$0</span></div>
+                            <div class="flex justify-between text-lg font-bold border-t border-slate-200 pt-3">
+                                <span>Total</span><span class="font-mono-numbers text-teal-600">$0</span></div>
+                            <button
+                                class="w-full bg-slate-200 text-slate-500 font-medium py-3.5 rounded-xl cursor-not-allowed text-sm">Facturar
+                                Venta</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ======================= -->
+            <!-- VISTA 3: PRODUCTOS -->
+            <!-- ======================= -->
+            <div id="view-products" class="view gap-6 pb-10">
+                <div class="flex justify-between items-center mb-2">
+                    <h2 class="text-xl font-bold text-slate-900">Catálogo de Productos (26)</h2><button
+                        class="bg-teal-600 hover:bg-teal-700 text-white text-sm font-medium px-5 py-2.5 rounded-xl shadow-sm transition">+
+                        Agregar Producto</button>
+                </div>
+                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                    <table class="w-full text-left text-sm text-slate-600">
+                        <thead
+                            class="bg-slate-50 text-slate-500 text-[10px] font-bold uppercase tracking-wider border-b border-slate-100">
+                            <tr>
+                                <th class="px-6 py-4">Nombre</th>
+                                <th class="px-6 py-4 text-right">Precio</th>
+                                <th class="px-6 py-4 text-center">Stock</th>
+                                <th class="px-6 py-4">Categoría</th>
+                                <th class="px-6 py-4 text-right">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100">
+                            <tr>
+                                <td class="px-6 py-4 font-medium text-slate-800">Limonada de Coco</td>
+                                <td class="px-6 py-4 text-right font-mono-numbers font-medium">$8.000</td>
+                                <td class="px-6 py-4 text-center"><span
+                                        class="bg-emerald-100 text-emerald-700 px-2.5 py-0.5 rounded-full text-[10px] font-bold">50</span>
+                                </td>
+                                <td class="px-6 py-4 text-slate-500">Bebidas</td>
+                                <td class="px-6 py-4 text-right space-x-1"><button
+                                        class="text-slate-500 hover:text-slate-800 border border-slate-200 px-3 py-1 rounded-lg text-xs bg-white hover:bg-slate-50 transition">Editar</button><button
+                                        class="text-red-600 hover:text-red-700 border border-red-200 px-3 py-1 rounded-lg text-xs bg-white hover:bg-red-50 transition">Eliminar</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="px-6 py-4 font-medium text-slate-800">Patacones con Hogao</td>
+                                <td class="px-6 py-4 text-right font-mono-numbers font-medium">$13.000</td>
+                                <td class="px-6 py-4 text-center"><span
+                                        class="bg-emerald-100 text-emerald-700 px-2.5 py-0.5 rounded-full text-[10px] font-bold">40</span>
+                                </td>
+                                <td class="px-6 py-4 text-slate-500">Entradas</td>
+                                <td class="px-6 py-4 text-right space-x-1"><button
+                                        class="text-slate-500 hover:text-slate-800 border border-slate-200 px-3 py-1 rounded-lg text-xs bg-white hover:bg-slate-50 transition">Editar</button><button
+                                        class="text-red-600 hover:text-red-700 border border-red-200 px-3 py-1 rounded-lg text-xs bg-white hover:bg-red-50 transition">Eliminar</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="px-6 py-4 font-medium text-slate-800">Bandeja Paisa</td>
+                                <td class="px-6 py-4 text-right font-mono-numbers font-medium">$32.000</td>
+                                <td class="px-6 py-4 text-center"><span
+                                        class="bg-emerald-100 text-emerald-700 px-2.5 py-0.5 rounded-full text-[10px] font-bold">30</span>
+                                </td>
+                                <td class="px-6 py-4 text-slate-500">Platos Fuertes</td>
+                                <td class="px-6 py-4 text-right space-x-1"><button
+                                        class="text-slate-500 hover:text-slate-800 border border-slate-200 px-3 py-1 rounded-lg text-xs bg-white hover:bg-slate-50 transition">Editar</button><button
+                                        class="text-red-600 hover:text-red-700 border border-red-200 px-3 py-1 rounded-lg text-xs bg-white hover:bg-red-50 transition">Eliminar</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- ======================= -->
+            <!-- VISTA 4: PEDIDOS WEB -->
+            <!-- ======================= -->
+            <div id="view-orders" class="view gap-6 pb-10">
+                <div class="flex justify-between items-center mb-2">
+                    <h2 class="text-xl font-bold text-slate-900">Seguimiento de Pedidos</h2>
+                </div>
+                <div class="grid grid-cols-2 lg:grid-cols-5 gap-3 mb-4">
+                    <div class="bg-white rounded-xl p-4 border border-slate-200 shadow-sm"><span
+                            class="text-slate-400 text-[10px] font-bold block uppercase tracking-wider">Total</span><span
+                            class="text-lg font-bold font-mono-numbers text-slate-800 block">7</span></div>
+                    <div class="bg-white rounded-xl p-4 border border-slate-200 shadow-sm border-l-4 border-amber-500">
+                        <span
+                            class="text-amber-600 text-[10px] font-bold block uppercase tracking-wider">Pendientes</span><span
+                            class="text-lg font-bold font-mono-numbers text-amber-600 block">2</span></div>
+                    <div class="bg-white rounded-xl p-4 border border-slate-200 shadow-sm border-l-4 border-sky-500">
+                        <span
+                            class="text-sky-600 text-[10px] font-bold block uppercase tracking-wider">Proceso</span><span
+                            class="text-lg font-bold font-mono-numbers text-sky-600 block">2</span></div>
+                    <div
+                        class="bg-white rounded-xl p-4 border border-slate-200 shadow-sm border-l-4 border-emerald-500">
+                        <span
+                            class="text-emerald-600 text-[10px] font-bold block uppercase tracking-wider">Entregados</span><span
+                            class="text-lg font-bold font-mono-numbers text-emerald-600 block">2</span></div>
+                    <div class="bg-white rounded-xl p-4 border border-slate-200 shadow-sm border-l-4 border-teal-500">
+                        <span
+                            class="text-teal-600 text-[10px] font-bold block uppercase tracking-wider">Ventas</span><span
+                            class="text-lg font-bold font-mono-numbers text-teal-600 block">$81K</span></div>
+                </div>
+                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                    <table class="w-full text-left text-sm text-slate-600">
+                        <thead
+                            class="bg-slate-50 text-slate-500 text-[10px] font-bold uppercase tracking-wider border-b border-slate-100">
+                            <tr>
+                                <th class="px-6 py-4"># Pedido</th>
+                                <th class="px-6 py-4">Cliente</th>
+                                <th class="px-6 py-4">Total</th>
+                                <th class="px-6 py-4 text-center">Estado</th>
+                                <th class="px-6 py-4 text-right">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100">
+                            <tr>
+                                <td class="px-6 py-4 font-bold font-mono-numbers text-slate-800">#47</td>
+                                <td class="px-6 py-4">oscar dorado</td>
+                                <td class="px-6 py-4 font-mono-numbers font-medium">$37.000</td>
+                                <td class="px-6 py-4 text-center"><span
+                                        class="bg-sky-100 text-sky-700 px-3 py-0.5 rounded-full text-[10px] font-bold">Confirmado</span>
+                                </td>
+                                <td class="px-6 py-4 text-right space-x-1"><button
+                                        class="text-slate-500 border border-slate-200 px-2.5 py-1 rounded-lg text-[10px] bg-white">Ver</button><button
+                                        class="text-emerald-600 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-lg text-[10px] font-bold">Preparar</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="px-6 py-4 font-bold font-mono-numbers text-slate-800">#45</td>
+                                <td class="px-6 py-4">juan test 2</td>
+                                <td class="px-6 py-4 font-mono-numbers font-medium">$38.000</td>
+                                <td class="px-6 py-4 text-center"><span
+                                        class="bg-amber-100 text-amber-700 px-3 py-0.5 rounded-full text-[10px] font-bold">Pendiente</span>
+                                </td>
+                                <td class="px-6 py-4 text-right space-x-1"><button
+                                        class="text-slate-500 border border-slate-200 px-2.5 py-1 rounded-lg text-[10px] bg-white">Ver</button><button
+                                        class="text-teal-600 bg-teal-50 border border-teal-200 px-2.5 py-1 rounded-lg text-[10px] font-bold">Confirmar</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- ======================= -->
+            <!-- VISTA 5: CAJA -->
+            <!-- ======================= -->
+            <div id="view-cash" class="view gap-6 pb-10">
+                <h2 class="text-xl font-bold text-slate-900 mb-2">Control de Caja Registradora</h2>
+                <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+                    <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm relative">
+                        <div
+                            class="absolute -top-3 right-6 bg-teal-100 text-teal-700 text-[9px] px-2 py-1 rounded-full font-bold uppercase tracking-wide">
+                            En curso</div>
+                        <p class="text-slate-400 text-[10px] font-bold tracking-wider uppercase mb-1">Sesión Activa Nro.
+                            2</p>
+                        <h3 class="text-4xl font-bold font-mono-numbers text-slate-900 mb-1">$50.000</h3>
+                        <p class="text-[10px] text-slate-500 font-medium mb-6">Total Ventas + Apertura</p>
+                        <div class="flex justify-between border-y border-slate-100 py-2.5 text-xs"><span
+                                class="text-slate-500">Apertura:</span><span
+                                class="font-mono-numbers font-medium">13/07/26, 20:48</span></div>
+                        <div class="flex justify-between py-2.5 border-b border-slate-100 text-xs mb-4"><span
+                                class="text-slate-500">Saldo Inicial:</span><span
+                                class="font-mono-numbers font-medium text-slate-800">$50.000</span></div>
+                        <button
+                            class="w-full bg-red-500 hover:bg-red-600 text-white font-medium py-3 rounded-xl shadow-sm transition text-sm">Cerrar
+                            y Cuadrar Caja</button>
+                    </div>
+
+                    <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
+                        <h4 class="font-semibold text-slate-800 text-sm mb-4">Desglose por Métodos</h4>
+                        <div class="grid grid-cols-3 gap-3 mb-5">
+                            <div class="bg-slate-50 rounded-xl p-3 border border-slate-200 text-center">
+                                <div
+                                    class="w-8 h-8 bg-emerald-500/10 text-emerald-600 rounded-lg flex items-center justify-center mx-auto mb-1">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z">
+                                        </path>
+                                    </svg></div>
+                                <p class="font-mono-numbers font-bold text-slate-800 text-sm">$0</p>
+                                <p class="text-[8px] font-bold text-slate-500 uppercase tracking-wider">Efectivo</p>
+                            </div>
+                            <div class="bg-slate-50 rounded-xl p-3 border border-slate-200 text-center">
+                                <div
+                                    class="w-8 h-8 bg-sky-100 text-sky-600 rounded-lg flex items-center justify-center mx-auto mb-1">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z">
+                                        </path>
+                                    </svg></div>
+                                <p class="font-mono-numbers font-bold text-slate-800 text-sm">$0</p>
+                                <p class="text-[8px] font-bold text-slate-500 uppercase tracking-wider">Tarjeta</p>
+                            </div>
+                            <div class="bg-slate-50 rounded-xl p-3 border border-slate-200 text-center">
+                                <div
+                                    class="w-8 h-8 bg-amber-100 text-amber-600 rounded-lg flex items-center justify-center mx-auto mb-1">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M3 10v11m18-11v11"></path>
+                                    </svg></div>
+                                <p class="font-mono-numbers font-bold text-slate-800 text-sm">$0</p>
+                                <p class="text-[8px] font-bold text-slate-500 uppercase tracking-wider">Transf.</p>
+                            </div>
+                        </div>
+                        <div class="bg-teal-50 p-3 rounded-xl border border-teal-100 flex justify-between items-center">
+                            <div>
+                                <p class="text-[11px] font-bold text-slate-800">Efectivo Esperado</p>
+                                <p class="text-[9px] text-slate-500">* Solo dinero físico en caja</p>
+                            </div>
+                            <span class="font-mono-numbers font-bold text-emerald-600 text-sm">$50.000</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- SCRIPTS PARA LA NAVEGACIÓN DEL MOCKUP -->
+    <script>
+        const titles = {
+            'view-dashboard': 'Dashboard Global',
+            'view-pos': 'POS / Venta Local',
+            'view-orders': 'Seguimiento de Pedidos',
+            'view-products': 'Gestión de Productos',
+            'view-cash': 'Control de Caja'
+        };
+
+        function changeView(viewId, element) {
+            // Oculta todas las vistas
+            document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
+            // Limpia estilos del menú
+            document.querySelectorAll('.sidebar-item').forEach(el => el.classList.remove('active'));
+
+            // Muestra la nueva
+            document.getElementById(viewId).classList.add('active');
+            element.classList.add('active');
+
+            // Cambia el título del header
+            document.getElementById('page-title').innerText = titles[viewId];
+        }
+    </script>
+</body>
+
+</html>

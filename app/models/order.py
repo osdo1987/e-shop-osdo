@@ -19,10 +19,16 @@ class Order(db.Model):
     estimated_delivery = db.Column(db.DateTime, nullable=True)
     tracking_token = db.Column(db.String(64), unique=True, nullable=True, index=True)
     
+    # POS/Local fields
+    origin = db.Column(db.String(20), nullable=False, default='WEB')  # 'WEB' or 'LOCAL'
+    payment_method = db.Column(db.String(50), nullable=True)  # 'EFECTIVO', 'TARJETA', 'TRANSFERENCIA', 'OTRO'
+    cash_register_session_id = db.Column(db.Integer, db.ForeignKey('cash_register_sessions.id'), nullable=True)
+    
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
     store = db.relationship('Store', backref=db.backref('orders', lazy=True, cascade='all, delete-orphan'))
+    cash_session = db.relationship('CashRegisterSession', backref=db.backref('orders', lazy=True))
     items = db.relationship('OrderItem', backref='order', lazy=True, cascade='all, delete-orphan')
     status_history = db.relationship('OrderStatusHistory', backref='order', lazy=True, 
                                       cascade='all, delete-orphan', order_by='OrderStatusHistory.created_at.desc()')
