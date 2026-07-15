@@ -10,6 +10,13 @@ import TextField from '@mui/material/TextField'
 import Button from '@mui/material/Button'
 import Switch from '@mui/material/Switch'
 import FormControlLabel from '@mui/material/FormControlLabel'
+import Divider from '@mui/material/Divider'
+import { useTheme } from '@mui/material/styles'
+import StorefrontIcon from '@mui/icons-material/Storefront'
+import PaletteIcon from '@mui/icons-material/Palette'
+import SecurityIcon from '@mui/icons-material/Security'
+import InfoIcon from '@mui/icons-material/Info'
+import LinkIcon from '@mui/icons-material/Link'
 
 function Settings({ user, onLogout, darkMode, setDarkMode }) {
     const [store, setStore] = useState(null)
@@ -17,6 +24,8 @@ function Settings({ user, onLogout, darkMode, setDarkMode }) {
     const [logoUrl, setLogoUrl] = useState('')
     const [saving, setSaving] = useState(false)
     const toast = useToast()
+    const theme = useTheme()
+    const isDark = theme.palette.mode === 'dark'
 
     useEffect(() => {
         fetchStoreData()
@@ -73,153 +82,262 @@ function Settings({ user, onLogout, darkMode, setDarkMode }) {
         }
     }
 
+    const sectionCardStyle = (accentColor) => ({
+        mb: 3,
+        position: 'relative',
+        overflow: 'visible',
+        animation: 'fade-in-up 0.5s ease both',
+        '&::before': {
+            content: '""',
+            position: 'absolute', top: 0, left: 0, right: 0,
+            height: '3px',
+            background: accentColor,
+            borderRadius: '16px 16px 0 0',
+        },
+    })
+
+    const inputSx = {
+        '& .MuiOutlinedInput-root': {
+            borderRadius: '14px',
+            fontSize: '0.95rem',
+            '&.Mui-focused': {
+                boxShadow: isDark
+                    ? '0 0 0 4px rgba(129, 140, 248, 0.18), 0 0 20px rgba(129, 140, 248, 0.12)'
+                    : '0 0 0 4px rgba(99, 102, 241, 0.15), 0 0 16px rgba(99, 102, 241, 0.08)',
+            },
+        },
+    }
+
     return (
         <AdminLayout title="Configuración" user={user} onLogout={onLogout}>
             {store && (
-                <Card sx={{ mb: 3 }}>
-                    <CardContent sx={{ p: 3, '&:last-child': { pb: 3 } }}>
-                        <Typography variant="h6" sx={{ fontWeight: 700, mb: 1 }}>
-                            Información Pública de la Tienda
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                            Configura el WhatsApp para recibir pedidos y el logo que se mostrará en el catálogo.
-                            {store.slug && (
-                                <Typography component="span" variant="body2" sx={{ display: 'block', mt: 0.5 }}>
-                                    Catálogo: <Link to={`/${store.slug}`} target="_blank" style={{ color: '#6366f1' }}>/{store.slug}</Link>
+                <Card sx={sectionCardStyle('linear-gradient(90deg, #10b981, #059669, #34d399)')}>
+                    <CardContent sx={{ p: { xs: 3, sm: 4 }, '&:last-child': { pb: { xs: 3, sm: 4 } } }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 3 }}>
+                            <Box sx={{
+                                width: 36, height: 36, borderRadius: '10px',
+                                background: 'linear-gradient(135deg, rgba(16,185,129,0.15), rgba(16,185,129,0.08))',
+                                border: '1px solid rgba(16,185,129,0.2)',
+                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            }}>
+                                <StorefrontIcon sx={{ fontSize: 18, color: '#10b981' }} />
+                            </Box>
+                            <Box>
+                                <Typography variant="h6" sx={{ fontWeight: 700, fontSize: '1rem' }}>
+                                    Información Pública de la Tienda
                                 </Typography>
-                            )}
-                        </Typography>
-                        <Box component="form" onSubmit={handleSaveStoreInfo} sx={{ display: 'flex', gap: 1.5, alignItems: 'flex-end', flexWrap: 'wrap' }}>
-                            <TextField
-                                label="Número de WhatsApp"
-                                value={whatsapp}
-                                onChange={(e) => setWhatsapp(e.target.value)}
-                                placeholder="+573001234567"
-                                required
-                                size="small"
-                                sx={{ flex: 1, minWidth: 200 }}
-                            />
-                            <Box sx={{ flex: 1, minWidth: 200 }}>
+                                <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.8125rem' }}>
+                                    Configura el WhatsApp y el logo de tu catálogo
+                                </Typography>
+                            </Box>
+                        </Box>
+
+                        {store.slug && (
+                            <Box sx={{
+                                display: 'flex', alignItems: 'center', gap: 1, mb: 2.5, p: 1.5,
+                                borderRadius: '12px',
+                                background: isDark ? 'rgba(99,102,241,0.06)' : 'rgba(99,102,241,0.04)',
+                                border: isDark ? '1px solid rgba(129,140,248,0.12)' : '1px solid rgba(99,102,241,0.10)',
+                            }}>
+                                <LinkIcon sx={{ fontSize: 16, color: 'primary.main' }} />
+                                <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                                    Catálogo:{' '}
+                                    <Box component={Link} to={`/${store.slug}`} target="_blank" sx={{
+                                        color: 'primary.main', fontWeight: 700, textDecoration: 'none',
+                                        '&:hover': { textDecoration: 'underline' },
+                                    }}>
+                                        /{store.slug}
+                                    </Box>
+                                </Typography>
+                            </Box>
+                        )}
+
+                        <Box component="form" onSubmit={handleSaveStoreInfo}>
+                            <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'flex-end', flexWrap: 'wrap', mb: 2 }}>
                                 <TextField
-                                    fullWidth
-                                    label="Logo de la Tienda"
-                                    value={logoUrl}
-                                    onChange={(e) => setLogoUrl(e.target.value)}
-                                    placeholder="https://ejemplo.com/logo.png"
-                                    size="small"
-                                    sx={{ mb: 1 }}
+                                    label="Número de WhatsApp"
+                                    value={whatsapp} onChange={(e) => setWhatsapp(e.target.value)}
+                                    placeholder="+573001234567" required size="small"
+                                    sx={{ flex: 1, minWidth: 200, ...inputSx }}
                                 />
-                                <Typography variant="caption" color="text.disabled" sx={{ display: 'block', mb: 0.5 }}>
-                                    Puedes pegar una URL o subir una imagen desde tu computador
-                                </Typography>
-                                <Box
-                                    component="label"
+                                <Button
+                                    type="submit" variant="contained" disabled={saving}
                                     sx={{
-                                        border: '2px dashed',
-                                        borderColor: 'divider',
-                                        borderRadius: 1,
-                                        p: 2,
-                                        textAlign: 'center',
-                                        color: 'text.disabled',
-                                        fontSize: '0.8125rem',
-                                        cursor: 'pointer',
-                                        display: 'block',
-                                        bgcolor: 'background.default',
-                                        transition: 'all 0.2s',
-                                        '&:hover': { borderColor: 'primary.main' },
+                                        whiteSpace: 'nowrap', borderRadius: '12px',
+                                        px: 3, position: 'relative', overflow: 'hidden',
+                                        '&::before': {
+                                            content: '""', position: 'absolute',
+                                            top: 0, left: -100, width: 60, height: '100%',
+                                            background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent)',
+                                            transform: 'skewX(-20deg)', transition: 'left 0.7s ease',
+                                        },
+                                        '&:hover::before': { left: '130%' },
                                     }}
                                 >
-                                    📸 Arrastra una imagen aquí o haz clic para seleccionar
-                                    <input
-                                        type="file"
-                                        accept="image/*"
-                                        style={{ display: 'none' }}
-                                        onChange={(e) => {
-                                            const file = e.target.files[0]
-                                            if (file) {
-                                                const reader = new FileReader()
-                                                reader.onload = (ev) => {
-                                                    setLogoUrl(ev.target.result)
-                                                }
-                                                reader.readAsDataURL(file)
-                                            }
-                                        }}
-                                    />
-                                </Box>
-                                {logoUrl && (
-                                    <Box sx={{ mt: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
-                                        <Box component="img" src={logoUrl} alt="Preview logo" sx={{ width: 60, height: 60, objectFit: 'cover', borderRadius: 1 }} />
-                                        <Button variant="outlined" size="small" onClick={() => setLogoUrl('')}>
-                                            Quitar imagen
-                                        </Button>
-                                    </Box>
-                                )}
+                                    {saving ? 'Guardando...' : 'Guardar Cambios'}
+                                </Button>
                             </Box>
-                            <Button type="submit" variant="contained" disabled={saving} sx={{ whiteSpace: 'nowrap' }}>
-                                {saving ? 'Guardando...' : 'Guardar Cambios'}
-                            </Button>
+
+                            <TextField
+                                fullWidth label="Logo de la Tienda"
+                                value={logoUrl} onChange={(e) => setLogoUrl(e.target.value)}
+                                placeholder="https://ejemplo.com/logo.png" size="small"
+                                sx={{ mb: 1, ...inputSx }}
+                            />
+                            <Typography variant="caption" color="text.disabled" sx={{ display: 'block', mb: 1 }}>
+                                Puedes pegar una URL o subir una imagen desde tu computador
+                            </Typography>
+                            <Box
+                                component="label"
+                                sx={{
+                                    border: '2px dashed',
+                                    borderColor: isDark ? 'rgba(129,140,248,0.2)' : 'rgba(99,102,241,0.15)',
+                                    borderRadius: '14px',
+                                    p: 3, textAlign: 'center', cursor: 'pointer', display: 'block',
+                                    color: 'text.disabled', fontSize: '0.875rem',
+                                    background: isDark ? 'rgba(99,102,241,0.03)' : 'rgba(99,102,241,0.02)',
+                                    transition: 'all 0.25s ease',
+                                    '&:hover': {
+                                        borderColor: 'primary.main',
+                                        background: isDark ? 'rgba(99,102,241,0.06)' : 'rgba(99,102,241,0.04)',
+                                    },
+                                }}
+                            >
+                                📸 Arrastra una imagen aquí o haz clic para seleccionar
+                                <input
+                                    type="file" accept="image/*" style={{ display: 'none' }}
+                                    onChange={(e) => {
+                                        const file = e.target.files[0]
+                                        if (file) {
+                                            const reader = new FileReader()
+                                            reader.onload = (ev) => setLogoUrl(ev.target.result)
+                                            reader.readAsDataURL(file)
+                                        }
+                                    }}
+                                />
+                            </Box>
+                            {logoUrl && (
+                                <Box sx={{ mt: 1.5, display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                                    <Box component="img" src={logoUrl} alt="Preview logo" sx={{
+                                        width: 56, height: 56, objectFit: 'cover', borderRadius: '12px',
+                                        border: isDark ? '1px solid rgba(129,140,248,0.15)' : '1px solid rgba(99,102,241,0.1)',
+                                    }} />
+                                    <Button variant="outlined" size="small" onClick={() => setLogoUrl('')} sx={{ borderRadius: '10px' }}>
+                                        Quitar imagen
+                                    </Button>
+                                </Box>
+                            )}
                         </Box>
                     </CardContent>
                 </Card>
             )}
 
             {/* Dark Mode Toggle */}
-            <Card sx={{ mb: 3 }}>
-                <CardContent sx={{ p: 3, '&:last-child': { pb: 3 } }}>
-                    <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>Apariencia</Typography>
-                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', py: 1.5 }}>
+            <Card sx={{ animation: 'fade-in-up 0.5s ease both', animationDelay: '0.1s', mb: 3, position: 'relative', overflow: 'visible', '&::before': { content: '""', position: 'absolute', top: 0, left: 0, right: 0, height: '3px', background: 'linear-gradient(90deg, #6366f1, #8b5cf6, #a78bfa)', borderRadius: '16px 16px 0 0' } }}>
+                <CardContent sx={{ p: { xs: 3, sm: 4 }, '&:last-child': { pb: { xs: 3, sm: 4 } } }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1 }}>
+                        <Box sx={{
+                            width: 36, height: 36, borderRadius: '10px',
+                            background: isDark ? 'rgba(129,140,248,0.15)' : 'rgba(99,102,241,0.10)',
+                            border: isDark ? '1px solid rgba(129,140,248,0.2)' : '1px solid rgba(99,102,241,0.15)',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        }}>
+                            <PaletteIcon sx={{ fontSize: 18, color: 'primary.main' }} />
+                        </Box>
+                        <Typography variant="h6" sx={{ fontWeight: 700, fontSize: '1rem' }}>Apariencia</Typography>
+                    </Box>
+                    <Box sx={{
+                        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                        py: 1.5, mt: 1,
+                        borderRadius: '12px', px: 2,
+                        background: isDark ? 'rgba(99,102,241,0.04)' : 'rgba(99,102,241,0.03)',
+                    }}>
                         <Box>
-                            <Typography variant="body2" sx={{ fontWeight: 500 }}>Modo Oscuro</Typography>
+                            <Typography variant="body2" sx={{ fontWeight: 600 }}>Modo Oscuro</Typography>
                             <Typography variant="caption" color="text.disabled">
                                 Activa el modo oscuro para reducir la fatiga visual
                             </Typography>
                         </Box>
                         <FormControlLabel
-                            control={
-                                <Switch
-                                    checked={darkMode}
-                                    onChange={() => setDarkMode(!darkMode)}
-                                />
-                            }
-                            label=""
-                            sx={{ mr: 0 }}
+                            control={<Switch checked={darkMode} onChange={() => setDarkMode(!darkMode)} />}
+                            label="" sx={{ mr: 0 }}
                         />
                     </Box>
                 </CardContent>
             </Card>
 
             {/* Change Password */}
-            <Card sx={{ mb: 3 }}>
-                <CardContent sx={{ p: 3, '&:last-child': { pb: 3 } }}>
-                    <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>Seguridad</Typography>
-                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', py: 1.5 }}>
+            <Card sx={{ animation: 'fade-in-up 0.5s ease both', animationDelay: '0.2s', mb: 3, position: 'relative', overflow: 'visible', '&::before': { content: '""', position: 'absolute', top: 0, left: 0, right: 0, height: '3px', background: 'linear-gradient(90deg, #f59e0b, #d97706, #fbbf24)', borderRadius: '16px 16px 0 0' } }}>
+                <CardContent sx={{ p: { xs: 3, sm: 4 }, '&:last-child': { pb: { xs: 3, sm: 4 } } }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1 }}>
+                        <Box sx={{
+                            width: 36, height: 36, borderRadius: '10px',
+                            background: isDark ? 'rgba(251,191,36,0.15)' : 'rgba(245,158,11,0.10)',
+                            border: isDark ? '1px solid rgba(251,191,36,0.2)' : '1px solid rgba(245,158,11,0.15)',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        }}>
+                            <SecurityIcon sx={{ fontSize: 18, color: '#f59e0b' }} />
+                        </Box>
+                        <Typography variant="h6" sx={{ fontWeight: 700, fontSize: '1rem' }}>Seguridad</Typography>
+                    </Box>
+                    <Box sx={{
+                        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                        py: 1.5, mt: 1,
+                        borderRadius: '12px', px: 2,
+                        background: isDark ? 'rgba(99,102,241,0.04)' : 'rgba(99,102,241,0.03)',
+                    }}>
                         <Box>
-                            <Typography variant="body2" sx={{ fontWeight: 500 }}>Contraseña</Typography>
+                            <Typography variant="body2" sx={{ fontWeight: 600 }}>Contraseña</Typography>
                             <Typography variant="caption" color="text.disabled">
                                 Cambia tu contraseña de acceso al panel
                             </Typography>
                         </Box>
-                        <Button component={Link} to="/admin/change-password" variant="outlined" sx={{ textDecoration: 'none' }}>
-                            Cambiar Contraseña
+                        <Button
+                            component={Link} to="/admin/change-password" variant="outlined"
+                            sx={{ textDecoration: 'none', borderRadius: '12px', fontWeight: 600 }}
+                        >
+                            Cambiar
                         </Button>
                     </Box>
                 </CardContent>
             </Card>
 
-            <Card>
-                <CardContent sx={{ p: 3, '&:last-child': { pb: 3 } }}>
-                    <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>Información de la Cuenta</Typography>
-                    <Box sx={{ display: 'grid', gap: 1 }}>
-                        <Typography variant="body2"><strong>Email:</strong> {user?.email}</Typography>
-                        <Typography variant="body2"><strong>Rol:</strong> {user?.role === 'SUPERADMIN' ? 'Super Administrador' : 'Vendedor'}</Typography>
-                        <Typography variant="body2"><strong>ID de Tienda:</strong> {user?.storeId || 'N/A'}</Typography>
-                        {store && (
-                            <>
-                                <Typography variant="body2"><strong>Nombre de Tienda:</strong> {store.name}</Typography>
-                                <Typography variant="body2"><strong>Slug:</strong> /{store.slug}</Typography>
-                                {store.whatsapp && <Typography variant="body2"><strong>WhatsApp Configurado:</strong> {store.whatsapp}</Typography>}
-                            </>
-                        )}
+            {/* Account Info */}
+            <Card sx={{ animation: 'fade-in-up 0.5s ease both', animationDelay: '0.3s', position: 'relative', overflow: 'visible', '&::before': { content: '""', position: 'absolute', top: 0, left: 0, right: 0, height: '3px', background: 'linear-gradient(90deg, #06b6d4, #0891b2, #22d3ee)', borderRadius: '16px 16px 0 0' } }}>
+                <CardContent sx={{ p: { xs: 3, sm: 4 }, '&:last-child': { pb: { xs: 3, sm: 4 } } }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2.5 }}>
+                        <Box sx={{
+                            width: 36, height: 36, borderRadius: '10px',
+                            background: isDark ? 'rgba(6,182,212,0.15)' : 'rgba(6,182,212,0.10)',
+                            border: isDark ? '1px solid rgba(6,182,212,0.2)' : '1px solid rgba(6,182,212,0.15)',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        }}>
+                            <InfoIcon sx={{ fontSize: 18, color: '#06b6d4' }} />
+                        </Box>
+                        <Typography variant="h6" sx={{ fontWeight: 700, fontSize: '1rem' }}>Información de la Cuenta</Typography>
+                    </Box>
+                    <Box sx={{
+                        display: 'grid', gap: 1, p: 2, borderRadius: '12px',
+                        background: isDark ? 'rgba(99,102,241,0.04)' : 'rgba(99,102,241,0.03)',
+                        border: isDark ? '1px solid rgba(129,140,248,0.08)' : '1px solid rgba(99,102,241,0.06)',
+                    }}>
+                        {[
+                            { label: 'Email', value: user?.email },
+                            { label: 'Rol', value: user?.role === 'SUPERADMIN' ? 'Super Administrador' : 'Vendedor' },
+                            { label: 'ID de Tienda', value: user?.storeId || 'N/A' },
+                            store && { label: 'Nombre de Tienda', value: store.name },
+                            store && { label: 'Slug', value: `/${store.slug}` },
+                            store?.whatsapp && { label: 'WhatsApp', value: store.whatsapp },
+                        ].filter(Boolean).map((item) => (
+                            <Box key={item.label} sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', py: 0.5 }}>
+                                <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500, fontSize: '0.875rem' }}>
+                                    {item.label}
+                                </Typography>
+                                <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.875rem' }}>
+                                    {item.value}
+                                </Typography>
+                            </Box>
+                        ))}
                     </Box>
                 </CardContent>
             </Card>

@@ -30,9 +30,26 @@ import Accordion from '@mui/material/Accordion'
 import AccordionSummary from '@mui/material/AccordionSummary'
 import AccordionDetails from '@mui/material/AccordionDetails'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
+import StoreIcon from '@mui/icons-material/Store'
+import TrendingUpIcon from '@mui/icons-material/TrendingUp'
+import AddIcon from '@mui/icons-material/Add'
+import EditIcon from '@mui/icons-material/Edit'
+import DeleteIcon from '@mui/icons-material/Delete'
+import SearchIcon from '@mui/icons-material/Search'
 import Divider from '@mui/material/Divider'
 import Paper from '@mui/material/Paper'
-import { useTheme } from '@mui/material/styles'
+import { useTheme, alpha } from '@mui/material/styles'
+
+const keyframes = `
+@keyframes fade-in-up {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes icon-bounce {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.15); }
+}
+`
 
 const MONTHS = [
     { value: 1, label: 'Enero' },
@@ -49,7 +66,51 @@ const MONTHS = [
     { value: 12, label: 'Diciembre' },
 ]
 
+const sectionBoxSx = (isDark) => ({
+    background: isDark ? 'rgba(99,102,241,0.04)' : 'rgba(99,102,241,0.03)',
+    border: isDark ? '1px solid rgba(129,140,248,0.10)' : '1px solid rgba(99,102,241,0.08)',
+    borderRadius: '14px',
+})
+
+const accentCardSx = (isDark) => ({
+    position: 'relative',
+    overflow: 'visible',
+    borderRadius: '16px',
+    boxShadow: isDark
+        ? '0 4px 24px rgba(0,0,0,0.25), 0 0 0 1px rgba(129,140,248,0.08)'
+        : '0 4px 24px rgba(99,102,241,0.06), 0 0 0 1px rgba(99,102,241,0.05)',
+    background: isDark ? 'rgba(20,20,42,0.95)' : '#ffffff',
+    '&::before': {
+        content: '""',
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        height: '3px',
+        background: 'linear-gradient(90deg, #6366f1, #8b5cf6, #a78bfa)',
+        borderRadius: '16px 16px 0 0',
+    },
+})
+
+const inputSx = (isDark) => ({
+    borderRadius: '14px',
+    '& .MuiOutlinedInput-root': {
+        borderRadius: '14px',
+        '&:hover .MuiOutlinedInput-notchedOutline': {
+            borderColor: isDark ? 'rgba(129,140,248,0.4)' : 'rgba(99,102,241,0.4)',
+        },
+        '&.Mui-focused': {
+            boxShadow: isDark
+                ? '0 0 0 3px rgba(99,102,241,0.15)'
+                : '0 0 0 3px rgba(99,102,241,0.1)',
+        },
+    },
+})
+
 function SuperAdmin({ user, onLogout }) {
+    const theme = useTheme()
+    const isDark = theme.palette.mode === 'dark'
+
     const [stores, setStores] = useState([])
     const [metrics, setMetrics] = useState([])
     const [loading, setLoading] = useState(true)
@@ -227,7 +288,6 @@ function SuperAdmin({ user, onLogout }) {
         totalProducts: stores.reduce((sum, s) => sum + (s.productCount || 0), 0)
     }
 
-    // Metrics calculations
     const metricStats = {
         totalOrders: metrics.reduce((sum, m) => sum + (m.total_orders || 0), 0),
         ordersToday: metrics.reduce((sum, m) => sum + (m.orders_today || 0), 0),
@@ -271,7 +331,7 @@ function SuperAdmin({ user, onLogout }) {
     }
 
     const renderStoreForm = (form, setForm, includePassword = false) => (
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
             <FormControl fullWidth>
                 <InputLabel id="business-type-label">Tipo de Negocio</InputLabel>
                 <Select
@@ -279,6 +339,7 @@ function SuperAdmin({ user, onLogout }) {
                     value={form.business_type || 'store'}
                     label="Tipo de Negocio"
                     onChange={(e) => setForm({ ...form, business_type: e.target.value })}
+                    sx={{ borderRadius: '14px' }}
                 >
                     <MenuItem value="store">🏪 Tienda</MenuItem>
                     <MenuItem value="restaurant">🍽️ Restaurante / Negocio de Comida</MenuItem>
@@ -288,60 +349,143 @@ function SuperAdmin({ user, onLogout }) {
                 label={form.business_type === 'restaurant' ? 'Nombre del Restaurante' : 'Nombre de la Tienda'}
                 value={form.storeName || form.name}
                 onChange={(e) => setForm({ ...form, [includePassword ? 'storeName' : 'name']: e.target.value })}
-                required fullWidth
+                required fullWidth sx={inputSx(isDark)}
             />
             <TextField
                 label="URL/Slug"
                 value={form.slug}
                 onChange={(e) => setForm({ ...form, slug: e.target.value.toLowerCase().replace(/\s+/g, '-') })}
-                required placeholder="mi-tienda" fullWidth
+                required placeholder="mi-tienda" fullWidth sx={inputSx(isDark)}
             />
             <TextField
                 label="WhatsApp (opcional)"
                 value={form.whatsapp}
                 onChange={(e) => setForm({ ...form, whatsapp: e.target.value })}
-                placeholder="+1234567890" fullWidth
+                placeholder="+1234567890" fullWidth sx={inputSx(isDark)}
             />
             {form.business_type === 'restaurant' && (
                 <>
-                    <TextField label="Dirección" value={form.address || ''} onChange={(e) => setForm({ ...form, address: e.target.value })} placeholder="Calle 123 #45-67, Ciudad" fullWidth />
-                    <TextField label="Horario" value={form.schedule || ''} onChange={(e) => setForm({ ...form, schedule: e.target.value })} placeholder="Lun-Vie 8am-8pm, Sáb 9am-6pm" fullWidth />
+                    <TextField label="Dirección" value={form.address || ''} onChange={(e) => setForm({ ...form, address: e.target.value })} placeholder="Calle 123 #45-67, Ciudad" fullWidth sx={inputSx(isDark)} />
+                    <TextField label="Horario" value={form.schedule || ''} onChange={(e) => setForm({ ...form, schedule: e.target.value })} placeholder="Lun-Vie 8am-8pm, Sáb 9am-6pm" fullWidth sx={inputSx(isDark)} />
                 </>
             )}
             <Box>
-                <TextField label="Logo de la Tienda (opcional)" value={form.logo_url} onChange={(e) => setForm({ ...form, logo_url: e.target.value })} placeholder="https://ejemplo.com/logo.png" fullWidth size="small" sx={{ mb: 1 }} />
+                <TextField label="Logo de la Tienda (opcional)" value={form.logo_url} onChange={(e) => setForm({ ...form, logo_url: e.target.value })} placeholder="https://ejemplo.com/logo.png" fullWidth size="small" sx={{ mb: 1, ...inputSx(isDark) }} />
                 <Typography variant="caption" color="text.disabled" sx={{ display: 'block', mb: 0.5 }}>Puedes pegar una URL o subir una imagen desde tu computador</Typography>
-                <Box component="label" sx={{ border: '2px dashed', borderColor: 'divider', borderRadius: 1, p: 2.5, textAlign: 'center', color: 'text.disabled', fontSize: '0.8125rem', cursor: 'pointer', display: 'block', bgcolor: 'background.default', transition: 'all 0.2s', '&:hover': { borderColor: 'primary.main' } }}>
+                <Box
+                    component="label"
+                    sx={{
+                        border: '2px dashed',
+                        borderColor: isDark ? 'rgba(129,140,248,0.2)' : 'rgba(99,102,241,0.2)',
+                        borderRadius: '14px',
+                        p: 2.5,
+                        textAlign: 'center',
+                        color: 'text.disabled',
+                        fontSize: '0.8125rem',
+                        cursor: 'pointer',
+                        display: 'block',
+                        background: isDark ? 'rgba(99,102,241,0.03)' : 'rgba(99,102,241,0.02)',
+                        transition: 'all 0.25s ease',
+                        '&:hover': {
+                            borderColor: 'primary.main',
+                            background: isDark ? 'rgba(99,102,241,0.06)' : 'rgba(99,102,241,0.04)',
+                        }
+                    }}
+                >
                     📸 Arrastra una imagen aquí o haz clic para seleccionar
                     <input type="file" accept="image/*" style={{ display: 'none' }} onChange={(e) => { const file = e.target.files[0]; if (file) { const reader = new FileReader(); reader.onload = (ev) => { setForm({ ...form, logo_url: ev.target.result }) }; reader.readAsDataURL(file) } }} />
                 </Box>
                 {form.logo_url && (
                     <Box sx={{ mt: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <Box component="img" src={form.logo_url} alt="Preview logo" sx={{ width: 60, height: 60, objectFit: 'cover', borderRadius: 1 }} />
-                        <Button variant="outlined" size="small" onClick={() => setForm({ ...form, logo_url: '' })}>Quitar imagen</Button>
+                        <Box component="img" src={form.logo_url} alt="Preview logo" sx={{ width: 60, height: 60, objectFit: 'cover', borderRadius: '10px' }} />
+                        <Button variant="outlined" size="small" onClick={() => setForm({ ...form, logo_url: '' })} sx={{ borderRadius: '10px', textTransform: 'none', fontWeight: 600 }}>Quitar imagen</Button>
                     </Box>
                 )}
             </Box>
             {includePassword && (
                 <>
-                    <TextField label="Email del Vendedor" type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} required fullWidth />
-                    <TextField label="Contraseña" type="password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} required inputProps={{ minLength: 6 }} fullWidth />
+                    <TextField label="Email del Vendedor" type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} required fullWidth sx={inputSx(isDark)} />
+                    <TextField label="Contraseña" type="password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} required inputProps={{ minLength: 6 }} fullWidth sx={inputSx(isDark)} />
                 </>
             )}
             {!includePassword && (
-                <TextField label="Email del Vendedor" type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} fullWidth helperText="Actualizará el correo del vendedor asociado" />
+                <TextField label="Email del Vendedor" type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} fullWidth helperText="Actualizará el correo del vendedor asociado" sx={inputSx(isDark)} />
             )}
         </Box>
     )
 
+    const tableHeaderCellSx = {
+        fontWeight: 700,
+        fontSize: '0.7rem',
+        textTransform: 'uppercase',
+        letterSpacing: '0.08em',
+        color: 'text.secondary',
+        py: 2,
+        borderBottom: '2px solid',
+        borderColor: 'divider',
+        background: 'transparent',
+    }
+
+    const businessTypeChipSx = (type) => ({
+        fontWeight: 600,
+        fontSize: '0.75rem',
+        borderRadius: '8px',
+        bgcolor: type === 'restaurant'
+            ? (isDark ? 'rgba(245,158,11,0.15)' : 'rgba(245,158,11,0.08)')
+            : (isDark ? 'rgba(16,185,129,0.15)' : 'rgba(16,185,129,0.08)'),
+        color: type === 'restaurant'
+            ? (isDark ? '#fbbf24' : '#d97706')
+            : (isDark ? '#34d399' : '#059669'),
+        border: type === 'restaurant'
+            ? (isDark ? '1px solid rgba(245,158,11,0.2)' : '1px solid rgba(245,158,11,0.15)')
+            : (isDark ? '1px solid rgba(16,185,129,0.2)' : '1px solid rgba(16,185,129,0.15)'),
+    })
+
     return (
         <>
+            <style>{keyframes}</style>
             <AdminLayout title="Gestión de Tiendas" user={user} onLogout={onLogout} superadmin>
-                {/* View Mode Toggle */}
                 <Box sx={{ mb: 3, display: 'flex', justifyContent: 'center' }}>
-                    <ToggleButtonGroup value={viewMode} exclusive onChange={(_, newMode) => newMode && setViewMode(newMode)} size="small">
-                        <ToggleButton value="stores" sx={{ fontWeight: 700, px: 3 }}>🏪 Tiendas</ToggleButton>
-                        <ToggleButton value="metrics" sx={{ fontWeight: 700, px: 3 }}>📊 Métricas</ToggleButton>
+                    <ToggleButtonGroup
+                        value={viewMode}
+                        exclusive
+                        onChange={(_, newMode) => newMode && setViewMode(newMode)}
+                        size="small"
+                        sx={{
+                            '& .MuiToggleButton-root': {
+                                fontWeight: 700,
+                                px: 3,
+                                py: 1,
+                                borderRadius: '12px !important',
+                                border: isDark
+                                    ? '1px solid rgba(129,140,248,0.2) !important'
+                                    : '1px solid rgba(99,102,241,0.15) !important',
+                                textTransform: 'none',
+                                transition: 'all 0.25s ease',
+                                '&.Mui-selected': {
+                                    background: isDark
+                                        ? 'linear-gradient(135deg, rgba(99,102,241,0.25), rgba(139,92,246,0.25))'
+                                        : 'linear-gradient(135deg, rgba(99,102,241,0.1), rgba(139,92,246,0.1))',
+                                    color: 'primary.main',
+                                    fontWeight: 800,
+                                    boxShadow: isDark
+                                        ? '0 2px 12px rgba(99,102,241,0.2)'
+                                        : '0 2px 12px rgba(99,102,241,0.1)',
+                                    '&:hover': {
+                                        background: isDark
+                                            ? 'linear-gradient(135deg, rgba(99,102,241,0.3), rgba(139,92,246,0.3))'
+                                            : 'linear-gradient(135deg, rgba(99,102,241,0.15), rgba(139,92,246,0.15))',
+                                    },
+                                },
+                                '&:hover': {
+                                    background: isDark ? 'rgba(99,102,241,0.08)' : 'rgba(99,102,241,0.04)',
+                                },
+                            },
+                            mx: 'auto',
+                        }}
+                    >
+                        <ToggleButton value="stores">🏪 Tiendas</ToggleButton>
+                        <ToggleButton value="metrics">📊 Métricas</ToggleButton>
                     </ToggleButtonGroup>
                 </Box>
 
@@ -354,37 +498,98 @@ function SuperAdmin({ user, onLogout }) {
                                 <StatCard title="Productos" value={stats.totalProducts} icon="📦" color="#f59e0b" />
                             </Box>
                         )}
-                        <Card sx={{ mb: 3 }}>
+
+                        <Card sx={{ ...accentCardSx(isDark), mb: 3 }}>
                             <CardContent sx={{ p: 3, '&:last-child': { pb: 3 } }}>
                                 <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', flexWrap: 'wrap', justifyContent: 'space-between' }}>
-                                    <TextField label="Buscar tienda" placeholder="Buscar por nombre o slug..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} size="small" sx={{ flex: 2, minWidth: 200 }} />
+                                    <TextField
+                                        label="Buscar tienda"
+                                        placeholder="Buscar por nombre o slug..."
+                                        value={searchTerm}
+                                        onChange={(e) => setSearchTerm(e.target.value)}
+                                        size="small"
+                                        sx={{ flex: 2, minWidth: 200, ...inputSx(isDark) }}
+                                        InputProps={{
+                                            startAdornment: (
+                                                <SearchIcon sx={{ mr: 1, color: 'text.disabled', fontSize: '1.1rem' }} />
+                                            ),
+                                        }}
+                                    />
                                     <Box sx={{ alignSelf: 'flex-end' }}>
-                                        <Button variant="contained" onClick={() => setShowCreateModal(true)} sx={{ whiteSpace: 'nowrap' }}>+ Nuevo Negocio</Button>
+                                        <Button
+                                            variant="contained"
+                                            onClick={() => setShowCreateModal(true)}
+                                            startIcon={<AddIcon />}
+                                            sx={{
+                                                whiteSpace: 'nowrap',
+                                                borderRadius: '12px',
+                                                fontWeight: 700,
+                                                textTransform: 'none',
+                                                px: 2.5,
+                                                py: 1,
+                                                background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
+                                                boxShadow: isDark
+                                                    ? '0 4px 16px rgba(99,102,241,0.3)'
+                                                    : '0 4px 16px rgba(99,102,241,0.2)',
+                                                transition: 'all 0.25s ease',
+                                                '&:hover': {
+                                                    background: 'linear-gradient(135deg, #5558e6, #7c4fe0)',
+                                                    boxShadow: isDark
+                                                        ? '0 6px 24px rgba(99,102,241,0.4)'
+                                                        : '0 6px 24px rgba(99,102,241,0.25)',
+                                                    transform: 'translateY(-1px)',
+                                                },
+                                            }}
+                                        >
+                                            Nuevo Negocio
+                                        </Button>
                                     </Box>
                                 </Box>
                             </CardContent>
                         </Card>
-                        <Card>
+
+                        <Card sx={accentCardSx(isDark)}>
                             <CardContent sx={{ p: 3, '&:last-child': { pb: 3 } }}>
-                                <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>Negocios ({filteredStores.length})</Typography>
+                                <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>
+                                    Negocios ({filteredStores.length})
+                                </Typography>
                                 {loading ? (
-                                    <Typography color="text.secondary">Cargando...</Typography>
+                                    <Typography color="text.secondary" sx={{ py: 3, textAlign: 'center' }}>Cargando...</Typography>
                                 ) : filteredStores.length === 0 ? (
-                                    <Typography color="text.secondary" sx={{ py: 5, textAlign: 'center' }}>
-                                        {stores.length === 0 ? 'No hay negocios registrados.' : 'No se encontraron negocios con ese filtro.'}
-                                    </Typography>
+                                    <Box sx={{ ...sectionBoxSx(isDark), py: 6, textAlign: 'center' }}>
+                                        <StoreIcon sx={{ fontSize: 48, color: 'text.disabled', mb: 1 }} />
+                                        <Typography color="text.secondary" sx={{ fontWeight: 600 }}>
+                                            {stores.length === 0 ? 'No hay negocios registrados.' : 'No se encontraron negocios con ese filtro.'}
+                                        </Typography>
+                                    </Box>
                                 ) : (
                                     <>
-                                        <Paper sx={{ width: '100%', overflow: 'hidden', borderRadius: 2, border: '1px solid', borderColor: 'divider', display: { xs: 'none', md: 'block' } }}>
+                                        <Paper
+                                            sx={{
+                                                width: '100%',
+                                                overflow: 'hidden',
+                                                borderRadius: '14px',
+                                                border: isDark
+                                                    ? '1px solid rgba(129,140,248,0.1)'
+                                                    : '1px solid rgba(99,102,241,0.08)',
+                                                display: { xs: 'none', md: 'block' },
+                                                background: 'transparent',
+                                                boxShadow: 'none',
+                                            }}
+                                        >
                                             <Table>
                                                 <TableHead>
-                                                    <TableRow sx={{ bgcolor: 'grey.50', '&:hover': { bgcolor: 'grey.50' } }}>
-                                                        <TableCell sx={{ fontWeight: 700, fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'text.secondary', py: 2, borderBottom: '2px solid', borderColor: 'divider' }}>Nombre</TableCell>
-                                                        <TableCell sx={{ fontWeight: 700, fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'text.secondary', py: 2, borderBottom: '2px solid', borderColor: 'divider' }}>Tipo</TableCell>
-                                                        <TableCell sx={{ fontWeight: 700, fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'text.secondary', py: 2, borderBottom: '2px solid', borderColor: 'divider' }}>Slug/URL</TableCell>
-                                                        <TableCell sx={{ fontWeight: 700, fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'text.secondary', py: 2, borderBottom: '2px solid', borderColor: 'divider' }}>WhatsApp</TableCell>
-                                                        <TableCell sx={{ fontWeight: 700, fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'text.secondary', py: 2, borderBottom: '2px solid', borderColor: 'divider' }}>Vendedor</TableCell>
-                                                        <TableCell sx={{ fontWeight: 700, fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'text.secondary', py: 2, borderBottom: '2px solid', borderColor: 'divider' }}>Acciones</TableCell>
+                                                    <TableRow sx={{
+                                                        '&:hover': { bgcolor: 'transparent' },
+                                                        '& th:first-of-type': { borderRadius: '12px 0 0 0' },
+                                                        '& th:last-of-type': { borderRadius: '0 12px 0 0' },
+                                                    }}>
+                                                        <TableCell sx={tableHeaderCellSx}>Nombre</TableCell>
+                                                        <TableCell sx={tableHeaderCellSx}>Tipo</TableCell>
+                                                        <TableCell sx={tableHeaderCellSx}>Slug/URL</TableCell>
+                                                        <TableCell sx={tableHeaderCellSx}>WhatsApp</TableCell>
+                                                        <TableCell sx={tableHeaderCellSx}>Vendedor</TableCell>
+                                                        <TableCell sx={tableHeaderCellSx}>Acciones</TableCell>
                                                     </TableRow>
                                                 </TableHead>
                                                 <TableBody>
@@ -393,23 +598,33 @@ function SuperAdmin({ user, onLogout }) {
                                                             key={store.id}
                                                             hover
                                                             sx={{
-                                                                bgcolor: index % 2 === 0 ? 'background.paper' : 'grey.50',
-                                                                transition: 'background-color 0.2s',
-                                                                '&:hover': { bgcolor: 'action.hover' },
-                                                                '&:last-child td': { borderBottom: 0 }
+                                                                animation: 'fade-in-up 0.3s ease',
+                                                                animationDelay: `${index * 0.03}s`,
+                                                                animationFillMode: 'backwards',
+                                                                transition: 'all 0.2s ease',
+                                                                cursor: 'default',
+                                                                '&:hover': {
+                                                                    background: isDark
+                                                                        ? 'rgba(99,102,241,0.06)'
+                                                                        : 'rgba(99,102,241,0.03)',
+                                                                    '& td': { color: 'text.primary' },
+                                                                },
+                                                                '&:last-child td': {
+                                                                    borderBottom: 0,
+                                                                    '&:first-of-type': { borderRadius: '0 0 0 12px' },
+                                                                    '&:last-of-type': { borderRadius: '0 0 12px 0' },
+                                                                },
                                                             }}
                                                         >
-                                                            <TableCell sx={{ fontWeight: 700, py: 2.5, color: 'text.primary' }}>{store.name}</TableCell>
+                                                            <TableCell sx={{ fontWeight: 700, py: 2.5, color: 'text.primary', fontSize: '0.9rem' }}>
+                                                                {store.name}
+                                                            </TableCell>
                                                             <TableCell sx={{ py: 2.5 }}>
                                                                 <Chip
                                                                     label={store.business_type === 'restaurant' ? 'Restaurante' : 'Tienda'}
                                                                     size="small"
                                                                     icon={<span>{store.business_type === 'restaurant' ? '🍽️' : '🏪'}</span>}
-                                                                    sx={{
-                                                                        fontWeight: 600, fontSize: '0.75rem',
-                                                                        bgcolor: store.business_type === 'restaurant' ? '#fff3e0' : '#e8f5e9',
-                                                                        color: store.business_type === 'restaurant' ? '#e65100' : '#2e7d32',
-                                                                    }}
+                                                                    sx={businessTypeChipSx(store.business_type)}
                                                                 />
                                                             </TableCell>
                                                             <TableCell sx={{ py: 2.5 }}>
@@ -424,7 +639,16 @@ function SuperAdmin({ user, onLogout }) {
                                                                         fontWeight: 600,
                                                                         fontSize: '0.875rem',
                                                                         fontFamily: 'monospace',
-                                                                        '&:hover': { textDecoration: 'underline' }
+                                                                        px: 1,
+                                                                        py: 0.3,
+                                                                        borderRadius: '6px',
+                                                                        transition: 'all 0.2s ease',
+                                                                        '&:hover': {
+                                                                            textDecoration: 'underline',
+                                                                            background: isDark
+                                                                                ? 'rgba(99,102,241,0.1)'
+                                                                                : 'rgba(99,102,241,0.06)',
+                                                                        },
                                                                     }}
                                                                 >
                                                                     /{store.slug}
@@ -441,11 +665,11 @@ function SuperAdmin({ user, onLogout }) {
                                                                 {store.users?.find(u => u.role === 'SELLER')?.email ? (
                                                                     <Typography sx={{ fontWeight: 500, fontSize: '0.875rem' }}>{store.users.find(u => u.role === 'SELLER').email}</Typography>
                                                                 ) : (
-                                                                    <Chip label="Sin vendedor" size="small" variant="outlined" sx={{ fontWeight: 600, fontSize: '0.6875rem', color: 'text.disabled' }} />
+                                                                    <Chip label="Sin vendedor" size="small" variant="outlined" sx={{ fontWeight: 600, fontSize: '0.6875rem', color: 'text.disabled', borderRadius: '8px' }} />
                                                                 )}
                                                             </TableCell>
                                                             <TableCell sx={{ py: 2.5 }}>
-                                                                <Box sx={{ display: 'flex', gap: 1 }}>
+                                                                <Box sx={{ display: 'flex', gap: 0.75 }}>
                                                                     <Button
                                                                         variant="text"
                                                                         size="small"
@@ -453,7 +677,16 @@ function SuperAdmin({ user, onLogout }) {
                                                                         href={`/${store.slug}`}
                                                                         target="_blank"
                                                                         rel="noopener noreferrer"
-                                                                        sx={{ fontWeight: 600, fontSize: '0.75rem', minWidth: 70, color: 'text.secondary', '&:hover': { color: 'primary.main' } }}
+                                                                        sx={{
+                                                                            fontWeight: 600,
+                                                                            fontSize: '0.75rem',
+                                                                            minWidth: 60,
+                                                                            color: 'text.secondary',
+                                                                            borderRadius: '10px',
+                                                                            textTransform: 'none',
+                                                                            transition: 'all 0.2s ease',
+                                                                            '&:hover': { color: 'primary.main', background: isDark ? 'rgba(99,102,241,0.1)' : 'rgba(99,102,241,0.06)' },
+                                                                        }}
                                                                     >
                                                                         Ver
                                                                     </Button>
@@ -461,7 +694,16 @@ function SuperAdmin({ user, onLogout }) {
                                                                         variant="outlined"
                                                                         size="small"
                                                                         onClick={() => openEditModal(store)}
-                                                                        sx={{ fontWeight: 600, fontSize: '0.75rem', minWidth: 70, textTransform: 'none' }}
+                                                                        startIcon={<EditIcon sx={{ fontSize: '0.9rem !important' }} />}
+                                                                        sx={{
+                                                                            fontWeight: 600,
+                                                                            fontSize: '0.75rem',
+                                                                            minWidth: 70,
+                                                                            textTransform: 'none',
+                                                                            borderRadius: '10px',
+                                                                            transition: 'all 0.2s ease',
+                                                                            '&:hover': { transform: 'translateY(-1px)' },
+                                                                        }}
                                                                     >
                                                                         Editar
                                                                     </Button>
@@ -470,7 +712,17 @@ function SuperAdmin({ user, onLogout }) {
                                                                         size="small"
                                                                         color="error"
                                                                         onClick={() => setDeleteTarget(store)}
-                                                                        sx={{ fontWeight: 600, fontSize: '0.75rem', minWidth: 80, textTransform: 'none', boxShadow: 'none', '&:hover': { boxShadow: 'none' } }}
+                                                                        startIcon={<DeleteIcon sx={{ fontSize: '0.9rem !important' }} />}
+                                                                        sx={{
+                                                                            fontWeight: 600,
+                                                                            fontSize: '0.75rem',
+                                                                            minWidth: 80,
+                                                                            textTransform: 'none',
+                                                                            borderRadius: '10px',
+                                                                            boxShadow: 'none',
+                                                                            transition: 'all 0.2s ease',
+                                                                            '&:hover': { boxShadow: 'none', transform: 'translateY(-1px)' },
+                                                                        }}
                                                                     >
                                                                         Eliminar
                                                                     </Button>
@@ -482,19 +734,32 @@ function SuperAdmin({ user, onLogout }) {
                                             </Table>
                                         </Paper>
                                         <Box sx={{ display: { xs: 'flex', md: 'none' }, flexDirection: 'column', gap: 1.5 }}>
-                                            {filteredStores.map(store => (
-                                                <Card key={store.id} variant="outlined" sx={{ borderRadius: 2, border: '1px solid', borderColor: 'divider' }}>
+                                            {filteredStores.map((store, index) => (
+                                                <Card
+                                                    key={store.id}
+                                                    variant="outlined"
+                                                    sx={{
+                                                        borderRadius: '14px',
+                                                        border: isDark ? '1px solid rgba(129,140,248,0.1)' : '1px solid rgba(99,102,241,0.08)',
+                                                        animation: 'fade-in-up 0.3s ease',
+                                                        animationDelay: `${index * 0.05}s`,
+                                                        animationFillMode: 'backwards',
+                                                        transition: 'all 0.2s ease',
+                                                        '&:hover': {
+                                                            borderColor: 'primary.main',
+                                                            boxShadow: isDark
+                                                                ? '0 4px 16px rgba(99,102,241,0.15)'
+                                                                : '0 4px 16px rgba(99,102,241,0.08)',
+                                                        },
+                                                    }}
+                                                >
                                                     <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
                                                         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
                                                             <Typography sx={{ fontWeight: 700, fontSize: '0.9375rem' }}>{store.name}</Typography>
                                                             <Chip
                                                                 label={store.business_type === 'restaurant' ? '🍽️ Restaurante' : '🏪 Tienda'}
                                                                 size="small"
-                                                                sx={{
-                                                                    fontWeight: 600, fontSize: '0.6875rem',
-                                                                    bgcolor: store.business_type === 'restaurant' ? '#fff3e0' : '#e8f5e9',
-                                                                    color: store.business_type === 'restaurant' ? '#e65100' : '#2e7d32',
-                                                                }}
+                                                                sx={businessTypeChipSx(store.business_type)}
                                                             />
                                                         </Box>
                                                         <Box sx={{ display: 'flex', gap: 1.5, mb: 1.5, fontSize: '0.8125rem', color: 'text.secondary' }}>
@@ -503,10 +768,10 @@ function SuperAdmin({ user, onLogout }) {
                                                         </Box>
                                                         <Box sx={{ display: 'flex', gap: 0.75 }}>
                                                             <a href={`/${store.slug}`} target="_blank" rel="noopener noreferrer" style={{ flex: 1 }}>
-                                                                <Button variant="text" size="small" fullWidth sx={{ fontWeight: 600, fontSize: '0.75rem', textTransform: 'none' }}>Ver</Button>
+                                                                <Button variant="text" size="small" fullWidth sx={{ fontWeight: 600, fontSize: '0.75rem', textTransform: 'none', borderRadius: '10px' }}>Ver</Button>
                                                             </a>
-                                                            <Button variant="outlined" size="small" sx={{ flex: 1, fontWeight: 600, fontSize: '0.75rem', textTransform: 'none' }} onClick={() => openEditModal(store)}>Editar</Button>
-                                                            <Button variant="contained" color="error" size="small" sx={{ flex: 1, fontWeight: 600, fontSize: '0.75rem', textTransform: 'none', boxShadow: 'none' }} onClick={() => setDeleteTarget(store)}>Eliminar</Button>
+                                                            <Button variant="outlined" size="small" sx={{ flex: 1, fontWeight: 600, fontSize: '0.75rem', textTransform: 'none', borderRadius: '10px' }} onClick={() => openEditModal(store)}>Editar</Button>
+                                                            <Button variant="contained" color="error" size="small" sx={{ flex: 1, fontWeight: 600, fontSize: '0.75rem', textTransform: 'none', boxShadow: 'none', borderRadius: '10px' }} onClick={() => setDeleteTarget(store)}>Eliminar</Button>
                                                         </Box>
                                                     </CardContent>
                                                 </Card>
@@ -519,13 +784,17 @@ function SuperAdmin({ user, onLogout }) {
                     </>
                 ) : (
                     <>
-                        {/* Metrics - Month/Year Filter */}
-                        <Card sx={{ mb: 3 }}>
+                        <Card sx={{ ...accentCardSx(isDark), mb: 3 }}>
                             <CardContent sx={{ p: 3, '&:last-child': { pb: 3 } }}>
                                 <Box sx={{ display: 'flex', gap: 2, alignItems: 'flex-end', flexWrap: 'wrap' }}>
                                     <FormControl size="small" sx={{ minWidth: 160 }}>
                                         <InputLabel>Mes</InputLabel>
-                                        <Select value={filterMonth} label="Mes" onChange={(e) => setFilterMonth(e.target.value)}>
+                                        <Select
+                                            value={filterMonth}
+                                            label="Mes"
+                                            onChange={(e) => setFilterMonth(e.target.value)}
+                                            sx={{ borderRadius: '14px' }}
+                                        >
                                             {MONTHS.map(m => <MenuItem key={m.value} value={m.value}>{m.label}</MenuItem>)}
                                         </Select>
                                     </FormControl>
@@ -535,10 +804,27 @@ function SuperAdmin({ user, onLogout }) {
                                         size="small"
                                         value={filterYear}
                                         onChange={(e) => setFilterYear(parseInt(e.target.value) || new Date().getFullYear())}
-                                        sx={{ minWidth: 100 }}
+                                        sx={{ minWidth: 100, ...inputSx(isDark) }}
                                         inputProps={{ min: 2024, max: 2030 }}
                                     />
-                                    <Button variant="contained" size="small" onClick={fetchMetrics} sx={{ height: 40 }}>
+                                    <Button
+                                        variant="contained"
+                                        size="small"
+                                        onClick={fetchMetrics}
+                                        sx={{
+                                            height: 40,
+                                            borderRadius: '12px',
+                                            fontWeight: 700,
+                                            textTransform: 'none',
+                                            background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
+                                            boxShadow: isDark ? '0 4px 16px rgba(99,102,241,0.3)' : '0 4px 16px rgba(99,102,241,0.2)',
+                                            transition: 'all 0.25s ease',
+                                            '&:hover': {
+                                                background: 'linear-gradient(135deg, #5558e6, #7c4fe0)',
+                                                transform: 'translateY(-1px)',
+                                            },
+                                        }}
+                                    >
                                         Filtrar
                                     </Button>
                                 </Box>
@@ -556,9 +842,12 @@ function SuperAdmin({ user, onLogout }) {
                                     <StatCard title="Negocios Activos" value={metricStats.activeStores} icon="✅" color="#3b82f6" subtitle="Con actividad" />
                                 </Box>
 
-                                <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>Métricas por Negocio</Typography>
+                                <Typography variant="h6" sx={{ fontWeight: 700, mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+                                    <TrendingUpIcon sx={{ color: 'primary.main' }} />
+                                    Métricas por Negocio
+                                </Typography>
 
-                                {metrics.map(m => {
+                                {metrics.map((m, index) => {
                                     const badge = getLastLoginBadge(m.last_login)
                                     const isExpanded = expandedStoreId === m.id
                                     return (
@@ -566,23 +855,82 @@ function SuperAdmin({ user, onLogout }) {
                                             key={m.id}
                                             expanded={isExpanded}
                                             onChange={() => setExpandedStoreId(isExpanded ? null : m.id)}
-                                            sx={{ mb: 1.5, borderRadius: '12px !important', '&:before': { display: 'none' }, boxShadow: isExpanded ? 3 : 1 }}
+                                            sx={{
+                                                mb: 1.5,
+                                                borderRadius: '14px !important',
+                                                overflow: 'hidden',
+                                                animation: 'fade-in-up 0.3s ease',
+                                                animationDelay: `${index * 0.05}s`,
+                                                animationFillMode: 'backwards',
+                                                border: isDark
+                                                    ? '1px solid rgba(129,140,248,0.1)'
+                                                    : '1px solid rgba(99,102,241,0.08)',
+                                                boxShadow: isExpanded
+                                                    ? (isDark ? '0 4px 24px rgba(99,102,241,0.15)' : '0 4px 24px rgba(99,102,241,0.08)')
+                                                    : (isDark ? '0 2px 8px rgba(0,0,0,0.15)' : '0 2px 8px rgba(0,0,0,0.04)'),
+                                                transition: 'all 0.25s ease',
+                                                '&::before': { display: 'none' },
+                                                background: isDark ? 'rgba(20,20,42,0.95)' : 'rgba(255,255,255,0.95)',
+                                                '&.Mui-expanded': {
+                                                    boxShadow: isDark ? '0 4px 24px rgba(99,102,241,0.15)' : '0 4px 24px rgba(99,102,241,0.08)',
+                                                },
+                                                '&:hover': {
+                                                    border: isDark ? '1px solid rgba(129,140,248,0.2)' : '1px solid rgba(99,102,241,0.15)',
+                                                },
+                                                '& .MuiAccordionSummary-root': {
+                                                    borderLeft: '3px solid',
+                                                    borderColor: isExpanded ? 'primary.main' : 'transparent',
+                                                    transition: 'border-color 0.25s ease',
+                                                },
+                                            }}
                                         >
-                                            <AccordionSummary expandIcon={<ExpandMoreIcon />} sx={{ borderRadius: 2, '&.Mui-expanded': { borderBottom: 1, borderColor: 'divider' } }}>
+                                            <AccordionSummary
+                                                expandIcon={<ExpandMoreIcon sx={{ color: 'primary.main' }} />}
+                                                sx={{
+                                                    borderRadius: 2,
+                                                    '&.Mui-expanded': { borderBottom: 1, borderColor: 'divider' },
+                                                    minHeight: 64,
+                                                }}
+                                            >
                                                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap', width: '100%', pr: 2 }}>
                                                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, minWidth: 200 }}>
+                                                        <Box sx={{
+                                                            width: 36,
+                                                            height: 36,
+                                                            borderRadius: '10px',
+                                                            background: isDark ? 'rgba(99,102,241,0.12)' : 'rgba(99,102,241,0.08)',
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            justifyContent: 'center',
+                                                            fontSize: '1.1rem',
+                                                        }}>
+                                                            {m.business_type === 'restaurant' ? '🍽️' : '🏪'}
+                                                        </Box>
                                                         <Typography sx={{ fontWeight: 700, fontSize: '0.9375rem' }}>{m.name}</Typography>
-                                                        <Typography variant="caption" color="text.secondary">{m.business_type === 'restaurant' ? '🍽️' : '🏪'}</Typography>
                                                     </Box>
                                                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flexWrap: 'wrap', ml: 'auto' }}>
-                                                        <Chip icon={<span>{badge.dot}</span>} label={badge.label} size="small"
+                                                        <Chip
+                                                            icon={<span>{badge.dot}</span>}
+                                                            label={badge.label}
+                                                            size="small"
                                                             color={badge.color === 'default' ? 'default' : badge.color}
                                                             variant={badge.color === 'default' ? 'outlined' : 'filled'}
-                                                            sx={{ fontWeight: 600, fontSize: '0.6875rem' }} />
-                                                        <Chip label={`${m.orders_today || 0} hoy`} size="small"
+                                                            sx={{ fontWeight: 600, fontSize: '0.6875rem', borderRadius: '8px' }}
+                                                        />
+                                                        <Chip
+                                                            label={`${m.orders_today || 0} hoy`}
+                                                            size="small"
                                                             color={m.orders_today > 0 ? 'success' : 'default'}
-                                                            variant={m.orders_today > 0 ? 'filled' : 'outlined'} sx={{ fontWeight: 600, fontSize: '0.6875rem' }} />
-                                                        <Chip label={`${m.orders_in_period || 0} en ${getPeriodLabel()}`} size="small" color="primary" variant="outlined" sx={{ fontWeight: 600, fontSize: '0.6875rem' }} />
+                                                            variant={m.orders_today > 0 ? 'filled' : 'outlined'}
+                                                            sx={{ fontWeight: 600, fontSize: '0.6875rem', borderRadius: '8px' }}
+                                                        />
+                                                        <Chip
+                                                            label={`${m.orders_in_period || 0} en ${getPeriodLabel()}`}
+                                                            size="small"
+                                                            color="primary"
+                                                            variant="outlined"
+                                                            sx={{ fontWeight: 600, fontSize: '0.6875rem', borderRadius: '8px' }}
+                                                        />
                                                         <Typography sx={{ fontWeight: 700, fontSize: '0.875rem', color: 'primary.main' }}>
                                                             ${(m.revenue_in_period || 0).toLocaleString()}
                                                         </Typography>
@@ -590,100 +938,109 @@ function SuperAdmin({ user, onLogout }) {
                                                 </Box>
                                             </AccordionSummary>
                                             <AccordionDetails sx={{ p: 3 }}>
-                                                <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' }, gap: 2.5 }}>
-                                                    {/* Orders Section */}
-                                                    <Box>
-                                                        <Typography variant="caption" color="text.disabled" sx={{ fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', mb: 1.5 }}>📋 Pedidos</Typography>
-                                                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                                                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                                                <Typography variant="body2" color="text.secondary">Hoy</Typography>
-                                                                <Chip label={m.orders_today || '0'} size="small" color={m.orders_today > 0 ? 'success' : 'default'} variant={m.orders_today > 0 ? 'filled' : 'outlined'} sx={{ fontWeight: 700 }} />
-                                                            </Box>
-                                                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                                                <Typography variant="body2" color="text.secondary">Esta semana</Typography>
-                                                                <Typography sx={{ fontWeight: 700 }}>{m.orders_this_week}</Typography>
-                                                            </Box>
-                                                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                                                <Typography variant="body2" color="text.secondary">{getPeriodLabel()}</Typography>
-                                                                <Typography sx={{ fontWeight: 700, color: 'primary.main' }}>{m.orders_in_period}</Typography>
-                                                            </Box>
-                                                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                                                <Typography variant="body2" color="text.secondary">Total histórico</Typography>
-                                                                <Typography sx={{ fontWeight: 700 }}>{m.total_orders}</Typography>
-                                                            </Box>
-                                                            <Divider sx={{ my: 1 }} />
-                                                            <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                                                                <Typography variant="body2" color="text.secondary">Último pedido</Typography>
-                                                                <Typography variant="body2" sx={{ fontWeight: 600 }}>{formatDate(m.last_order_date)}</Typography>
-                                                            </Box>
-                                                        </Box>
-                                                    </Box>
-
-                                                    {/* Status Breakdown */}
-                                                    <Box>
-                                                        <Typography variant="caption" color="text.disabled" sx={{ fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', mb: 1.5 }}>📊 Estados</Typography>
-                                                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                                                            {[
-                                                                { key: 'PENDIENTE', label: 'Pendientes', color: '#f59e0b' },
-                                                                { key: 'CONFIRMADO', label: 'Confirmados', color: '#3b82f6' },
-                                                                { key: 'EN_PREPARACION', label: 'En preparación', color: '#8b5cf6' },
-                                                                { key: 'EN_CAMINO', label: 'En camino', color: '#10b981' },
-                                                                { key: 'ENTREGADO', label: 'Entregados', color: '#22c55e' },
-                                                                { key: 'CANCELADO', label: 'Cancelados', color: '#ef4444' },
-                                                            ].map(st => (
-                                                                <Box key={st.key} sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                                                        <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: st.color, flexShrink: 0 }} />
-                                                                        <Typography variant="body2" color="text.secondary">{st.label}</Typography>
-                                                                    </Box>
-                                                                    <Typography sx={{ fontWeight: 700 }}>{m.status_counts?.[st.key] || 0}</Typography>
+                                                <Box sx={{ ...sectionBoxSx(isDark), p: 2.5, mb: 2 }}>
+                                                    <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' }, gap: 2.5 }}>
+                                                        <Box>
+                                                            <Typography variant="caption" color="text.disabled" sx={{ fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', mb: 1.5 }}>📋 Pedidos</Typography>
+                                                            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                                                                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                                    <Typography variant="body2" color="text.secondary">Hoy</Typography>
+                                                                    <Chip label={m.orders_today || '0'} size="small" color={m.orders_today > 0 ? 'success' : 'default'} variant={m.orders_today > 0 ? 'filled' : 'outlined'} sx={{ fontWeight: 700, borderRadius: '8px' }} />
                                                                 </Box>
-                                                            ))}
-                                                        </Box>
-                                                    </Box>
-
-                                                    {/* Revenue Section */}
-                                                    <Box>
-                                                        <Typography variant="caption" color="text.disabled" sx={{ fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', mb: 1.5 }}>💰 Ingresos</Typography>
-                                                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                                                            <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                                                                <Typography variant="body2" color="text.secondary">Hoy</Typography>
-                                                                <Typography sx={{ fontWeight: 700, color: m.revenue_today > 0 ? 'success.main' : 'text.secondary' }}>
-                                                                    ${(m.revenue_today || 0).toLocaleString()}
-                                                                </Typography>
-                                                            </Box>
-                                                            <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                                                                <Typography variant="body2" color="text.secondary">Esta semana</Typography>
-                                                                <Typography sx={{ fontWeight: 700 }}>${(m.revenue_this_week || 0).toLocaleString()}</Typography>
-                                                            </Box>
-                                                            <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                                                                <Typography variant="body2" color="text.secondary">{getPeriodLabel()}</Typography>
-                                                                <Typography sx={{ fontWeight: 700, color: 'primary.main', fontSize: '1rem' }}>
-                                                                    ${(m.revenue_in_period || 0).toLocaleString()}
-                                                                </Typography>
-                                                            </Box>
-                                                            <Divider sx={{ my: 1 }} />
-                                                            <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                                                                <Typography variant="body2" color="text.secondary">Total histórico</Typography>
-                                                                <Typography sx={{ fontWeight: 700, fontSize: '1rem' }}>
-                                                                    ${(m.revenue || 0).toLocaleString()}
-                                                                </Typography>
+                                                                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                                    <Typography variant="body2" color="text.secondary">Esta semana</Typography>
+                                                                    <Typography sx={{ fontWeight: 700 }}>{m.orders_this_week}</Typography>
+                                                                </Box>
+                                                                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                                    <Typography variant="body2" color="text.secondary">{getPeriodLabel()}</Typography>
+                                                                    <Typography sx={{ fontWeight: 700, color: 'primary.main' }}>{m.orders_in_period}</Typography>
+                                                                </Box>
+                                                                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                                    <Typography variant="body2" color="text.secondary">Total histórico</Typography>
+                                                                    <Typography sx={{ fontWeight: 700 }}>{m.total_orders}</Typography>
+                                                                </Box>
+                                                                <Divider sx={{ my: 1 }} />
+                                                                <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                                                                    <Typography variant="body2" color="text.secondary">Último pedido</Typography>
+                                                                    <Typography variant="body2" sx={{ fontWeight: 600 }}>{formatDate(m.last_order_date)}</Typography>
+                                                                </Box>
                                                             </Box>
                                                         </Box>
-                                                    </Box>
 
-                                                    {/* Seller Activity */}
-                                                    <Box sx={{ gridColumn: { md: '1 / -1' } }}>
-                                                        <Divider sx={{ mb: 2 }} />
-                                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
-                                                            <Typography variant="caption" color="text.disabled" sx={{ fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>👤 Vendedor</Typography>
-                                                            <Typography variant="body2" sx={{ fontWeight: 600 }}>{m.users?.find(u => u.role === 'SELLER')?.email || 'Sin asignar'}</Typography>
-                                                            <Box sx={{ ml: 'auto', display: 'flex', alignItems: 'center', gap: 1 }}>
-                                                                <Typography variant="caption" color="text.disabled">Último acceso:</Typography>
-                                                                <Chip icon={<span>{badge.dot}</span>} label={badge.label} size="small"
-                                                                    color={badge.color === 'default' ? 'default' : badge.color}
-                                                                    variant={badge.color === 'default' ? 'outlined' : 'filled'}
-                                                                    sx={{ fontWeight: 600, fontSize: '0.6875rem' }} />
+                                                        <Box>
+                                                            <Typography variant="caption" color="text.disabled" sx={{ fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', mb: 1.5 }}>📊 Estados</Typography>
+                                                            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                                                                {[
+                                                                    { key: 'PENDIENTE', label: 'Pendientes', color: '#f59e0b' },
+                                                                    { key: 'CONFIRMADO', label: 'Confirmados', color: '#3b82f6' },
+                                                                    { key: 'EN_PREPARACION', label: 'En preparación', color: '#8b5cf6' },
+                                                                    { key: 'EN_CAMINO', label: 'En camino', color: '#10b981' },
+                                                                    { key: 'ENTREGADO', label: 'Entregados', color: '#22c55e' },
+                                                                    { key: 'CANCELADO', label: 'Cancelados', color: '#ef4444' },
+                                                                ].map(st => (
+                                                                    <Box key={st.key} sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                                                            <Box sx={{
+                                                                                width: 8,
+                                                                                height: 8,
+                                                                                borderRadius: '50%',
+                                                                                bgcolor: st.color,
+                                                                                flexShrink: 0,
+                                                                                boxShadow: `0 0 6px ${alpha(st.color, 0.4)}`,
+                                                                            }} />
+                                                                            <Typography variant="body2" color="text.secondary">{st.label}</Typography>
+                                                                        </Box>
+                                                                        <Typography sx={{ fontWeight: 700 }}>{m.status_counts?.[st.key] || 0}</Typography>
+                                                                    </Box>
+                                                                ))}
+                                                            </Box>
+                                                        </Box>
+
+                                                        <Box>
+                                                            <Typography variant="caption" color="text.disabled" sx={{ fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', mb: 1.5 }}>💰 Ingresos</Typography>
+                                                            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                                                                <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                                                                    <Typography variant="body2" color="text.secondary">Hoy</Typography>
+                                                                    <Typography sx={{ fontWeight: 700, color: m.revenue_today > 0 ? 'success.main' : 'text.secondary' }}>
+                                                                        ${(m.revenue_today || 0).toLocaleString()}
+                                                                    </Typography>
+                                                                </Box>
+                                                                <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                                                                    <Typography variant="body2" color="text.secondary">Esta semana</Typography>
+                                                                    <Typography sx={{ fontWeight: 700 }}>${(m.revenue_this_week || 0).toLocaleString()}</Typography>
+                                                                </Box>
+                                                                <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                                                                    <Typography variant="body2" color="text.secondary">{getPeriodLabel()}</Typography>
+                                                                    <Typography sx={{ fontWeight: 700, color: 'primary.main', fontSize: '1rem' }}>
+                                                                        ${(m.revenue_in_period || 0).toLocaleString()}
+                                                                    </Typography>
+                                                                </Box>
+                                                                <Divider sx={{ my: 1 }} />
+                                                                <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                                                                    <Typography variant="body2" color="text.secondary">Total histórico</Typography>
+                                                                    <Typography sx={{ fontWeight: 700, fontSize: '1rem' }}>
+                                                                        ${(m.revenue || 0).toLocaleString()}
+                                                                    </Typography>
+                                                                </Box>
+                                                            </Box>
+                                                        </Box>
+
+                                                        <Box sx={{ gridColumn: { md: '1 / -1' } }}>
+                                                            <Divider sx={{ mb: 2 }} />
+                                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
+                                                                <Typography variant="caption" color="text.disabled" sx={{ fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>👤 Vendedor</Typography>
+                                                                <Typography variant="body2" sx={{ fontWeight: 600 }}>{m.users?.find(u => u.role === 'SELLER')?.email || 'Sin asignar'}</Typography>
+                                                                <Box sx={{ ml: 'auto', display: 'flex', alignItems: 'center', gap: 1 }}>
+                                                                    <Typography variant="caption" color="text.disabled">Último acceso:</Typography>
+                                                                    <Chip
+                                                                        icon={<span>{badge.dot}</span>}
+                                                                        label={badge.label}
+                                                                        size="small"
+                                                                        color={badge.color === 'default' ? 'default' : badge.color}
+                                                                        variant={badge.color === 'default' ? 'outlined' : 'filled'}
+                                                                        sx={{ fontWeight: 600, fontSize: '0.6875rem', borderRadius: '8px' }}
+                                                                    />
+                                                                </Box>
                                                             </Box>
                                                         </Box>
                                                     </Box>
@@ -696,41 +1053,174 @@ function SuperAdmin({ user, onLogout }) {
                         )}
 
                         {!loading && metrics.length === 0 && (
-                            <Box sx={{ textAlign: 'center', py: 5 }}>
-                                <Typography variant="h6" color="text.secondary">No hay métricas para {getPeriodLabel()}</Typography>
+                            <Box sx={{ ...sectionBoxSx(isDark), textAlign: 'center', py: 5 }}>
+                                <TrendingUpIcon sx={{ fontSize: 48, color: 'text.disabled', mb: 1 }} />
+                                <Typography variant="h6" color="text.secondary" sx={{ fontWeight: 600 }}>No hay métricas para {getPeriodLabel()}</Typography>
                             </Box>
                         )}
 
-                        {loading && <Typography color="text.secondary" sx={{ textAlign: 'center', py: 5 }}>Cargando métricas...</Typography>}
+                        {loading && (
+                            <Typography color="text.secondary" sx={{ textAlign: 'center', py: 5, fontWeight: 500 }}>
+                                Cargando métricas...
+                            </Typography>
+                        )}
                     </>
                 )}
             </AdminLayout>
 
-            <Dialog open={showCreateModal} onClose={() => { setShowCreateModal(false); setModalError('') }} maxWidth="sm" fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
-                <DialogTitle sx={{ fontWeight: 700, fontSize: '1.25rem' }}>Crear Nuevo Negocio</DialogTitle>
-                <DialogContent>
-                    {modalError && <Alert severity="error" sx={{ mb: 2, mt: 1 }}>{modalError}</Alert>}
+            <Dialog
+                open={showCreateModal}
+                onClose={() => { setShowCreateModal(false); setModalError('') }}
+                maxWidth="sm"
+                fullWidth
+                PaperProps={{
+                    sx: {
+                        borderRadius: '20px',
+                        background: isDark ? 'rgba(10, 10, 28, 0.95)' : 'rgba(255, 255, 255, 0.95)',
+                        backdropFilter: 'blur(40px) saturate(200%)',
+                        border: isDark ? '1px solid rgba(129, 140, 248, 0.15)' : '1px solid rgba(99, 102, 241, 0.12)',
+                        boxShadow: isDark
+                            ? '0 24px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(129,140,248,0.08)'
+                            : '0 24px 80px rgba(99,102,241,0.12), 0 0 0 1px rgba(99,102,241,0.05)',
+                    },
+                }}
+            >
+                <DialogTitle sx={{
+                    fontWeight: 800,
+                    fontSize: '1.25rem',
+                    fontFamily: '"DM Serif Display", serif',
+                    pt: 3,
+                    px: 3,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 1.5,
+                }}>
+                    <Box sx={{
+                        width: 36,
+                        height: 36,
+                        borderRadius: '10px',
+                        background: isDark ? 'rgba(99,102,241,0.15)' : 'rgba(99,102,241,0.1)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                    }}>
+                        <AddIcon sx={{ color: 'primary.main', fontSize: '1.2rem' }} />
+                    </Box>
+                    Crear Nuevo Negocio
+                </DialogTitle>
+                <DialogContent sx={{ pt: 2, px: 3 }}>
+                    {modalError && <Alert severity="error" sx={{ mb: 2, mt: 1, borderRadius: '12px' }}>{modalError}</Alert>}
                     <Box component="form" onSubmit={handleCreateStore} id="create-store-form" sx={{ mt: 1 }}>
                         {renderStoreForm(newStore, setNewStore, true)}
                     </Box>
                 </DialogContent>
-                <DialogActions sx={{ px: 3, pb: 3, gap: 1 }}>
-                    <Button onClick={() => { setShowCreateModal(false); setModalError('') }} variant="outlined" fullWidth>Cancelar</Button>
-                    <Button type="submit" form="create-store-form" variant="contained" fullWidth disabled={loading}>{loading ? 'Creando...' : 'Crear Negocio'}</Button>
+                <DialogActions sx={{ px: 3, pb: 3, pt: 1, gap: 1.5 }}>
+                    <Button
+                        onClick={() => { setShowCreateModal(false); setModalError('') }}
+                        variant="outlined"
+                        fullWidth
+                        sx={{ borderRadius: '12px', textTransform: 'none', fontWeight: 700, py: 1.1 }}
+                    >
+                        Cancelar
+                    </Button>
+                    <Button
+                        type="submit"
+                        form="create-store-form"
+                        variant="contained"
+                        fullWidth
+                        disabled={loading}
+                        sx={{
+                            borderRadius: '12px',
+                            textTransform: 'none',
+                            fontWeight: 700,
+                            py: 1.1,
+                            background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
+                            boxShadow: isDark ? '0 4px 16px rgba(99,102,241,0.3)' : '0 4px 16px rgba(99,102,241,0.2)',
+                            '&:hover': {
+                                background: 'linear-gradient(135deg, #5558e6, #7c4fe0)',
+                            },
+                        }}
+                    >
+                        {loading ? 'Creando...' : 'Crear Negocio'}
+                    </Button>
                 </DialogActions>
             </Dialog>
 
-            <Dialog open={showEditModal} onClose={() => { setShowEditModal(false); setEditingStore(null); setModalError('') }} maxWidth="sm" fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
-                <DialogTitle sx={{ fontWeight: 700, fontSize: '1.25rem' }}>Editar Negocio: {editingStore?.name}</DialogTitle>
-                <DialogContent>
-                    {modalError && <Alert severity="error" sx={{ mb: 2, mt: 1 }}>{modalError}</Alert>}
+            <Dialog
+                open={showEditModal}
+                onClose={() => { setShowEditModal(false); setEditingStore(null); setModalError('') }}
+                maxWidth="sm"
+                fullWidth
+                PaperProps={{
+                    sx: {
+                        borderRadius: '20px',
+                        background: isDark ? 'rgba(10, 10, 28, 0.95)' : 'rgba(255, 255, 255, 0.95)',
+                        backdropFilter: 'blur(40px) saturate(200%)',
+                        border: isDark ? '1px solid rgba(129, 140, 248, 0.15)' : '1px solid rgba(99, 102, 241, 0.12)',
+                        boxShadow: isDark
+                            ? '0 24px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(129,140,248,0.08)'
+                            : '0 24px 80px rgba(99,102,241,0.12), 0 0 0 1px rgba(99,102,241,0.05)',
+                    },
+                }}
+            >
+                <DialogTitle sx={{
+                    fontWeight: 800,
+                    fontSize: '1.25rem',
+                    fontFamily: '"DM Serif Display", serif',
+                    pt: 3,
+                    px: 3,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 1.5,
+                }}>
+                    <Box sx={{
+                        width: 36,
+                        height: 36,
+                        borderRadius: '10px',
+                        background: isDark ? 'rgba(99,102,241,0.15)' : 'rgba(99,102,241,0.1)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                    }}>
+                        <EditIcon sx={{ color: 'primary.main', fontSize: '1.2rem' }} />
+                    </Box>
+                    Editar Negocio: {editingStore?.name}
+                </DialogTitle>
+                <DialogContent sx={{ pt: 2, px: 3 }}>
+                    {modalError && <Alert severity="error" sx={{ mb: 2, mt: 1, borderRadius: '12px' }}>{modalError}</Alert>}
                     <Box component="form" onSubmit={handleEditStore} id="edit-store-form" sx={{ mt: 1 }}>
                         {renderStoreForm(editForm, setEditForm, false)}
                     </Box>
                 </DialogContent>
-                <DialogActions sx={{ px: 3, pb: 3, gap: 1 }}>
-                    <Button onClick={() => { setShowEditModal(false); setEditingStore(null); setModalError('') }} variant="outlined" fullWidth>Cancelar</Button>
-                    <Button type="submit" form="edit-store-form" variant="contained" fullWidth disabled={loading}>{loading ? 'Guardando...' : 'Guardar Cambios'}</Button>
+                <DialogActions sx={{ px: 3, pb: 3, pt: 1, gap: 1.5 }}>
+                    <Button
+                        onClick={() => { setShowEditModal(false); setEditingStore(null); setModalError('') }}
+                        variant="outlined"
+                        fullWidth
+                        sx={{ borderRadius: '12px', textTransform: 'none', fontWeight: 700, py: 1.1 }}
+                    >
+                        Cancelar
+                    </Button>
+                    <Button
+                        type="submit"
+                        form="edit-store-form"
+                        variant="contained"
+                        fullWidth
+                        disabled={loading}
+                        sx={{
+                            borderRadius: '12px',
+                            textTransform: 'none',
+                            fontWeight: 700,
+                            py: 1.1,
+                            background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
+                            boxShadow: isDark ? '0 4px 16px rgba(99,102,241,0.3)' : '0 4px 16px rgba(99,102,241,0.2)',
+                            '&:hover': {
+                                background: 'linear-gradient(135deg, #5558e6, #7c4fe0)',
+                            },
+                        }}
+                    >
+                        {loading ? 'Guardando...' : 'Guardar Cambios'}
+                    </Button>
                 </DialogActions>
             </Dialog>
 

@@ -19,47 +19,111 @@ import Dialog from '@mui/material/Dialog'
 import DialogTitle from '@mui/material/DialogTitle'
 import DialogContent from '@mui/material/DialogContent'
 import DialogActions from '@mui/material/DialogActions'
-import Grid from '@mui/material/Grid' // MUI 9 Grid
+import Grid from '@mui/material/Grid'
 import InputAdornment from '@mui/material/InputAdornment'
 import Divider from '@mui/material/Divider'
 import Paper from '@mui/material/Paper'
+import { useTheme } from '@mui/material/styles'
 
-// Icons
 import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet'
 import HistoryIcon from '@mui/icons-material/History'
 import LocalAtmIcon from '@mui/icons-material/LocalAtm'
 import PaymentIcon from '@mui/icons-material/Payment'
 import AccountBalanceIcon from '@mui/icons-material/AccountBalance'
 import PointOfSaleIcon from '@mui/icons-material/PointOfSale'
+import TrendingUpIcon from '@mui/icons-material/TrendingUp'
+import CheckCircleIcon from '@mui/icons-material/CheckCircle'
+
+const tabAccent = {
+    position: 'relative',
+    minHeight: 48,
+    textTransform: 'none',
+    fontWeight: 600,
+    fontSize: '0.875rem',
+    letterSpacing: '0.01em',
+    transition: 'all 0.25s ease',
+}
+
+const sectionBox = (isDark) => ({
+    background: isDark ? 'rgba(99,102,241,0.04)' : 'rgba(99,102,241,0.03)',
+    border: isDark ? '1px solid rgba(129,140,248,0.10)' : '1px solid rgba(99,102,241,0.08)',
+    borderRadius: '14px',
+})
+
+const accentCard = (isDark) => ({
+    position: 'relative',
+    overflow: 'visible',
+    borderRadius: '16px',
+    animation: 'fade-in-up 0.5s ease both',
+    '&::before': {
+        content: '""',
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        height: '3px',
+        background: 'linear-gradient(90deg, #6366f1, #8b5cf6, #a78bfa)',
+        borderRadius: '16px 16px 0 0',
+    },
+})
+
+const paymentCardAccent = (isDark) => ({
+    position: 'relative',
+    overflow: 'visible',
+    borderRadius: '14px',
+    background: isDark ? 'rgba(14,14,36,0.6)' : '#ffffff',
+    border: isDark ? '1px solid rgba(129,140,248,0.10)' : '1px solid rgba(99,102,241,0.10)',
+    transition: 'all 0.3s cubic-bezier(0.4,0,0.2,1)',
+    '&::before': {
+        content: '""',
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        height: '2px',
+        borderRadius: '14px 14px 0 0',
+    },
+    '&:hover': {
+        transform: 'translateY(-3px)',
+        boxShadow: isDark
+            ? '0 8px 28px rgba(0,0,0,0.5), 0 0 0 1px rgba(129,140,248,0.10)'
+            : '0 8px 28px rgba(99,102,241,0.12), 0 0 0 1px rgba(99,102,241,0.05)',
+    },
+})
 
 function CashRegister({ user }) {
     const [activeTab, setActiveTab] = useState(0)
     const [activeSession, setActiveSession] = useState(null)
     const [history, setHistory] = useState([])
     const [loading, setLoading] = useState(true)
-    
-    // Open session form state
+    const [mounted, setMounted] = useState(false)
+
     const [openingBalance, setOpeningBalance] = useState('')
     const [openingNotes, setOpeningNotes] = useState('')
-    
-    // Close session modal state
+
     const [showCloseModal, setShowCloseModal] = useState(false)
     const [closingBalanceReal, setClosingBalanceReal] = useState('')
     const [closingNotes, setClosingNotes] = useState('')
-    
-    const toast = useToast()
 
-    // Fetch active session and history
+    const toast = useToast()
+    const theme = useTheme()
+    const isDark = theme.palette.mode === 'dark'
+
+    useEffect(() => {
+        const t = setTimeout(() => setMounted(true), 50)
+        return () => clearTimeout(t)
+    }, [])
+
     const fetchData = async () => {
         try {
             const token = localStorage.getItem('token')
             const headers = { 'Authorization': `Bearer ${token}` }
-            
+
             const [sessionRes, historyRes] = await Promise.all([
                 fetch('/api/cash-register/session/active', { headers }),
                 fetch('/api/cash-register/sessions', { headers })
             ])
-            
+
             if (sessionRes.ok) {
                 const sessionData = await sessionRes.json()
                 setActiveSession(sessionData.session)
@@ -85,7 +149,7 @@ function CashRegister({ user }) {
             toast.error('El balance de apertura es requerido.')
             return
         }
-        
+
         setLoading(true)
         try {
             const token = localStorage.getItem('token')
@@ -100,7 +164,7 @@ function CashRegister({ user }) {
                     notes: openingNotes
                 })
             })
-            
+
             if (res.ok) {
                 toast.success('Sesión de caja abierta exitosamente.')
                 setOpeningBalance('')
@@ -123,7 +187,7 @@ function CashRegister({ user }) {
             toast.error('Ingresa el monto de efectivo físico en caja.')
             return
         }
-        
+
         setLoading(true)
         try {
             const token = localStorage.getItem('token')
@@ -138,7 +202,7 @@ function CashRegister({ user }) {
                     notes: closingNotes
                 })
             })
-            
+
             if (res.ok) {
                 toast.success('Sesión de caja cerrada y cuadrada exitosamente.')
                 setClosingBalanceReal('')
@@ -156,7 +220,6 @@ function CashRegister({ user }) {
         }
     }
 
-    // Calculations for closing modal
     const expectedCashInDrawer = useMemo(() => {
         if (!activeSession) return 0
         return (activeSession.opening_balance ?? 0) + (activeSession.cash_sales ?? 0)
@@ -168,71 +231,162 @@ function CashRegister({ user }) {
     }, [closingBalanceReal, expectedCashInDrawer])
 
     const getDiffChip = (diff) => {
-        if (diff === 0) return <Chip label="Cuadrado ($0)" color="success" size="small" sx={{ fontWeight: 700 }} />
+        if (diff === 0) return <Chip icon={<CheckCircleIcon sx={{ fontSize: 14 }} />} label="Cuadrado ($0)" color="success" size="small" sx={{ fontWeight: 700 }} />
         if (diff < 0) return <Chip label={`Faltante ($${Math.abs(diff).toLocaleString()})`} color="error" size="small" sx={{ fontWeight: 700 }} />
         return <Chip label={`Sobrante (+$${diff.toLocaleString()})`} color="primary" size="small" sx={{ fontWeight: 700 }} />
     }
 
+    const totalSales = activeSession
+        ? (activeSession.opening_balance ?? 0) + (activeSession.cash_sales ?? 0) + (activeSession.card_sales ?? 0) + (activeSession.transfer_sales ?? 0)
+        : 0
+
     return (
         <AdminLayout title="Control de Caja Registradora" user={user}>
-            <Box sx={{ mb: 3 }}>
-                <Tabs value={activeTab} onChange={(_, nv) => setActiveTab(nv)} indicatorColor="primary" textColor="primary">
-                    <Tab label="Caja Activa" icon={<AccountBalanceWalletIcon />} iconPosition="start" />
-                    <Tab label="Historial de Turnos" icon={<HistoryIcon />} iconPosition="start" />
+            {/* ── Styled Tab Bar ──────────────────────────────── */}
+            <Box sx={{
+                mb: 3,
+                ...sectionBox(isDark),
+                p: 0.5,
+                display: 'inline-flex',
+                borderRadius: '14px',
+                animation: mounted ? 'fade-in-up 0.4s ease both' : 'none',
+            }}>
+                <Tabs
+                    value={activeTab}
+                    onChange={(_, nv) => setActiveTab(nv)}
+                    sx={{
+                        minHeight: 44,
+                        '& .MuiTabs-indicator': {
+                            height: 3,
+                            borderRadius: '3px 3px 0 0',
+                            background: 'linear-gradient(90deg, #6366f1, #8b5cf6, #a78bfa)',
+                            transition: 'all 0.3s cubic-bezier(0.4,0,0.2,1)',
+                        },
+                    }}
+                >
+                    <Tab
+                        icon={<AccountBalanceWalletIcon sx={{ fontSize: 20 }} />}
+                        iconPosition="start"
+                        label="Caja Activa"
+                        sx={tabAccent}
+                    />
+                    <Tab
+                        icon={<HistoryIcon sx={{ fontSize: 20 }} />}
+                        iconPosition="start"
+                        label="Historial de Turnos"
+                        sx={tabAccent}
+                    />
                 </Tabs>
             </Box>
 
+            {/* ═══════ TAB 0 : ACTIVE SESSION ═══════ */}
             {activeTab === 0 && (
                 <Box>
                     {activeSession ? (
-                        /* Active Session Dashboard */
                         <Grid container spacing={3}>
-                            {/* Summary Card */}
+                            {/* ── Summary Card ─────────────────────── */}
                             <Grid size={{ xs: 12, md: 5, lg: 4 }}>
-                                <Card variant="outlined" sx={{ borderRadius: 3, borderLeft: '5px solid #6366f1' }}>
+                                <Card sx={{
+                                    ...accentCard(isDark),
+                                    animationDelay: '0.05s',
+                                }}>
                                     <CardContent sx={{ p: 3 }}>
-                                        <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1, fontWeight: 600 }}>
-                                            SESIÓN ACTIVA NRO. {activeSession.id}
-                                        </Typography>
-                                        <Typography variant="h4" sx={{ fontWeight: 900, mb: 1, color: 'primary.main' }}>
-                                            ${((activeSession.opening_balance ?? 0) + (activeSession.cash_sales ?? 0) + (activeSession.card_sales ?? 0) + (activeSession.transfer_sales ?? 0)).toLocaleString()}
-                                        </Typography>
-                                        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                                            Total Ventas + Apertura
-                                        </Typography>
-                                        
-                                        <Divider sx={{ mb: 2 }} />
+                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.2, mb: 2 }}>
+                                            <Box sx={{
+                                                p: 1,
+                                                borderRadius: '12px',
+                                                background: 'linear-gradient(135deg, rgba(99,102,241,0.12), rgba(139,92,246,0.12))',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                animation: 'icon-bounce 0.6s ease both',
+                                                animationDelay: '0.3s',
+                                            }}>
+                                                <AccountBalanceWalletIcon sx={{ fontSize: 24, color: 'primary.main' }} />
+                                            </Box>
+                                            <Box>
+                                                <Typography variant="caption" color="text.disabled" sx={{ display: 'block', fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+                                                    Sesión Activa Nro.
+                                                </Typography>
+                                                <Typography variant="h4" sx={{ fontWeight: 400, fontFamily: '"DM Serif Display", "Georgia", serif', lineHeight: 1.1 }}>
+                                                    #{activeSession.id}
+                                                </Typography>
+                                            </Box>
+                                        </Box>
+
+                                        <Box sx={{
+                                            ...sectionBox(isDark),
+                                            p: 2,
+                                            mb: 2.5,
+                                            textAlign: 'center',
+                                        }}>
+                                            <Typography variant="caption" color="text.disabled" sx={{ fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                                                Total General
+                                            </Typography>
+                                            <Typography variant="h4" sx={{
+                                                fontWeight: 400,
+                                                fontFamily: '"DM Serif Display", "Georgia", serif',
+                                                background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
+                                                WebkitBackgroundClip: 'text',
+                                                WebkitTextFillColor: 'transparent',
+                                                lineHeight: 1.2,
+                                            }}>
+                                                ${totalSales.toLocaleString()}
+                                            </Typography>
+                                            <Typography variant="body2" color="text.disabled" sx={{ mt: 0.5 }}>
+                                                Ventas + Apertura
+                                            </Typography>
+                                        </Box>
 
                                         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
                                             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                                <Typography variant="body2" color="text.secondary">Fecha de Apertura:</Typography>
+                                                <Typography variant="body2" color="text.secondary">Fecha de Apertura</Typography>
                                                 <Typography variant="body2" sx={{ fontWeight: 600 }}>
                                                     {new Date(activeSession.opened_at).toLocaleString()}
                                                 </Typography>
                                             </Box>
                                             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                                <Typography variant="body2" color="text.secondary">Saldo de Apertura:</Typography>
+                                                <Typography variant="body2" color="text.secondary">Saldo de Apertura</Typography>
                                                 <Typography variant="body2" sx={{ fontWeight: 600 }}>
                                                     ${(activeSession.opening_balance ?? 0).toLocaleString()}
                                                 </Typography>
                                             </Box>
                                             {activeSession.notes && (
-                                                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, mt: 1 }}>
-                                                    <Typography variant="caption" color="text.secondary">Notas de apertura:</Typography>
-                                                    <Typography variant="caption" sx={{ p: 1, bgcolor: 'action.hover', borderRadius: 1 }}>
+                                                <Box sx={{
+                                                    ...sectionBox(isDark),
+                                                    p: 1.5,
+                                                    mt: 0.5,
+                                                }}>
+                                                    <Typography variant="caption" color="text.disabled" sx={{ display: 'block', mb: 0.5, fontWeight: 600 }}>
+                                                        Notas de apertura
+                                                    </Typography>
+                                                    <Typography variant="caption" sx={{ fontStyle: 'italic' }}>
                                                         {activeSession.notes}
                                                     </Typography>
                                                 </Box>
                                             )}
                                         </Box>
 
-                                        <Button 
-                                            variant="contained" 
-                                            color="error" 
-                                            fullWidth 
-                                            size="large" 
+                                        <Button
+                                            variant="contained"
+                                            color="error"
+                                            fullWidth
+                                            size="large"
                                             onClick={() => setShowCloseModal(true)}
-                                            sx={{ mt: 3, py: 1.2, fontWeight: 700, borderRadius: 2 }}
+                                            startIcon={<CheckCircleIcon />}
+                                            sx={{
+                                                mt: 3,
+                                                py: 1.3,
+                                                fontWeight: 700,
+                                                borderRadius: '12px',
+                                                background: 'linear-gradient(135deg, #ef4444, #dc2626)',
+                                                boxShadow: '0 4px 20px rgba(239,68,68,0.35)',
+                                                '&:hover': {
+                                                    background: 'linear-gradient(135deg, #dc2626, #b91c1c)',
+                                                    boxShadow: '0 8px 32px rgba(239,68,68,0.45)',
+                                                    transform: 'translateY(-2px)',
+                                                },
+                                            }}
                                         >
                                             Cerrar y Cuadrar Caja
                                         </Button>
@@ -240,64 +394,140 @@ function CashRegister({ user }) {
                                 </Card>
                             </Grid>
 
-                            {/* Transaction Details */}
+                            {/* ── Transaction Details ─────────────── */}
                             <Grid size={{ xs: 12, md: 7, lg: 8 }}>
-                                <Card variant="outlined" sx={{ borderRadius: 3, height: '100%' }}>
+                                <Card sx={{ ...accentCard(isDark), animationDelay: '0.1s', height: '100%' }}>
                                     <CardContent sx={{ p: 3 }}>
-                                        <Typography variant="h6" sx={{ fontWeight: 800, mb: 3 }}>
-                                            Desglose por Métodos de Pago
-                                        </Typography>
+                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.2, mb: 3 }}>
+                                            <Box sx={{
+                                                p: 1,
+                                                borderRadius: '12px',
+                                                background: 'linear-gradient(135deg, rgba(99,102,241,0.12), rgba(139,92,246,0.12))',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                            }}>
+                                                <TrendingUpIcon sx={{ fontSize: 22, color: 'primary.main' }} />
+                                            </Box>
+                                            <Typography variant="h6" sx={{ fontWeight: 700, fontSize: '1.05rem' }}>
+                                                Desglose por Métodos de Pago
+                                            </Typography>
+                                        </Box>
 
-                                        <Grid container spacing={3}>
-                                            {/* Cash Card */}
+                                        <Grid container spacing={2.5}>
+                                            {/* Cash */}
                                             <Grid size={{ xs: 12, sm: 4 }}>
-                                                <Paper variant="outlined" sx={{ p: 2.5, borderRadius: 2, display: 'flex', alignItems: 'center', gap: 2 }}>
-                                                    <Box sx={{ p: 1, borderRadius: 1.5, bgcolor: 'success.light', color: 'success.contrastText' }}>
-                                                        <LocalAtmIcon />
+                                                <Box sx={{
+                                                    ...paymentCardAccent(isDark),
+                                                    p: 2.5,
+                                                    '&::before': {
+                                                        ...paymentCardAccent(isDark)['&::before'],
+                                                        background: 'linear-gradient(90deg, #10b981, #34d399)',
+                                                    },
+                                                    animation: mounted ? 'fade-in-up 0.5s ease both' : 'none',
+                                                    animationDelay: '0.15s',
+                                                }}>
+                                                    <Box sx={{
+                                                        p: 1.2,
+                                                        borderRadius: '12px',
+                                                        background: isDark ? 'rgba(16,185,129,0.15)' : 'rgba(16,185,129,0.10)',
+                                                        display: 'inline-flex',
+                                                        mb: 1.5,
+                                                        animation: 'icon-bounce 0.6s ease both',
+                                                        animationDelay: '0.4s',
+                                                    }}>
+                                                        <LocalAtmIcon sx={{ fontSize: 22, color: 'success.main' }} />
                                                     </Box>
-                                                    <Box>
-                                                        <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>Efectivo (Caja)</Typography>
-                                                        <Typography variant="h6" sx={{ fontWeight: 800 }}>${(activeSession.cash_sales ?? 0).toLocaleString()}</Typography>
-                                                    </Box>
-                                                </Paper>
+                                                    <Typography variant="caption" color="text.disabled" sx={{ fontWeight: 600, display: 'block', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                                                        Efectivo (Caja)
+                                                    </Typography>
+                                                    <Typography variant="h6" sx={{ fontWeight: 700, mt: 0.5 }}>
+                                                        ${(activeSession.cash_sales ?? 0).toLocaleString()}
+                                                    </Typography>
+                                                </Box>
                                             </Grid>
 
-                                            {/* Card Card */}
+                                            {/* Card */}
                                             <Grid size={{ xs: 12, sm: 4 }}>
-                                                <Paper variant="outlined" sx={{ p: 2.5, borderRadius: 2, display: 'flex', alignItems: 'center', gap: 2 }}>
-                                                    <Box sx={{ p: 1, borderRadius: 1.5, bgcolor: 'primary.light', color: 'primary.contrastText' }}>
-                                                        <PaymentIcon />
+                                                <Box sx={{
+                                                    ...paymentCardAccent(isDark),
+                                                    p: 2.5,
+                                                    '&::before': {
+                                                        ...paymentCardAccent(isDark)['&::before'],
+                                                        background: 'linear-gradient(90deg, #6366f1, #818cf8)',
+                                                    },
+                                                    animation: mounted ? 'fade-in-up 0.5s ease both' : 'none',
+                                                    animationDelay: '0.2s',
+                                                }}>
+                                                    <Box sx={{
+                                                        p: 1.2,
+                                                        borderRadius: '12px',
+                                                        background: isDark ? 'rgba(99,102,241,0.15)' : 'rgba(99,102,241,0.10)',
+                                                        display: 'inline-flex',
+                                                        mb: 1.5,
+                                                        animation: 'icon-bounce 0.6s ease both',
+                                                        animationDelay: '0.5s',
+                                                    }}>
+                                                        <PaymentIcon sx={{ fontSize: 22, color: 'primary.main' }} />
                                                     </Box>
-                                                    <Box>
-                                                        <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>Tarjeta</Typography>
-                                                        <Typography variant="h6" sx={{ fontWeight: 800 }}>${(activeSession.card_sales ?? 0).toLocaleString()}</Typography>
-                                                    </Box>
-                                                </Paper>
+                                                    <Typography variant="caption" color="text.disabled" sx={{ fontWeight: 600, display: 'block', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                                                        Tarjeta
+                                                    </Typography>
+                                                    <Typography variant="h6" sx={{ fontWeight: 700, mt: 0.5 }}>
+                                                        ${(activeSession.card_sales ?? 0).toLocaleString()}
+                                                    </Typography>
+                                                </Box>
                                             </Grid>
 
-                                            {/* Transfer Card */}
+                                            {/* Transfer */}
                                             <Grid size={{ xs: 12, sm: 4 }}>
-                                                <Paper variant="outlined" sx={{ p: 2.5, borderRadius: 2, display: 'flex', alignItems: 'center', gap: 2 }}>
-                                                    <Box sx={{ p: 1, borderRadius: 1.5, bgcolor: 'warning.light', color: 'warning.contrastText' }}>
-                                                        <AccountBalanceIcon />
+                                                <Box sx={{
+                                                    ...paymentCardAccent(isDark),
+                                                    p: 2.5,
+                                                    '&::before': {
+                                                        ...paymentCardAccent(isDark)['&::before'],
+                                                        background: 'linear-gradient(90deg, #f59e0b, #fbbf24)',
+                                                    },
+                                                    animation: mounted ? 'fade-in-up 0.5s ease both' : 'none',
+                                                    animationDelay: '0.25s',
+                                                }}>
+                                                    <Box sx={{
+                                                        p: 1.2,
+                                                        borderRadius: '12px',
+                                                        background: isDark ? 'rgba(245,158,11,0.15)' : 'rgba(245,158,11,0.10)',
+                                                        display: 'inline-flex',
+                                                        mb: 1.5,
+                                                        animation: 'icon-bounce 0.6s ease both',
+                                                        animationDelay: '0.6s',
+                                                    }}>
+                                                        <AccountBalanceIcon sx={{ fontSize: 22, color: 'warning.main' }} />
                                                     </Box>
-                                                    <Box>
-                                                        <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>Transferencia</Typography>
-                                                        <Typography variant="h6" sx={{ fontWeight: 800 }}>${(activeSession.transfer_sales ?? 0).toLocaleString()}</Typography>
-                                                    </Box>
-                                                </Paper>
+                                                    <Typography variant="caption" color="text.disabled" sx={{ fontWeight: 600, display: 'block', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                                                        Transferencia
+                                                    </Typography>
+                                                    <Typography variant="h6" sx={{ fontWeight: 700, mt: 0.5 }}>
+                                                        ${(activeSession.transfer_sales ?? 0).toLocaleString()}
+                                                    </Typography>
+                                                </Box>
                                             </Grid>
                                         </Grid>
 
-                                        <Box sx={{ mt: 4, p: 2.5, borderRadius: 2, bgcolor: 'background.default', border: '1px dashed', borderColor: 'divider' }}>
-                                            <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                                                <Typography variant="body2" sx={{ fontWeight: 700 }}>Efectivo Esperado en Caja (Apertura + Ventas Efectivo):</Typography>
-                                                <Typography variant="body2" sx={{ fontWeight: 900, color: 'success.main' }}>
+                                        {/* Expected cash callout */}
+                                        <Box sx={{
+                                            ...sectionBox(isDark),
+                                            p: 2.5,
+                                            mt: 3.5,
+                                        }}>
+                                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+                                                <Typography variant="body2" sx={{ fontWeight: 700 }}>
+                                                    Efectivo Esperado en Caja
+                                                </Typography>
+                                                <Typography variant="body2" sx={{ fontWeight: 800, color: 'success.main' }}>
                                                     ${expectedCashInDrawer.toLocaleString()}
                                                 </Typography>
                                             </Box>
-                                            <Typography variant="caption" color="text.secondary">
-                                                * Al momento del cierre de caja, deberás contar únicamente el dinero en efectivo físico disponible en la caja. El monto esperado a declarar es de <strong>${expectedCashInDrawer.toLocaleString()}</strong>. Los saldos de tarjeta y transferencia se consideran recaudados en las respectivas cuentas bancarias.
+                                            <Typography variant="caption" color="text.disabled" sx={{ lineHeight: 1.6, display: 'block' }}>
+                                                Al momento del cierre de caja, deberás contar únicamente el dinero en efectivo físico disponible en la caja. El monto esperado a declarar es de <strong>${expectedCashInDrawer.toLocaleString()}</strong>. Los saldos de tarjeta y transferencia se consideran recaudados en las respectivas cuentas bancarias.
                                             </Typography>
                                         </Box>
                                     </CardContent>
@@ -305,75 +535,107 @@ function CashRegister({ user }) {
                             </Grid>
                         </Grid>
                     ) : (
-                        /* Open Session Form */
-                        <Box sx={{ maxWidth: 500, mx: 'auto', mt: 4 }}>
-                            <Card variant="outlined" sx={{ borderRadius: 3, p: 2 }}>
-                                <CardContent>
-                                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 3 }}>
-                                                    <PointOfSaleIcon color="primary" sx={{ fontSize: 32 }} />
-                                                    <Box>
-                                                        <Typography variant="h6" sx={{ fontWeight: 800 }}>Apertura de Caja</Typography>
-                                                        <Typography variant="caption" color="text.secondary">
-                                                            Registra el dinero inicial para iniciar transacciones locales.
-                                                        </Typography>
-                                                    </Box>
-                                                </Box>
-
-                                                <form onSubmit={handleOpenSession}>
-                                                    <TextField
-                                                        label="Monto Inicial en Efectivo (Base de Caja)"
-                                                        fullWidth
-                                                        required
-                                                        value={openingBalance}
-                                                        onChange={(e) => setOpeningBalance(e.target.value)}
-                                                        sx={{ mb: 3 }}
-                                                        slotProps={{
-                                                            input: {
-                                                                startAdornment: <InputAdornment position="start">$</InputAdornment>
-                                                            }
-                                                        }}
-                                                    />
-
-                                                    <TextField
-                                                        label="Notas / Observaciones"
-                                                        fullWidth
-                                                        multiline
-                                                        rows={3}
-                                                        value={openingNotes}
-                                                        onChange={(e) => setOpeningNotes(e.target.value)}
-                                                        placeholder="Ej: Base de caja inicial para dar vueltas..."
-                                                        sx={{ mb: 3 }}
-                                                    />
-
-                                                    <Button 
-                                                        variant="contained" 
-                                                        color="primary" 
-                                                        fullWidth 
-                                                        size="large" 
-                                                        type="submit"
-                                                        sx={{ py: 1.2, fontWeight: 700, borderRadius: 2 }}
-                                                    >
-                                                        Abrir Caja Registradora
-                                                    </Button>
-                                                </form>
-                                            </CardContent>
-                                        </Card>
+                        /* ── Open Session Form ────────────────────── */
+                        <Box sx={{ maxWidth: 500, mx: 'auto', mt: 2, animation: mounted ? 'fade-in-up 0.5s ease both' : 'none' }}>
+                            <Card sx={{ ...accentCard(isDark) }}>
+                                <CardContent sx={{ p: 3 }}>
+                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 3 }}>
+                                        <Box sx={{
+                                            p: 1.2,
+                                            borderRadius: '12px',
+                                            background: 'linear-gradient(135deg, rgba(99,102,241,0.12), rgba(139,92,246,0.12))',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            animation: 'icon-bounce 0.6s ease both',
+                                            animationDelay: '0.3s',
+                                        }}>
+                                            <PointOfSaleIcon sx={{ fontSize: 28, color: 'primary.main' }} />
+                                        </Box>
+                                        <Box>
+                                            <Typography variant="h6" sx={{ fontWeight: 700, fontSize: '1.05rem' }}>Apertura de Caja</Typography>
+                                            <Typography variant="caption" color="text.disabled">
+                                                Registra el dinero inicial para iniciar transacciones locales.
+                                            </Typography>
+                                        </Box>
                                     </Box>
-                                )}
-                            </Box>
-                        )}
 
+                                    <form onSubmit={handleOpenSession}>
+                                        <TextField
+                                            label="Monto Inicial en Efectivo (Base de Caja)"
+                                            fullWidth
+                                            required
+                                            value={openingBalance}
+                                            onChange={(e) => setOpeningBalance(e.target.value)}
+                                            sx={{ mb: 2.5 }}
+                                            slotProps={{
+                                                input: {
+                                                    startAdornment: <InputAdornment position="start">$</InputAdornment>
+                                                }
+                                            }}
+                                        />
+
+                                        <TextField
+                                            label="Notas / Observaciones"
+                                            fullWidth
+                                            multiline
+                                            rows={3}
+                                            value={openingNotes}
+                                            onChange={(e) => setOpeningNotes(e.target.value)}
+                                            placeholder="Ej: Base de caja inicial para dar vueltas..."
+                                            sx={{ mb: 3 }}
+                                        />
+
+                                        <Button
+                                            variant="contained"
+                                            color="primary"
+                                            fullWidth
+                                            size="large"
+                                            type="submit"
+                                            startIcon={<PointOfSaleIcon />}
+                                            sx={{ py: 1.3, fontWeight: 700, borderRadius: '12px' }}
+                                        >
+                                            Abrir Caja Registradora
+                                        </Button>
+                                    </form>
+                                </CardContent>
+                            </Card>
+                        </Box>
+                    )}
+                </Box>
+            )}
+
+            {/* ═══════ TAB 1 : HISTORY ═══════ */}
             {activeTab === 1 && (
-                <Card variant="outlined" sx={{ borderRadius: 3 }}>
+                <Card sx={{
+                    ...accentCard(isDark),
+                    animation: mounted ? 'fade-in-up 0.5s ease both' : 'none',
+                    animationDelay: '0.1s',
+                }}>
                     <CardContent sx={{ p: 3 }}>
-                        <Typography variant="h6" sx={{ fontWeight: 800, mb: 2 }}>
-                            Historial de Cierres de Caja
-                        </Typography>
-                        
-                        {history.length === 0 ? (
-                            <Typography color="text.secondary" sx={{ py: 4, textAlign: 'center' }}>
-                                No se registran turnos de caja anteriores.
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.2, mb: 3 }}>
+                            <Box sx={{
+                                p: 1,
+                                borderRadius: '12px',
+                                background: 'linear-gradient(135deg, rgba(99,102,241,0.12), rgba(139,92,246,0.12))',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                            }}>
+                                <HistoryIcon sx={{ fontSize: 22, color: 'primary.main' }} />
+                            </Box>
+                            <Typography variant="h6" sx={{ fontWeight: 700, fontSize: '1.05rem' }}>
+                                Historial de Cierres de Caja
                             </Typography>
+                        </Box>
+
+                        {history.length === 0 ? (
+                            <Box sx={{ py: 6, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                                <HistoryIcon sx={{ fontSize: 48, color: 'text.disabled', mb: 1.5 }} />
+                                <Typography color="text.disabled" variant="body2">
+                                    No se registran turnos de caja anteriores.
+                                </Typography>
+                            </Box>
                         ) : (
                             <Box sx={{ overflowX: 'auto' }}>
                                 <Table>
@@ -391,36 +653,53 @@ function CashRegister({ user }) {
                                         </TableRow>
                                     </TableHead>
                                     <TableBody>
-                                        {history.map((session) => {
+                                        {history.map((session, idx) => {
                                             const expected = (session.opening_balance ?? 0) + (session.cash_sales ?? 0)
                                             const real = session.closing_balance_real ?? 0
                                             const diff = session.status === 'CERRADA' ? (real - expected) : null
-                                            
+
                                             return (
-                                                <TableRow key={session.id} hover>
-                                                    <TableCell sx={{ fontWeight: 700 }}>#{session.id}</TableCell>
+                                                <TableRow key={session.id} hover sx={{
+                                                    animation: mounted ? 'fade-in-up 0.4s ease both' : 'none',
+                                                    animationDelay: `${0.05 * Math.min(idx, 10)}s`,
+                                                }}>
+                                                    <TableCell>
+                                                        <Chip
+                                                            label={`#${session.id}`}
+                                                            size="small"
+                                                            color={session.status === 'CERRADA' ? 'default' : 'primary'}
+                                                            variant="outlined"
+                                                            sx={{ fontWeight: 700, fontSize: '0.75rem' }}
+                                                        />
+                                                    </TableCell>
                                                     <TableCell>{new Date(session.opened_at).toLocaleString()}</TableCell>
                                                     <TableCell>
                                                         {session.closed_at ? new Date(session.closed_at).toLocaleString() : (
                                                             <Chip label="ACTIVA" size="small" color="primary" variant="filled" sx={{ fontWeight: 700 }} />
                                                         )}
                                                     </TableCell>
-                                                    <TableCell>${(session.opening_balance ?? 0).toLocaleString()}</TableCell>
-                                                    <TableCell>${(session.cash_sales ?? 0).toLocaleString()}</TableCell>
-                                                    <TableCell>
-                                                        {session.status === 'CERRADA' 
-                                                            ? `$${expected.toLocaleString()}` 
+                                                    <TableCell sx={{ fontWeight: 600 }}>${(session.opening_balance ?? 0).toLocaleString()}</TableCell>
+                                                    <TableCell sx={{ fontWeight: 600 }}>${(session.cash_sales ?? 0).toLocaleString()}</TableCell>
+                                                    <TableCell sx={{ fontWeight: 600, color: 'success.main' }}>
+                                                        {session.status === 'CERRADA'
+                                                            ? `$${expected.toLocaleString()}`
                                                             : `$${((session.opening_balance ?? 0) + (session.cash_sales ?? 0)).toLocaleString()}`
                                                         }
                                                     </TableCell>
                                                     <TableCell>
-                                                        {session.status === 'CERRADA' ? `$${real.toLocaleString()}` : <span style={{ color: 'gray' }}>—</span>}
+                                                        {session.status === 'CERRADA'
+                                                            ? <Typography variant="body2" sx={{ fontWeight: 600 }}>${real.toLocaleString()}</Typography>
+                                                            : <Typography variant="body2" color="text.disabled">—</Typography>
+                                                        }
                                                     </TableCell>
                                                     <TableCell>
-                                                        {session.status === 'CERRADA' && diff !== null ? getDiffChip(diff) : <span style={{ color: 'gray' }}>—</span>}
+                                                        {session.status === 'CERRADA' && diff !== null
+                                                            ? getDiffChip(diff)
+                                                            : <Typography variant="body2" color="text.disabled">—</Typography>
+                                                        }
                                                     </TableCell>
                                                     <TableCell sx={{ maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                                                        {session.notes || '—'}
+                                                        {session.notes || <Typography variant="body2" color="text.disabled">—</Typography>}
                                                     </TableCell>
                                                 </TableRow>
                                             )
@@ -433,37 +712,84 @@ function CashRegister({ user }) {
                 </Card>
             )}
 
-            {/* Close Register / Reconcile Dialog */}
-            <Dialog open={showCloseModal} onClose={() => setShowCloseModal(false)} maxWidth="sm" fullWidth>
+            {/* ═══════ CLOSE SESSION DIALOG ═══════ */}
+            <Dialog
+                open={showCloseModal}
+                onClose={() => setShowCloseModal(false)}
+                maxWidth="sm"
+                fullWidth
+                PaperProps={{
+                    sx: {
+                        background: isDark ? 'rgba(10, 10, 28, 0.95)' : 'rgba(255, 255, 255, 0.95)',
+                        backdropFilter: 'blur(40px) saturate(200%)',
+                        border: isDark ? '1px solid rgba(129, 140, 248, 0.15)' : '1px solid rgba(99, 102, 241, 0.12)',
+                        borderRadius: '20px',
+                        boxShadow: isDark
+                            ? '0 32px 80px rgba(0,0,0,0.7), 0 0 0 1px rgba(129,140,248,0.08)'
+                            : '0 32px 80px rgba(99,102,241,0.18), 0 0 0 1px rgba(99,102,241,0.05)',
+                        overflow: 'hidden',
+                    },
+                }}
+            >
                 <form onSubmit={handleCloseSession}>
-                    <DialogTitle sx={{ fontWeight: 700 }}>Cierre y Cuadre de Caja</DialogTitle>
-                    <DialogContent dividers>
+                    <DialogTitle sx={{
+                        fontWeight: 700,
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 1.2,
+                        borderBottom: isDark ? '1px solid rgba(129,140,248,0.08)' : '1px solid rgba(99,102,241,0.08)',
+                        py: 2.5,
+                        px: 3,
+                    }}>
+                        <Box sx={{
+                            p: 0.8,
+                            borderRadius: '10px',
+                            background: 'linear-gradient(135deg, rgba(239,68,68,0.12), rgba(220,38,38,0.12))',
+                            display: 'flex',
+                        }}>
+                            <CheckCircleIcon sx={{ fontSize: 22, color: 'error.main' }} />
+                        </Box>
+                        Cierre y Cuadre de Caja
+                    </DialogTitle>
+                    <DialogContent dividers sx={{ borderTop: 'none', px: 3, py: 3 }}>
                         {activeSession && (
-                            <Box sx={{ py: 1 }}>
+                            <Box>
                                 <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
                                     Ingresa el monto de dinero físico que has contado en la caja registradora al final de tu turno. El sistema comparará este valor con las ventas registradas.
                                 </Typography>
 
                                 <Grid container spacing={2.5}>
                                     <Grid size={{ xs: 6 }}>
-                                        <Typography variant="caption" color="text.secondary" sx={{ display: 'block', fontWeight: 600 }}>
-                                            EFECTIVO ESPERADO EN CAJA
-                                        </Typography>
-                                        <Typography variant="h5" sx={{ fontWeight: 800, mt: 0.5, color: 'success.main' }}>
-                                            ${expectedCashInDrawer.toLocaleString()}
-                                        </Typography>
+                                        <Box sx={{
+                                            ...sectionBox(isDark),
+                                            p: 2,
+                                            textAlign: 'center',
+                                        }}>
+                                            <Typography variant="caption" color="text.disabled" sx={{ display: 'block', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                                                Efectivo Esperado
+                                            </Typography>
+                                            <Typography variant="h5" sx={{ fontWeight: 400, fontFamily: '"DM Serif Display", "Georgia", serif', mt: 0.5, color: 'success.main' }}>
+                                                ${expectedCashInDrawer.toLocaleString()}
+                                            </Typography>
+                                        </Box>
                                     </Grid>
                                     <Grid size={{ xs: 6 }}>
-                                        <Typography variant="caption" color="text.secondary" sx={{ display: 'block', fontWeight: 600 }}>
-                                            DIFERENCIA / DESCUADRE
-                                        </Typography>
-                                        <Box sx={{ mt: 1 }}>
-                                            {getDiffChip(closingDifference)}
+                                        <Box sx={{
+                                            ...sectionBox(isDark),
+                                            p: 2,
+                                            textAlign: 'center',
+                                        }}>
+                                            <Typography variant="caption" color="text.disabled" sx={{ display: 'block', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                                                Diferencia
+                                            </Typography>
+                                            <Box sx={{ mt: 1, display: 'flex', justifyContent: 'center' }}>
+                                                {getDiffChip(closingDifference)}
+                                            </Box>
                                         </Box>
                                     </Grid>
                                 </Grid>
 
-                                <Box sx={{ my: 3 }} />
+                                <Divider sx={{ my: 3 }} />
 
                                 <TextField
                                     label="Efectivo Físico Contado en Caja"
@@ -471,7 +797,7 @@ function CashRegister({ user }) {
                                     required
                                     value={closingBalanceReal}
                                     onChange={(e) => setClosingBalanceReal(e.target.value)}
-                                    sx={{ mb: 3 }}
+                                    sx={{ mb: 2.5 }}
                                     slotProps={{
                                         input: {
                                             startAdornment: <InputAdornment position="start">$</InputAdornment>
@@ -491,9 +817,30 @@ function CashRegister({ user }) {
                             </Box>
                         )}
                     </DialogContent>
-                    <DialogActions sx={{ p: 2 }}>
-                        <Button onClick={() => setShowCloseModal(false)}>Cancelar</Button>
-                        <Button variant="contained" color="error" type="submit">
+                    <DialogActions sx={{ p: 2.5, borderTop: isDark ? '1px solid rgba(129,140,248,0.08)' : '1px solid rgba(99,102,241,0.08)' }}>
+                        <Button
+                            onClick={() => setShowCloseModal(false)}
+                            sx={{ borderRadius: '12px', fontWeight: 600 }}
+                        >
+                            Cancelar
+                        </Button>
+                        <Button
+                            variant="contained"
+                            color="error"
+                            type="submit"
+                            startIcon={<CheckCircleIcon />}
+                            sx={{
+                                borderRadius: '12px',
+                                fontWeight: 700,
+                                background: 'linear-gradient(135deg, #ef4444, #dc2626)',
+                                boxShadow: '0 4px 16px rgba(239,68,68,0.35)',
+                                '&:hover': {
+                                    background: 'linear-gradient(135deg, #dc2626, #b91c1c)',
+                                    boxShadow: '0 8px 28px rgba(239,68,68,0.45)',
+                                    transform: 'translateY(-2px)',
+                                },
+                            }}
+                        >
                             Confirmar Cierre de Caja
                         </Button>
                     </DialogActions>

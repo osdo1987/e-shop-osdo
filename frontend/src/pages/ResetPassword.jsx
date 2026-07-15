@@ -1,12 +1,15 @@
 import { useState, useEffect } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import Box from '@mui/material/Box'
-import Paper from '@mui/material/Paper'
 import Typography from '@mui/material/Typography'
 import TextField from '@mui/material/TextField'
 import Button from '@mui/material/Button'
 import LinkMui from '@mui/material/Link'
 import Alert from '@mui/material/Alert'
+import { useTheme } from '@mui/material/styles'
+import LockResetIcon from '@mui/icons-material/LockReset'
+import CheckCircleIcon from '@mui/icons-material/CheckCircle'
+import ErrorIcon from '@mui/icons-material/Error'
 
 function ResetPassword() {
     const [searchParams] = useSearchParams()
@@ -16,6 +19,8 @@ function ResetPassword() {
     const [loading, setLoading] = useState(false)
     const [success, setSuccess] = useState(false)
     const [token, setToken] = useState('')
+    const theme = useTheme()
+    const isDark = theme.palette.mode === 'dark'
 
     useEffect(() => {
         const urlToken = searchParams.get('token')
@@ -76,14 +81,42 @@ function ResetPassword() {
         if (success) {
             return (
                 <Box sx={{ textAlign: 'center' }}>
-                    <Alert severity="success" sx={{ mt: 2, mb: 2 }}>
-                        Contraseña restablecida exitosamente
-                    </Alert>
-                    <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+                    <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2.5 }}>
+                        <Box sx={{
+                            width: 72, height: 72, borderRadius: '50%',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            background: isDark
+                                ? 'linear-gradient(135deg, rgba(16,185,129,0.2), rgba(16,185,129,0.08))'
+                                : 'linear-gradient(135deg, rgba(16,185,129,0.12), rgba(16,185,129,0.04))',
+                            border: `1px solid ${isDark ? 'rgba(16,185,129,0.2)' : 'rgba(16,185,129,0.15)'}`,
+                            boxShadow: '0 0 0 8px rgba(16,185,129,0.06), 0 8px 24px rgba(16,185,129,0.12)',
+                            animation: 'icon-bounce 0.6s cubic-bezier(0.4, 0, 0.2, 1) both',
+                            animationDelay: '0.15s',
+                        }}>
+                            <CheckCircleIcon sx={{ fontSize: 36, color: 'success.main' }} />
+                        </Box>
+                    </Box>
+                    <Typography variant="h5" sx={{ fontWeight: 400, mb: 1 }}>
+                        Contraseña actualizada
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary" sx={{ mb: 3.5, fontSize: '0.95rem' }}>
                         Tu contraseña ha sido actualizada. Ahora puedes iniciar sesión con tu nueva contraseña.
                     </Typography>
-                    <Button component={Link} to="/login" variant="contained" fullWidth sx={{ textDecoration: 'none' }}>
-                        Iniciar Sesión
+                    <Button
+                        component={Link} to="/login" variant="contained" fullWidth
+                        sx={{
+                            textDecoration: 'none', py: 1.6, fontSize: '1rem', borderRadius: '14px',
+                            fontWeight: 700, position: 'relative', overflow: 'hidden',
+                            '&::before': {
+                                content: '""', position: 'absolute',
+                                top: 0, left: -120, width: 70, height: '100%',
+                                background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent)',
+                                transform: 'skewX(-20deg)', transition: 'left 0.7s ease',
+                            },
+                            '&:hover::before': { left: '140%' },
+                        }}
+                    >
+                        Iniciar Sesión →
                     </Button>
                 </Box>
             )
@@ -92,8 +125,37 @@ function ResetPassword() {
         if (error && !token) {
             return (
                 <Box sx={{ textAlign: 'center' }}>
-                    <Alert severity="error" sx={{ mt: 2, mb: 2 }}>{error}</Alert>
-                    <Button component={Link} to="/forgot-password" variant="contained" fullWidth sx={{ textDecoration: 'none' }}>
+                    <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2.5 }}>
+                        <Box sx={{
+                            width: 72, height: 72, borderRadius: '50%',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            background: isDark
+                                ? 'linear-gradient(135deg, rgba(239,68,68,0.2), rgba(239,68,68,0.08))'
+                                : 'linear-gradient(135deg, rgba(239,68,68,0.12), rgba(239,68,68,0.04))',
+                            border: `1px solid ${isDark ? 'rgba(239,68,68,0.2)' : 'rgba(239,68,68,0.15)'}`,
+                            boxShadow: '0 0 0 8px rgba(239,68,68,0.06), 0 8px 24px rgba(239,68,68,0.12)',
+                            animation: 'icon-bounce 0.6s cubic-bezier(0.4, 0, 0.2, 1) both',
+                        }}>
+                            <ErrorIcon sx={{ fontSize: 36, color: 'error.main' }} />
+                        </Box>
+                    </Box>
+                    <Alert severity="error" sx={{ mb: 3, animation: 'fade-in-up 0.3s ease', borderRadius: '14px' }}>
+                        {error}
+                    </Alert>
+                    <Button
+                        component={Link} to="/forgot-password" variant="contained" fullWidth
+                        sx={{
+                            textDecoration: 'none', py: 1.6, fontSize: '1rem', borderRadius: '14px',
+                            fontWeight: 700, position: 'relative', overflow: 'hidden',
+                            '&::before': {
+                                content: '""', position: 'absolute',
+                                top: 0, left: -120, width: 70, height: '100%',
+                                background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent)',
+                                transform: 'skewX(-20deg)', transition: 'left 0.7s ease',
+                            },
+                            '&:hover::before': { left: '140%' },
+                        }}
+                    >
                         Solicitar Nuevo Restablecimiento
                     </Button>
                 </Box>
@@ -102,37 +164,64 @@ function ResetPassword() {
 
         return (
             <>
-                <Typography variant="body2" color="text.secondary" sx={{ mb: 3, textAlign: 'center' }}>
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 3, textAlign: 'center', fontSize: '0.95rem' }}>
                     Ingresa tu nueva contraseña
                 </Typography>
 
-                {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+                {error && (
+                    <Alert severity="error" sx={{ mb: 3, animation: 'fade-in-up 0.3s ease', borderRadius: '14px' }}>
+                        {error}
+                    </Alert>
+                )}
 
                 <Box component="form" onSubmit={handleSubmit}>
                     <TextField
-                        fullWidth
-                        label="Nueva Contraseña"
-                        type="password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        placeholder="••••••••"
-                        required
-                        inputProps={{ minLength: 6 }}
-                        sx={{ mb: 2 }}
+                        fullWidth label="Nueva Contraseña" type="password"
+                        value={password} onChange={(e) => setPassword(e.target.value)}
+                        placeholder="••••••••" required inputProps={{ minLength: 6 }}
+                        sx={{
+                            mb: 2.5,
+                            '& .MuiOutlinedInput-root': {
+                                borderRadius: '14px', fontSize: '0.95rem',
+                                '&.Mui-focused': {
+                                    boxShadow: isDark
+                                        ? '0 0 0 4px rgba(129, 140, 248, 0.18), 0 0 20px rgba(129, 140, 248, 0.12)'
+                                        : '0 0 0 4px rgba(99, 102, 241, 0.15), 0 0 16px rgba(99, 102, 241, 0.08)',
+                                },
+                            },
+                        }}
                     />
                     <TextField
-                        fullWidth
-                        label="Confirmar Nueva Contraseña"
-                        type="password"
-                        value={confirmPassword}
-                        onChange={(e) => setConfirmPassword(e.target.value)}
-                        placeholder="••••••••"
-                        required
-                        inputProps={{ minLength: 6 }}
-                        sx={{ mb: 2.5 }}
+                        fullWidth label="Confirmar Nueva Contraseña" type="password"
+                        value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)}
+                        placeholder="••••••••" required inputProps={{ minLength: 6 }}
+                        sx={{
+                            mb: 3.5,
+                            '& .MuiOutlinedInput-root': {
+                                borderRadius: '14px', fontSize: '0.95rem',
+                                '&.Mui-focused': {
+                                    boxShadow: isDark
+                                        ? '0 0 0 4px rgba(129, 140, 248, 0.18), 0 0 20px rgba(129, 140, 248, 0.12)'
+                                        : '0 0 0 4px rgba(99, 102, 241, 0.15), 0 0 16px rgba(99, 102, 241, 0.08)',
+                                },
+                            },
+                        }}
                     />
-                    <Button type="submit" variant="contained" fullWidth disabled={loading} sx={{ py: 1.5 }}>
-                        {loading ? 'Restableciendo...' : 'Restablecer Contraseña'}
+                    <Button
+                        type="submit" variant="contained" fullWidth disabled={loading}
+                        sx={{
+                            py: 1.6, fontSize: '1rem', borderRadius: '14px',
+                            fontWeight: 700, position: 'relative', overflow: 'hidden',
+                            '&::before': {
+                                content: '""', position: 'absolute',
+                                top: 0, left: -120, width: 70, height: '100%',
+                                background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent)',
+                                transform: 'skewX(-20deg)', transition: 'left 0.7s ease',
+                            },
+                            '&:hover::before': { left: '140%' },
+                        }}
+                    >
+                        {loading ? 'Restableciendo...' : 'Restablecer Contraseña →'}
                     </Button>
                 </Box>
             </>
@@ -140,30 +229,139 @@ function ResetPassword() {
     }
 
     return (
-        <Box
-            sx={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                minHeight: '100vh',
-                p: 2.5,
-                background: (theme) => theme.palette.mode === 'dark'
-                    ? 'linear-gradient(135deg, #080818 0%, #0f0f28 50%, #080818 100%)'
-                    : 'linear-gradient(135deg, #f5f5ff 0%, #eef2ff 50%, #f5f5ff 100%)',
-            }}
-        >
-            <Paper elevation={3} sx={{ width: '100%', maxWidth: 420, p: 4, borderRadius: 3 }}>
-                <Typography variant="h4" sx={{ fontWeight: 800, textAlign: 'center', mb: 1 }}>
-                    Restablecer Contraseña
-                </Typography>
-                {renderContent()}
+        <Box sx={{
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            minHeight: '100vh', p: 2.5, position: 'relative', overflow: 'hidden',
+        }}>
+            {/* Gradient mesh background */}
+            <Box sx={{
+                position: 'absolute', inset: 0, zIndex: 0,
+                background: isDark
+                    ? `
+                        radial-gradient(ellipse 90% 70% at 10% 10%, rgba(99, 102, 241, 0.30) 0%, transparent 55%),
+                        radial-gradient(ellipse 70% 60% at 90% 20%, rgba(139, 92, 246, 0.25) 0%, transparent 50%),
+                        radial-gradient(ellipse 60% 50% at 30% 90%, rgba(16, 185, 129, 0.12) 0%, transparent 50%),
+                        radial-gradient(ellipse 50% 40% at 80% 70%, rgba(6, 182, 212, 0.10) 0%, transparent 45%),
+                        #07071a
+                    `
+                    : `
+                        radial-gradient(ellipse 90% 70% at 10% 10%, rgba(99, 102, 241, 0.18) 0%, transparent 55%),
+                        radial-gradient(ellipse 70% 60% at 90% 20%, rgba(139, 92, 246, 0.14) 0%, transparent 50%),
+                        radial-gradient(ellipse 60% 50% at 30% 90%, rgba(16, 185, 129, 0.08) 0%, transparent 50%),
+                        radial-gradient(ellipse 50% 40% at 80% 70%, rgba(6, 182, 212, 0.06) 0%, transparent 45%),
+                        #f6f6fe
+                    `,
+            }} />
 
-                <Box sx={{ textAlign: 'center', mt: 2 }}>
-                    <LinkMui component={Link} to="/login" variant="body2" sx={{ color: 'primary.dark', fontWeight: 500 }}>
-                        ← Volver al inicio de sesión
-                    </LinkMui>
+            {/* Giant floating orbs */}
+            <Box sx={{
+                position: 'absolute', width: 600, height: 600, borderRadius: '50%',
+                background: 'radial-gradient(circle, rgba(99,102,241,0.28) 0%, transparent 60%)',
+                top: '-18%', left: '-12%',
+                filter: 'blur(70px)',
+                animation: 'orb-float-1 20s ease-in-out infinite',
+                pointerEvents: 'none',
+            }} />
+            <Box sx={{
+                position: 'absolute', width: 450, height: 450, borderRadius: '50%',
+                background: 'radial-gradient(circle, rgba(139,92,246,0.20) 0%, transparent 60%)',
+                top: '45%', right: '-15%',
+                filter: 'blur(60px)',
+                animation: 'orb-float-2 18s ease-in-out infinite',
+                animationDelay: '-6s',
+                pointerEvents: 'none',
+            }} />
+            <Box sx={{
+                position: 'absolute', width: 350, height: 350, borderRadius: '50%',
+                background: 'radial-gradient(circle, rgba(16,185,129,0.15) 0%, transparent 60%)',
+                bottom: '-8%', left: '25%',
+                filter: 'blur(50px)',
+                animation: 'orb-float-1 15s ease-in-out infinite',
+                animationDelay: '-4s',
+                pointerEvents: 'none',
+            }} />
+
+            {/* Dot grid */}
+            <Box sx={{
+                position: 'absolute', inset: 0, pointerEvents: 'none',
+                backgroundImage: isDark
+                    ? 'radial-gradient(circle, rgba(99,102,241,0.06) 1px, transparent 1px)'
+                    : 'radial-gradient(circle, rgba(99,102,241,0.07) 1px, transparent 1px)',
+                backgroundSize: '32px 32px',
+            }} />
+
+            {/* Card with animated border */}
+            <Box sx={{
+                width: '100%', maxWidth: 440,
+                position: 'relative', zIndex: 1,
+                animation: 'fade-in-up 0.6s cubic-bezier(0.4, 0, 0.2, 1) both',
+                '&::before': {
+                    content: '""',
+                    position: 'absolute', inset: -2,
+                    borderRadius: '24px',
+                    background: `linear-gradient(135deg, #6366f1, #8b5cf6, #a78bfa, #10b981, #6366f1)`,
+                    backgroundSize: '400% 400%',
+                    animation: 'gradient-rotate 6s ease infinite',
+                    zIndex: -1, opacity: 0.5, filter: 'blur(1px)',
+                },
+            }}>
+                <Box sx={{
+                    p: { xs: 3.5, sm: 5 },
+                    borderRadius: '22px',
+                    background: isDark
+                        ? 'rgba(10, 10, 28, 0.88)'
+                        : 'rgba(255, 255, 255, 0.92)',
+                    backdropFilter: 'blur(40px) saturate(200%)',
+                    WebkitBackdropFilter: 'blur(40px) saturate(200%)',
+                    border: isDark
+                        ? '1px solid rgba(129, 140, 248, 0.20)'
+                        : '1px solid rgba(99, 102, 241, 0.15)',
+                    boxShadow: isDark
+                        ? '0 32px 80px rgba(0,0,0,0.7), 0 0 0 1px rgba(129,140,248,0.08), inset 0 1px 0 rgba(255,255,255,0.03)'
+                        : '0 32px 80px rgba(99,102,241,0.16), 0 0 0 1px rgba(99,102,241,0.05), inset 0 1px 0 rgba(255,255,255,0.5)',
+                }}>
+                    {/* Brand icon */}
+                    {!success && !(!token && error) && (
+                        <Box sx={{ display: 'flex', justifyContent: 'center', mb: 3 }}>
+                            <Box sx={{
+                                width: 64, height: 64, borderRadius: '18px',
+                                background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 40%, #a78bfa 70%, #c4b5fd 100%)',
+                                backgroundSize: '200% auto',
+                                animation: 'float 4s ease-in-out infinite, shimmer 3s linear infinite',
+                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                boxShadow: '0 12px 40px rgba(99,102,241,0.55), 0 0 0 1px rgba(99,102,241,0.2)',
+                            }}>
+                                <LockResetIcon sx={{ fontSize: 32, color: '#fff' }} />
+                            </Box>
+                        </Box>
+                    )}
+
+                    <Typography variant="h4" sx={{
+                        fontWeight: 400, textAlign: 'center', mb: 0.75,
+                        fontSize: { xs: '1.625rem', sm: '2rem' },
+                        background: isDark
+                            ? 'linear-gradient(135deg, #c7d2fe, #818cf8, #a78bfa)'
+                            : 'linear-gradient(135deg, #4f46e5, #6366f1, #8b5cf6)',
+                        WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+                        backgroundClip: 'text', letterSpacing: '-0.04em',
+                    }}>
+                        Restablecer Contraseña
+                    </Typography>
+
+                    {renderContent()}
+
+                    <Box sx={{ textAlign: 'center', mt: 3 }}>
+                        <LinkMui component={Link} to="/login" variant="body2" sx={{
+                            color: 'primary.main', fontWeight: 600,
+                            textDecoration: 'none', opacity: 0.75,
+                            transition: 'all 0.2s ease',
+                            '&:hover': { opacity: 1, textDecoration: 'underline' },
+                        }}>
+                            ← Volver al inicio de sesión
+                        </LinkMui>
+                    </Box>
                 </Box>
-            </Paper>
+            </Box>
         </Box>
     )
 }
