@@ -28,7 +28,7 @@ const STATUS_STEPS = [
 const STATUS_COLORS = {
     'PENDIENTE': '#f59e0b',
     'CONFIRMADO': '#3b82f6',
-    'EN_PREPARACION': '#8b5cf6',
+    'EN_PREPARACION': '#2563eb',
     'EN_CAMINO': '#10b981',
     'ENTREGADO': '#22c55e',
     'CANCELADO': '#ef4444',
@@ -44,8 +44,8 @@ const STATUS_CHIP_VARIANT = {
 }
 
 const sectionBox = (isDark) => ({
-    background: isDark ? 'rgba(99,102,241,0.04)' : 'rgba(99,102,241,0.03)',
-    border: isDark ? '1px solid rgba(129,140,248,0.10)' : '1px solid rgba(99,102,241,0.08)',
+    background: isDark ? 'rgba(0,74,198,0.04)' : 'rgba(0,74,198,0.03)',
+    border: isDark ? '1px solid rgba(180,197,255,0.10)' : '1px solid rgba(0,74,198,0.08)',
     borderRadius: '14px',
 })
 
@@ -56,13 +56,13 @@ const glassCard = (isDark) => ({
     backdropFilter: 'blur(24px) saturate(180%)',
     WebkitBackdropFilter: 'blur(24px) saturate(180%)',
     border: isDark
-        ? '1px solid rgba(129, 140, 248, 0.12)'
-        : '1px solid rgba(99, 102, 241, 0.10)',
+        ? '1px solid rgba(180, 197, 255, 0.12)'
+        : '1px solid rgba(0, 74, 198, 0.10)',
     borderRadius: '18px',
     overflow: 'visible',
     boxShadow: isDark
-        ? '0 16px 48px rgba(0,0,0,0.45), 0 0 0 1px rgba(129,140,248,0.06)'
-        : '0 16px 48px rgba(99,102,241,0.10), 0 0 0 1px rgba(99,102,241,0.04)',
+        ? '0 16px 48px rgba(0,0,0,0.45), 0 0 0 1px rgba(180,197,255,0.06)'
+        : '0 16px 48px rgba(0,74,198,0.10), 0 0 0 1px rgba(0,74,198,0.04)',
 })
 
 function OrderTracking() {
@@ -121,18 +121,18 @@ function OrderTracking() {
             }}>
                 <Box sx={{
                     width: 72, height: 72, borderRadius: '22px',
-                    background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #a78bfa 100%)',
+                    background: 'linear-gradient(135deg, #004ac6 0%, #2563eb 50%, #5092f7 100%)',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     mb: 3, animation: 'float 4s ease-in-out infinite',
-                    boxShadow: '0 16px 48px rgba(99,102,241,0.45)',
+                    boxShadow: '0 16px 48px rgba(0,74,198,0.45)',
                 }}>
                     <CircularProgress size={32} sx={{ color: '#fff' }} />
                 </Box>
                 <Typography variant="h6" sx={{
                     fontWeight: 700, mb: 0.5,
                     background: isDark
-                        ? 'linear-gradient(135deg, #c7d2fe, #818cf8, #a78bfa)'
-                        : 'linear-gradient(135deg, #4f46e5, #6366f1, #8b5cf6)',
+                        ? 'linear-gradient(135deg, #dbe1ff, #b4c5ff, #5092f7)'
+                        : 'linear-gradient(135deg, #003ea8, #004ac6, #2563eb)',
                     WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
                     backgroundClip: 'text',
                 }}>
@@ -156,10 +156,10 @@ function OrderTracking() {
                     position: 'absolute', inset: 0, zIndex: 0,
                     background: isDark
                         ? `radial-gradient(ellipse 90% 70% at 50% 30%, rgba(239, 68, 68, 0.18) 0%, transparent 55%),
-                           radial-gradient(ellipse 60% 50% at 80% 70%, rgba(99, 102, 241, 0.10) 0%, transparent 50%),
+                           radial-gradient(ellipse 60% 50% at 80% 70%, rgba(0, 74, 198, 0.10) 0%, transparent 50%),
                            #07071a`
                         : `radial-gradient(ellipse 90% 70% at 50% 30%, rgba(239, 68, 68, 0.10) 0%, transparent 55%),
-                           radial-gradient(ellipse 60% 50% at 80% 70%, rgba(99, 102, 241, 0.06) 0%, transparent 50%),
+                           radial-gradient(ellipse 60% 50% at 80% 70%, rgba(0, 74, 198, 0.06) 0%, transparent 50%),
                            #f6f6fe`,
                 }} />
                 <Box sx={{
@@ -197,7 +197,7 @@ function OrderTracking() {
 
     const activeStep = getActiveStep()
     const isCancelled = order.status === 'CANCELADO'
-    const statusColor = STATUS_COLORS[order.status] || '#6366f1'
+    const statusColor = STATUS_COLORS[order.status] || '#004ac6'
 
     return (
         <Box sx={{ minHeight: '100vh', bgcolor: 'background.default', position: 'relative', overflow: 'hidden' }}>
@@ -206,18 +206,18 @@ function OrderTracking() {
                 position: 'absolute', inset: 0, zIndex: 0, pointerEvents: 'none',
                 background: isDark
                     ? `radial-gradient(ellipse 90% 50% at 50% 0%, ${statusColor}22 0%, transparent 60%),
-                       radial-gradient(ellipse 60% 40% at 20% 90%, rgba(99,102,241,0.08) 0%, transparent 50%),
+                       radial-gradient(ellipse 60% 40% at 20% 90%, rgba(0,74,198,0.08) 0%, transparent 50%),
                        #07071a`
                     : `radial-gradient(ellipse 90% 50% at 50% 0%, ${statusColor}15 0%, transparent 60%),
-                       radial-gradient(ellipse 60% 40% at 20% 90%, rgba(99,102,241,0.05) 0%, transparent 50%),
+                       radial-gradient(ellipse 60% 40% at 20% 90%, rgba(0,74,198,0.05) 0%, transparent 50%),
                        #f6f6fe`,
             }} />
             {/* Dot grid */}
             <Box sx={{
                 position: 'absolute', inset: 0, pointerEvents: 'none',
                 backgroundImage: isDark
-                    ? 'radial-gradient(circle, rgba(99,102,241,0.06) 1px, transparent 1px)'
-                    : 'radial-gradient(circle, rgba(99,102,241,0.07) 1px, transparent 1px)',
+                    ? 'radial-gradient(circle, rgba(0,74,198,0.06) 1px, transparent 1px)'
+                    : 'radial-gradient(circle, rgba(0,74,198,0.07) 1px, transparent 1px)',
                 backgroundSize: '32px 32px',
                 zIndex: 0,
             }} />
@@ -229,19 +229,19 @@ function OrderTracking() {
                     ? `linear-gradient(160deg, ${statusColor}30 0%, ${statusColor}10 50%, transparent 100%)`
                     : `linear-gradient(160deg, ${statusColor}20 0%, ${statusColor}08 50%, transparent 100%)`,
                 borderBottom: isDark
-                    ? '1px solid rgba(129,140,248,0.08)'
-                    : '1px solid rgba(99,102,241,0.06)',
+                    ? '1px solid rgba(180,197,255,0.08)'
+                    : '1px solid rgba(0,74,198,0.06)',
                 py: 5, px: 3, textAlign: 'center',
                 animation: 'fade-in-up 0.5s ease both',
             }}>
                 <Box sx={{
                     width: 72, height: 72, borderRadius: '22px',
                     background: isDark
-                        ? 'linear-gradient(135deg, rgba(99,102,241,0.18), rgba(99,102,241,0.08))'
-                        : 'linear-gradient(135deg, rgba(99,102,241,0.12), rgba(99,102,241,0.05))',
+                        ? 'linear-gradient(135deg, rgba(0,74,198,0.18), rgba(0,74,198,0.08))'
+                        : 'linear-gradient(135deg, rgba(0,74,198,0.12), rgba(0,74,198,0.05))',
                     border: isDark
-                        ? '1px solid rgba(129,140,248,0.18)'
-                        : '1px solid rgba(99,102,241,0.12)',
+                        ? '1px solid rgba(180,197,255,0.18)'
+                        : '1px solid rgba(0,74,198,0.12)',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     mx: 'auto', mb: 2.5,
                     boxShadow: `0 12px 40px ${statusColor}20`,
@@ -260,8 +260,8 @@ function OrderTracking() {
                 <Typography variant="h4" sx={{
                     fontWeight: 700, mb: 0.75,
                     background: isDark
-                        ? 'linear-gradient(135deg, #c7d2fe, #818cf8, #a78bfa)'
-                        : 'linear-gradient(135deg, #4f46e5, #6366f1, #8b5cf6)',
+                        ? 'linear-gradient(135deg, #dbe1ff, #b4c5ff, #5092f7)'
+                        : 'linear-gradient(135deg, #003ea8, #004ac6, #2563eb)',
                     WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
                     backgroundClip: 'text',
                 }}>
@@ -291,8 +291,8 @@ function OrderTracking() {
                             <Typography variant="h6" sx={{
                                 fontWeight: 700,
                                 background: isDark
-                                    ? 'linear-gradient(135deg, #c7d2fe, #818cf8, #a78bfa)'
-                                    : 'linear-gradient(135deg, #4f46e5, #6366f1, #8b5cf6)',
+                                    ? 'linear-gradient(135deg, #dbe1ff, #b4c5ff, #5092f7)'
+                                    : 'linear-gradient(135deg, #003ea8, #004ac6, #2563eb)',
                                 WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
                                 backgroundClip: 'text',
                             }}>
@@ -336,8 +336,8 @@ function OrderTracking() {
                                                 width: 36, height: 36, borderRadius: '12px',
                                                 bgcolor: index <= activeStep
                                                     ? isDark
-                                                        ? 'rgba(99,102,241,0.15)'
-                                                        : 'rgba(99,102,241,0.10)'
+                                                        ? 'rgba(0,74,198,0.15)'
+                                                        : 'rgba(0,74,198,0.10)'
                                                     : isDark
                                                         ? 'rgba(255,255,255,0.04)'
                                                         : 'rgba(0,0,0,0.04)',
@@ -471,7 +471,7 @@ function OrderTracking() {
                     '&::before': {
                         content: '""',
                         position: 'absolute', top: 0, left: 0, right: 0, height: '3px',
-                        background: 'linear-gradient(90deg, #8b5cf6, #6366f1)',
+                        background: 'linear-gradient(90deg, #2563eb, #004ac6)',
                         borderRadius: '18px 18px 0 0',
                     },
                 }}>
@@ -479,8 +479,8 @@ function OrderTracking() {
                         <Typography variant="h6" sx={{
                             fontWeight: 700, mb: 2.5,
                             background: isDark
-                                ? 'linear-gradient(135deg, #c7d2fe, #818cf8, #a78bfa)'
-                                : 'linear-gradient(135deg, #4f46e5, #6366f1, #8b5cf6)',
+                                ? 'linear-gradient(135deg, #dbe1ff, #b4c5ff, #5092f7)'
+                                : 'linear-gradient(135deg, #003ea8, #004ac6, #2563eb)',
                             WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
                             backgroundClip: 'text',
                         }}>
@@ -501,29 +501,29 @@ function OrderTracking() {
                                     </Box>
                                     <Typography sx={{
                                         fontWeight: 700, fontSize: '0.875rem',
-                                        color: isDark ? '#c7d2fe' : '#4f46e5',
+                                        color: isDark ? '#dbe1ff' : '#003ea8',
                                     }}>
                                         ${(item.price * item.quantity).toLocaleString()}
                                     </Typography>
                                 </Box>
                                 {idx < order.items.length - 1 && (
                                     <Divider sx={{
-                                        borderColor: isDark ? 'rgba(129,140,248,0.08)' : 'rgba(99,102,241,0.06)',
+                                        borderColor: isDark ? 'rgba(180,197,255,0.08)' : 'rgba(0,74,198,0.06)',
                                     }} />
                                 )}
                             </Box>
                         ))}
                         <Divider sx={{
                             my: 1.5,
-                            borderColor: isDark ? 'rgba(129,140,248,0.12)' : 'rgba(99,102,241,0.10)',
+                            borderColor: isDark ? 'rgba(180,197,255,0.12)' : 'rgba(0,74,198,0.10)',
                         }} />
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                             <Typography sx={{ fontWeight: 700 }}>Total</Typography>
                             <Typography sx={{
                                 fontWeight: 800, fontSize: '1.125rem',
                                 background: isDark
-                                    ? 'linear-gradient(135deg, #c7d2fe, #818cf8, #a78bfa)'
-                                    : 'linear-gradient(135deg, #4f46e5, #6366f1, #8b5cf6)',
+                                    ? 'linear-gradient(135deg, #dbe1ff, #b4c5ff, #5092f7)'
+                                    : 'linear-gradient(135deg, #003ea8, #004ac6, #2563eb)',
                                 WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
                                 backgroundClip: 'text',
                             }}>
@@ -550,8 +550,8 @@ function OrderTracking() {
                         <Typography variant="h6" sx={{
                             fontWeight: 700, mb: 2,
                             background: isDark
-                                ? 'linear-gradient(135deg, #c7d2fe, #818cf8, #a78bfa)'
-                                : 'linear-gradient(135deg, #4f46e5, #6366f1, #8b5cf6)',
+                                ? 'linear-gradient(135deg, #dbe1ff, #b4c5ff, #5092f7)'
+                                : 'linear-gradient(135deg, #003ea8, #004ac6, #2563eb)',
                             WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
                             backgroundClip: 'text',
                         }}>
@@ -613,8 +613,8 @@ function OrderTracking() {
                         <Typography variant="caption" sx={{
                             display: 'block', fontWeight: 600, mt: 0.5,
                             background: isDark
-                                ? 'linear-gradient(135deg, #c7d2fe, #818cf8, #a78bfa)'
-                                : 'linear-gradient(135deg, #4f46e5, #6366f1, #8b5cf6)',
+                                ? 'linear-gradient(135deg, #dbe1ff, #b4c5ff, #5092f7)'
+                                : 'linear-gradient(135deg, #003ea8, #004ac6, #2563eb)',
                             WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
                             backgroundClip: 'text',
                         }}>

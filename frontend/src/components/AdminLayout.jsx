@@ -19,6 +19,7 @@ import ShoppingCartIcon from '@mui/icons-material/ShoppingCart'
 import SettingsIcon from '@mui/icons-material/Settings'
 import StoreIcon from '@mui/icons-material/Store'
 import LogoutIcon from '@mui/icons-material/Logout'
+import PersonIcon from '@mui/icons-material/Person'
 import { useTheme } from '@mui/material/styles'
 import useMediaQuery from '@mui/material/useMediaQuery'
 import PointOfSaleIcon from '@mui/icons-material/PointOfSale'
@@ -55,77 +56,48 @@ function AdminLayout({ title, children, user, onLogout, superadmin = false, show
             { path: '/admin/settings', label: 'Configuración', icon: <SettingsIcon /> }
         ], [superadmin])
 
-    const drawerWidth = 260
+    const drawerWidth = 280
 
     const drawerContent = (
         <Box sx={{
             display: 'flex', flexDirection: 'column', height: '100%',
-            background: isDark
-                ? 'linear-gradient(180deg, #080820 0%, #0b0b28 40%, #0a0a24 70%, #080820 100%)'
-                : 'linear-gradient(180deg, #ffffff 0%, #fafafe 50%, #f5f5fe 100%)',
-            borderRight: `1px solid ${isDark ? 'rgba(129,140,248,0.10)' : 'rgba(99,102,241,0.08)'}`,
+            backgroundColor: isDark ? '#2d3133' : '#ffffff',
+            borderRight: `1px solid ${isDark ? 'rgba(180,197,255,0.12)' : '#c3c6d7'}`,
         }}>
-            {/* Logo / Brand — premium glow */}
-            <Box sx={{ px: 3, pt: 3.5, pb: 2 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+            {/* Profile Header */}
+            <Box sx={{ px: 3, py: 3 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                     <Box sx={{
-                        width: 44, height: 44, borderRadius: '14px',
-                        background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 40%, #a78bfa 80%, #c4b5fd 100%)',
-                        backgroundSize: '200% auto',
-                        animation: 'shimmer 4s linear infinite',
+                        width: 40, height: 40, borderRadius: '50%',
+                        backgroundColor: isDark ? 'rgba(180,197,255,0.12)' : '#eceef0',
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        boxShadow: '0 6px 24px rgba(99, 102, 241, 0.55)',
-                        flexShrink: 0,
-                        transition: 'all 0.3s ease',
-                        '&:hover': {
-                            transform: 'scale(1.1) rotate(5deg)',
-                            boxShadow: '0 8px 32px rgba(99, 102, 241, 0.7)',
-                        },
+                        border: `1px solid ${isDark ? 'rgba(180,197,255,0.12)' : '#c3c6d7'}`,
                     }}>
-                        <StoreIcon sx={{ color: 'white', fontSize: 24 }} />
+                        <PersonIcon sx={{ color: isDark ? '#c3c6d7' : '#737686', fontSize: 24 }} />
                     </Box>
                     <Box>
                         <Typography sx={{
-                            fontWeight: 800, lineHeight: 1.2, fontSize: '1rem',
-                            background: isDark
-                                ? 'linear-gradient(135deg, #e0e7ff, #a5b4fc)'
-                                : 'linear-gradient(135deg, #4338ca, #6366f1)',
-                            WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
-                            backgroundClip: 'text',
+                            fontWeight: 600, fontSize: '0.875rem', lineHeight: 1.2,
+                            color: isDark ? '#e0e3e5' : '#191c1e',
                         }}>
                             {displayName}
                         </Typography>
                         <Typography sx={{
-                            fontSize: '0.6rem', fontWeight: 600,
-                            textTransform: 'uppercase', letterSpacing: '0.12em',
-                            color: isDark ? 'rgba(160,160,200,0.45)' : 'rgba(74,74,106,0.4)',
+                            fontSize: '0.75rem', fontWeight: 400,
+                            color: isDark ? '#c3c6d7' : '#434655',
                         }}>
-                            Panel de control
+                            {headerLabel}
                         </Typography>
                     </Box>
                 </Box>
             </Box>
 
-            {/* Gradient divider */}
-            <Box sx={{
-                mx: 2.5, mb: 1.5, height: '2px', borderRadius: 99,
-                background: isDark
-                    ? 'linear-gradient(90deg, transparent, rgba(129,140,248,0.3), transparent)'
-                    : 'linear-gradient(90deg, transparent, rgba(99,102,241,0.2), transparent)',
-            }} />
+            {/* Divider */}
+            <Box sx={{ mx: 3, height: '1px', backgroundColor: isDark ? 'rgba(180,197,255,0.12)' : '#c3c6d7' }} />
 
-            <Typography sx={{
-                px: 3, mb: 0.75,
-                fontSize: '0.6rem', fontWeight: 700,
-                textTransform: 'uppercase', letterSpacing: '0.14em',
-                color: isDark ? 'rgba(160,160,200,0.35)' : 'rgba(74,74,106,0.35)',
-            }}>
-                Navegación
-            </Typography>
-
-            {/* Navigation items */}
-            <List sx={{ flex: 1, px: 1.5, py: 0 }}>
-                {navItems.map((item, idx) => {
+            {/* Navigation Items */}
+            <List sx={{ flex: 1, px: 2, py: 1 }}>
+                {navItems.map((item) => {
                     const isActive = location.pathname === item.path
                     return (
                         <ListItemButton
@@ -135,108 +107,73 @@ function AdminLayout({ title, children, user, onLogout, superadmin = false, show
                             selected={isActive}
                             onClick={() => setMobileOpen(false)}
                             sx={{
-                                borderRadius: '14px',
+                                borderRadius: '20px',
                                 mb: 0.5,
                                 py: 1,
-                                px: 1.75,
-                                minHeight: 46,
-                                position: 'relative',
-                                overflow: 'hidden',
-                                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                                animation: `slide-in-right 0.35s ease both`,
-                                animationDelay: `${idx * 50}ms`,
-                                ...(isActive ? {
-                                    background: isDark
-                                        ? 'linear-gradient(135deg, rgba(99,102,241,0.28) 0%, rgba(139,92,246,0.18) 100%)'
-                                        : 'linear-gradient(135deg, rgba(99,102,241,0.14) 0%, rgba(139,92,246,0.08) 100%)',
-                                    boxShadow: isDark
-                                        ? '0 4px 16px rgba(99,102,241,0.25), inset 0 0 0 1px rgba(99,102,241,0.18), 0 0 20px rgba(99,102,241,0.08)'
-                                        : '0 4px 12px rgba(99,102,241,0.15), inset 0 0 0 1px rgba(99,102,241,0.12)',
-                                    '& .MuiListItemIcon-root': { color: isDark ? '#c7d2fe' : '#4f46e5' },
-                                    '& .MuiListItemText-primary': {
-                                        color: isDark ? '#e0e7ff' : '#4338ca',
-                                        fontWeight: 800,
-                                    },
-                                    '&::before': {
-                                        content: '""',
-                                        position: 'absolute',
-                                        left: 0, top: '12%', bottom: '12%',
-                                        width: 4,
-                                        borderRadius: '0 4px 4px 0',
-                                        background: 'linear-gradient(180deg, #6366f1, #8b5cf6, #a78bfa)',
-                                        boxShadow: '0 0 12px rgba(99, 102, 241, 0.5)',
-                                    },
-                                } : {
-                                    '&:hover': {
-                                        background: isDark
-                                            ? 'rgba(129,140,248,0.10)'
-                                            : 'rgba(99,102,241,0.07)',
-                                        transform: 'translateX(4px)',
-                                        boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
-                                    },
-                                }),
+                                px: 2,
+                                minHeight: 44,
+                                backgroundColor: isActive
+                                    ? (isDark ? 'rgba(180,197,255,0.12)' : '#f2f4f6')
+                                    : 'transparent',
+                                transition: 'background-color 0.15s ease',
+                                '&:hover': {
+                                    backgroundColor: isActive
+                                        ? (isDark ? 'rgba(180,197,255,0.12)' : '#f2f4f6')
+                                        : (isDark ? 'rgba(180,197,255,0.04)' : '#f2f4f6'),
+                                },
+                                '& .MuiListItemIcon-root': {
+                                    color: isActive
+                                        ? (isDark ? '#b4c5ff' : '#004ac6')
+                                        : (isDark ? '#c3c6d7' : '#434655'),
+                                    minWidth: 40,
+                                },
+                                '& .MuiListItemText-primary': {
+                                    color: isActive
+                                        ? (isDark ? '#b4c5ff' : '#004ac6')
+                                        : (isDark ? '#e0e3e5' : '#191c1e'),
+                                    fontWeight: isActive ? 600 : 400,
+                                    fontSize: '0.875rem',
+                                },
                             }}
                         >
-                            <ListItemIcon sx={{
-                                minWidth: 36,
-                                color: isActive
-                                    ? (isDark ? '#a5b4fc' : '#6366f1')
-                                    : (isDark ? 'rgba(160,160,200,0.4)' : 'rgba(74,74,106,0.4)'),
-                                transition: 'all 0.25s ease',
-                                '& svg': { fontSize: 20 },
-                            }}>
+                            <ListItemIcon sx={{ '& svg': { fontSize: 20 } }}>
                                 {item.icon}
                             </ListItemIcon>
-                            <ListItemText
-                                primary={item.label}
-                                slotProps={{ primary: {
-                                    fontSize: '0.85rem',
-                                    fontWeight: isActive ? 800 : 500,
-                                    letterSpacing: '0.01em',
-                                } }}
-                            />
+                            <ListItemText primary={item.label} />
                         </ListItemButton>
                     )
                 })}
             </List>
 
-            {/* Bottom gradient divider */}
-            <Box sx={{
-                mx: 2.5, my: 1, height: '2px', borderRadius: 99,
-                background: isDark
-                    ? 'linear-gradient(90deg, transparent, rgba(129,140,248,0.2), transparent)'
-                    : 'linear-gradient(90deg, transparent, rgba(99,102,241,0.15), transparent)',
-            }} />
+            {/* Bottom Divider */}
+            <Box sx={{ mx: 3, height: '1px', backgroundColor: isDark ? 'rgba(180,197,255,0.12)' : '#c3c6d7' }} />
 
             {/* Logout */}
-            <Box sx={{ px: 1.5, pb: 2.5 }}>
+            <Box sx={{ px: 2, py: 1.5 }}>
                 <ListItemButton
                     onClick={onLogout}
                     sx={{
-                        borderRadius: '14px',
-                        py: 1, px: 1.75,
-                        minHeight: 46,
-                        transition: 'all 0.25s ease',
+                        borderRadius: '20px',
+                        py: 1,
+                        px: 2,
+                        minHeight: 44,
                         '&:hover': {
-                            background: 'rgba(239, 68, 68, 0.10)',
-                            boxShadow: '0 2px 12px rgba(239, 68, 68, 0.1)',
-                            '& .MuiListItemIcon-root': { color: '#ef4444' },
-                            '& .MuiListItemText-primary': { color: '#ef4444', fontWeight: 700 },
-                            transform: 'translateX(4px)',
+                            backgroundColor: isDark ? 'rgba(255,180,171,0.08)' : 'rgba(186,26,26,0.04)',
+                        },
+                        '& .MuiListItemIcon-root': {
+                            color: isDark ? '#c3c6d7' : '#434655',
+                            minWidth: 40,
+                        },
+                        '& .MuiListItemText-primary': {
+                            color: isDark ? '#e0e3e5' : '#191c1e',
+                            fontSize: '0.875rem',
                         },
                     }}
                 >
-                    <ListItemIcon sx={{
-                        minWidth: 36,
-                        color: isDark ? 'rgba(160,160,200,0.3)' : 'rgba(74,74,106,0.3)',
-                        transition: 'color 0.2s ease',
-                    }}>
-                        <LogoutIcon sx={{ fontSize: 20 }} />
+                    <ListItemIcon sx={{ '& svg': { fontSize: 20 } }}>
+                        <LogoutIcon />
                     </ListItemIcon>
-                    <ListItemText
-                        primary="Cerrar Sesión"
-                        slotProps={{ primary: { fontSize: '0.85rem', fontWeight: 500 } }}
-                    />
+                    <ListItemText primary="Cerrar Sesión" />
                 </ListItemButton>
             </Box>
         </Box>
@@ -254,8 +191,8 @@ function AdminLayout({ title, children, user, onLogout, superadmin = false, show
                         '& .MuiDrawer-paper': {
                             width: drawerWidth,
                             boxSizing: 'border-box',
-                            background: 'transparent',
-                            borderRight: 'none',
+                            backgroundColor: isDark ? '#2d3133' : '#ffffff',
+                            borderRight: `1px solid ${isDark ? 'rgba(180,197,255,0.12)' : '#c3c6d7'}`,
                         },
                     }}
                 >
@@ -282,21 +219,12 @@ function AdminLayout({ title, children, user, onLogout, superadmin = false, show
             )}
 
             <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
-                {/* Premium AppBar with intense glassmorphism */}
+                {/* AppBar */}
                 <AppBar
                     position="sticky" color="inherit" elevation={0}
                     sx={{
-                        borderBottom: isDark
-                            ? '1px solid rgba(129,140,248,0.14)'
-                            : '1px solid rgba(99,102,241,0.10)',
-                        background: isDark
-                            ? 'rgba(7, 7, 26, 0.75)'
-                            : 'rgba(255, 255, 255, 0.75)',
-                        backdropFilter: 'blur(32px) saturate(220%)',
-                        WebkitBackdropFilter: 'blur(32px) saturate(220%)',
-                        boxShadow: isDark
-                            ? '0 1px 0 rgba(129,140,248,0.12), 0 8px 32px rgba(0,0,0,0.3), inset 0 -1px 0 rgba(129,140,248,0.06)'
-                            : '0 1px 0 rgba(99,102,241,0.08), 0 8px 32px rgba(99,102,241,0.06), inset 0 -1px 0 rgba(99,102,241,0.04)',
+                        backgroundColor: isDark ? '#191c1e' : '#ffffff',
+                        borderBottom: `1px solid ${isDark ? 'rgba(180,197,255,0.12)' : '#c3c6d7'}`,
                     }}
                 >
                     <Toolbar sx={{ minHeight: { xs: 56, md: 64 }, gap: 1 }}>
@@ -304,10 +232,7 @@ function AdminLayout({ title, children, user, onLogout, superadmin = false, show
                             <IconButton
                                 edge="start"
                                 onClick={() => setMobileOpen(true)}
-                                sx={{
-                                    mr: 0.5,
-                                    '&:hover': { background: 'rgba(99, 102, 241, 0.1)' },
-                                }}
+                                sx={{ mr: 0.5 }}
                             >
                                 <MenuIcon />
                             </IconButton>
@@ -315,9 +240,9 @@ function AdminLayout({ title, children, user, onLogout, superadmin = false, show
                         <Typography
                             variant="h6"
                             sx={{
-                                flex: 1, fontWeight: 800,
-                                fontSize: { xs: '1rem', md: '1.2rem' },
-                                letterSpacing: '-0.02em',
+                                flex: 1, fontWeight: 600,
+                                fontSize: { xs: '1rem', md: '1.25rem' },
+                                color: isDark ? '#e0e3e5' : '#191c1e',
                             }}
                         >
                             {title}
@@ -326,68 +251,36 @@ function AdminLayout({ title, children, user, onLogout, superadmin = false, show
                             {/* User info — desktop only */}
                             <Box sx={{ display: { xs: 'none', sm: 'block' }, textAlign: 'right' }}>
                                 <Typography sx={{
-                                    fontWeight: 800, fontSize: '0.85rem', lineHeight: 1.2,
-                                    color: 'text.primary',
+                                    fontWeight: 600, fontSize: '0.875rem', lineHeight: 1.2,
+                                    color: isDark ? '#e0e3e5' : '#191c1e',
                                 }}>
                                     {user?.storeName || user?.email}
                                 </Typography>
                                 <Typography sx={{
-                                    fontSize: '0.6rem', lineHeight: 1, fontWeight: 600,
-                                    color: isDark ? 'rgba(160,160,200,0.4)' : 'rgba(74,74,106,0.4)',
-                                    textTransform: 'uppercase', letterSpacing: '0.08em',
+                                    fontSize: '0.75rem', lineHeight: 1, fontWeight: 400,
+                                    color: isDark ? '#c3c6d7' : '#434655',
                                 }}>
                                     {headerLabel}
                                 </Typography>
                             </Box>
 
-                            {/* Avatar with animated gradient border ring */}
-                            <Box sx={{ position: 'relative' }}>
-                                <Box sx={{
-                                    width: 40, height: 40, borderRadius: '50%',
-                                    background: isDark
-                                        ? 'linear-gradient(135deg, #6366f1, #8b5cf6, #a78bfa)'
-                                        : 'linear-gradient(135deg, #4f46e5, #6366f1, #8b5cf6)',
-                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                    color: 'white', fontSize: '0.85rem', fontWeight: 900,
-                                    boxShadow: '0 4px 18px rgba(99,102,241,0.5)',
-                                    position: 'relative',
-                                    transition: 'all 0.3s ease',
-                                    cursor: 'default',
-                                    '&:hover': {
-                                        transform: 'scale(1.1)',
-                                        boxShadow: '0 6px 28px rgba(99,102,241,0.65)',
-                                    },
-                                    '&::before': {
-                                        content: '""',
-                                        position: 'absolute',
-                                        inset: -3,
-                                        borderRadius: '50%',
-                                        background: `linear-gradient(135deg, #6366f1, #8b5cf6, #a78bfa, #10b981, #6366f1)`,
-                                        backgroundSize: '400% 400%',
-                                        animation: 'gradient-rotate 5s linear infinite',
-                                        zIndex: -1,
-                                    },
-                                }}>
-                                    {user?.storeName?.[0] || user?.email?.[0]?.toUpperCase() || 'U'}
-                                </Box>
-                                {/* Pulsing online dot */}
-                                <Box sx={{
-                                    position: 'absolute',
-                                    bottom: 0, right: 0,
-                                    width: 12, height: 12,
-                                    borderRadius: '50%',
-                                    background: '#10b981',
-                                    border: `2.5px solid ${isDark ? '#0e0e24' : '#fff'}`,
-                                    boxShadow: '0 0 8px rgba(16, 185, 129, 0.5)',
-                                    animation: 'pulse-glow 2s ease-in-out infinite',
-                                }} />
+                            {/* Avatar */}
+                            <Box sx={{
+                                width: 40, height: 40, borderRadius: '50%',
+                                backgroundColor: isDark ? 'rgba(180,197,255,0.12)' : '#eceef0',
+                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                color: isDark ? '#b4c5ff' : '#004ac6',
+                                fontSize: '0.875rem', fontWeight: 600,
+                                border: `1px solid ${isDark ? 'rgba(180,197,255,0.12)' : '#c3c6d7'}`,
+                            }}>
+                                {user?.storeName?.[0] || user?.email?.[0]?.toUpperCase() || 'U'}
                             </Box>
 
                             {showBack && (
                                 <Button
                                     component={Link} to="/admin"
                                     variant="outlined" size="small"
-                                    sx={{ fontSize: '0.7rem', py: 0.5, ml: 0.5, borderRadius: '10px' }}
+                                    sx={{ fontSize: '0.75rem', py: 0.5, ml: 0.5 }}
                                 >
                                     Volver
                                 </Button>
@@ -396,11 +289,11 @@ function AdminLayout({ title, children, user, onLogout, superadmin = false, show
                     </Toolbar>
                 </AppBar>
 
-                {/* Page content with entrance animation */}
+                {/* Page content */}
                 <Box sx={{
-                    p: { xs: 2, md: 3.5 },
+                    p: { xs: 2, md: 3 },
                     flex: 1,
-                    animation: 'fade-in-up 0.4s cubic-bezier(0.4, 0, 0.2, 1) both',
+                    backgroundColor: isDark ? '#191c1e' : '#f7f9fb',
                 }}>
                     {children}
                 </Box>

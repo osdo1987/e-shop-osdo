@@ -45,8 +45,8 @@ const tabAccent = {
 }
 
 const sectionBox = (isDark) => ({
-    background: isDark ? 'rgba(99,102,241,0.04)' : 'rgba(99,102,241,0.03)',
-    border: isDark ? '1px solid rgba(129,140,248,0.10)' : '1px solid rgba(99,102,241,0.08)',
+    background: isDark ? 'rgba(0,74,198,0.04)' : 'rgba(0,74,198,0.03)',
+    border: isDark ? '1px solid rgba(180,197,255,0.10)' : '1px solid rgba(0,74,198,0.08)',
     borderRadius: '14px',
 })
 
@@ -62,7 +62,7 @@ const accentCard = (isDark) => ({
         left: 0,
         right: 0,
         height: '3px',
-        background: 'linear-gradient(90deg, #6366f1, #8b5cf6, #a78bfa)',
+        background: 'linear-gradient(90deg, #004ac6, #2563eb, #5092f7)',
         borderRadius: '16px 16px 0 0',
     },
 })
@@ -72,7 +72,7 @@ const paymentCardAccent = (isDark) => ({
     overflow: 'visible',
     borderRadius: '14px',
     background: isDark ? 'rgba(14,14,36,0.6)' : '#ffffff',
-    border: isDark ? '1px solid rgba(129,140,248,0.10)' : '1px solid rgba(99,102,241,0.10)',
+    border: isDark ? '1px solid rgba(180,197,255,0.10)' : '1px solid rgba(0,74,198,0.10)',
     transition: 'all 0.3s cubic-bezier(0.4,0,0.2,1)',
     '&::before': {
         content: '""',
@@ -86,8 +86,8 @@ const paymentCardAccent = (isDark) => ({
     '&:hover': {
         transform: 'translateY(-3px)',
         boxShadow: isDark
-            ? '0 8px 28px rgba(0,0,0,0.5), 0 0 0 1px rgba(129,140,248,0.10)'
-            : '0 8px 28px rgba(99,102,241,0.12), 0 0 0 1px rgba(99,102,241,0.05)',
+            ? '0 8px 28px rgba(0,0,0,0.5), 0 0 0 1px rgba(180,197,255,0.10)'
+            : '0 8px 28px rgba(0,74,198,0.12), 0 0 0 1px rgba(0,74,198,0.05)',
     },
 })
 
@@ -259,7 +259,7 @@ function CashRegister({ user }) {
                         '& .MuiTabs-indicator': {
                             height: 3,
                             borderRadius: '3px 3px 0 0',
-                            background: 'linear-gradient(90deg, #6366f1, #8b5cf6, #a78bfa)',
+                            background: 'linear-gradient(90deg, #004ac6, #2563eb, #5092f7)',
                             transition: 'all 0.3s cubic-bezier(0.4,0,0.2,1)',
                         },
                     }}
@@ -295,7 +295,7 @@ function CashRegister({ user }) {
                                             <Box sx={{
                                                 p: 1,
                                                 borderRadius: '12px',
-                                                background: 'linear-gradient(135deg, rgba(99,102,241,0.12), rgba(139,92,246,0.12))',
+                                                background: 'linear-gradient(135deg, rgba(0,74,198,0.12), rgba(37,99,235,0.12))',
                                                 display: 'flex',
                                                 alignItems: 'center',
                                                 justifyContent: 'center',
@@ -308,7 +308,7 @@ function CashRegister({ user }) {
                                                 <Typography variant="caption" color="text.disabled" sx={{ display: 'block', fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase' }}>
                                                     Sesión Activa Nro.
                                                 </Typography>
-                                                <Typography variant="h4" sx={{ fontWeight: 400, fontFamily: '"DM Serif Display", "Georgia", serif', lineHeight: 1.1 }}>
+                                                <Typography variant="h4" sx={{ fontWeight: 400, fontFamily: '"Inter", "Helvetica", "Arial", sans-serif', lineHeight: 1.1 }}>
                                                     #{activeSession.id}
                                                 </Typography>
                                             </Box>
@@ -325,8 +325,8 @@ function CashRegister({ user }) {
                                             </Typography>
                                             <Typography variant="h4" sx={{
                                                 fontWeight: 400,
-                                                fontFamily: '"DM Serif Display", "Georgia", serif',
-                                                background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
+                                                fontFamily: '"Inter", "Helvetica", "Arial", sans-serif',
+                                                background: 'linear-gradient(135deg, #004ac6, #2563eb)',
                                                 WebkitBackgroundClip: 'text',
                                                 WebkitTextFillColor: 'transparent',
                                                 lineHeight: 1.2,
@@ -402,7 +402,7 @@ function CashRegister({ user }) {
                                             <Box sx={{
                                                 p: 1,
                                                 borderRadius: '12px',
-                                                background: 'linear-gradient(135deg, rgba(99,102,241,0.12), rgba(139,92,246,0.12))',
+                                                background: 'linear-gradient(135deg, rgba(0,74,198,0.12), rgba(37,99,235,0.12))',
                                                 display: 'flex',
                                                 alignItems: 'center',
                                                 justifyContent: 'center',
@@ -454,7 +454,7 @@ function CashRegister({ user }) {
                                                     p: 2.5,
                                                     '&::before': {
                                                         ...paymentCardAccent(isDark)['&::before'],
-                                                        background: 'linear-gradient(90deg, #6366f1, #818cf8)',
+                                                        background: 'linear-gradient(90deg, #004ac6, #b4c5ff)',
                                                     },
                                                     animation: mounted ? 'fade-in-up 0.5s ease both' : 'none',
                                                     animationDelay: '0.2s',
@@ -462,7 +462,7 @@ function CashRegister({ user }) {
                                                     <Box sx={{
                                                         p: 1.2,
                                                         borderRadius: '12px',
-                                                        background: isDark ? 'rgba(99,102,241,0.15)' : 'rgba(99,102,241,0.10)',
+                                                        background: isDark ? 'rgba(0,74,198,0.15)' : 'rgba(0,74,198,0.10)',
                                                         display: 'inline-flex',
                                                         mb: 1.5,
                                                         animation: 'icon-bounce 0.6s ease both',
@@ -543,7 +543,7 @@ function CashRegister({ user }) {
                                         <Box sx={{
                                             p: 1.2,
                                             borderRadius: '12px',
-                                            background: 'linear-gradient(135deg, rgba(99,102,241,0.12), rgba(139,92,246,0.12))',
+                                            background: 'linear-gradient(135deg, rgba(0,74,198,0.12), rgba(37,99,235,0.12))',
                                             display: 'flex',
                                             alignItems: 'center',
                                             justifyContent: 'center',
@@ -617,7 +617,7 @@ function CashRegister({ user }) {
                             <Box sx={{
                                 p: 1,
                                 borderRadius: '12px',
-                                background: 'linear-gradient(135deg, rgba(99,102,241,0.12), rgba(139,92,246,0.12))',
+                                background: 'linear-gradient(135deg, rgba(0,74,198,0.12), rgba(37,99,235,0.12))',
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',
@@ -722,11 +722,11 @@ function CashRegister({ user }) {
                     sx: {
                         background: isDark ? 'rgba(10, 10, 28, 0.95)' : 'rgba(255, 255, 255, 0.95)',
                         backdropFilter: 'blur(40px) saturate(200%)',
-                        border: isDark ? '1px solid rgba(129, 140, 248, 0.15)' : '1px solid rgba(99, 102, 241, 0.12)',
+                        border: isDark ? '1px solid rgba(180, 197, 255, 0.15)' : '1px solid rgba(0, 74, 198, 0.12)',
                         borderRadius: '20px',
                         boxShadow: isDark
-                            ? '0 32px 80px rgba(0,0,0,0.7), 0 0 0 1px rgba(129,140,248,0.08)'
-                            : '0 32px 80px rgba(99,102,241,0.18), 0 0 0 1px rgba(99,102,241,0.05)',
+                            ? '0 32px 80px rgba(0,0,0,0.7), 0 0 0 1px rgba(180,197,255,0.08)'
+                            : '0 32px 80px rgba(0,74,198,0.18), 0 0 0 1px rgba(0,74,198,0.05)',
                         overflow: 'hidden',
                     },
                 }}
@@ -737,7 +737,7 @@ function CashRegister({ user }) {
                         display: 'flex',
                         alignItems: 'center',
                         gap: 1.2,
-                        borderBottom: isDark ? '1px solid rgba(129,140,248,0.08)' : '1px solid rgba(99,102,241,0.08)',
+                        borderBottom: isDark ? '1px solid rgba(180,197,255,0.08)' : '1px solid rgba(0,74,198,0.08)',
                         py: 2.5,
                         px: 3,
                     }}>
@@ -768,7 +768,7 @@ function CashRegister({ user }) {
                                             <Typography variant="caption" color="text.disabled" sx={{ display: 'block', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                                                 Efectivo Esperado
                                             </Typography>
-                                            <Typography variant="h5" sx={{ fontWeight: 400, fontFamily: '"DM Serif Display", "Georgia", serif', mt: 0.5, color: 'success.main' }}>
+                                            <Typography variant="h5" sx={{ fontWeight: 400, fontFamily: '"Inter", "Helvetica", "Arial", sans-serif', mt: 0.5, color: 'success.main' }}>
                                                 ${expectedCashInDrawer.toLocaleString()}
                                             </Typography>
                                         </Box>
@@ -817,7 +817,7 @@ function CashRegister({ user }) {
                             </Box>
                         )}
                     </DialogContent>
-                    <DialogActions sx={{ p: 2.5, borderTop: isDark ? '1px solid rgba(129,140,248,0.08)' : '1px solid rgba(99,102,241,0.08)' }}>
+                    <DialogActions sx={{ p: 2.5, borderTop: isDark ? '1px solid rgba(180,197,255,0.08)' : '1px solid rgba(0,74,198,0.08)' }}>
                         <Button
                             onClick={() => setShowCloseModal(false)}
                             sx={{ borderRadius: '12px', fontWeight: 600 }}

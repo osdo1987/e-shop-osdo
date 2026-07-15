@@ -1,6 +1,6 @@
 import { useState, useCallback, createContext, useContext } from 'react'
-import Alert from '@mui/material/Alert'
 import Box from '@mui/material/Box'
+import Typography from '@mui/material/Typography'
 import IconButton from '@mui/material/IconButton'
 import CloseIcon from '@mui/icons-material/Close'
 import CheckCircleIcon from '@mui/icons-material/CheckCircle'
@@ -44,11 +44,11 @@ const severityConfig = {
     },
     info: {
         icon: <InfoIcon sx={{ fontSize: 22 }} />,
-        gradient: 'linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(99, 102, 241, 0.05))',
-        border: 'rgba(99, 102, 241, 0.4)',
-        shadow: '0 8px 32px rgba(99, 102, 241, 0.2), 0 0 0 1px rgba(99, 102, 241, 0.15)',
-        iconColor: '#6366f1',
-        barColor: 'linear-gradient(90deg, #6366f1, #8b5cf6)',
+        gradient: 'linear-gradient(135deg, rgba(0, 74, 198, 0.15), rgba(0, 74, 198, 0.05))',
+        border: 'rgba(0, 74, 198, 0.4)',
+        shadow: '0 8px 32px rgba(0, 74, 198, 0.2), 0 0 0 1px rgba(0, 74, 198, 0.15)',
+        iconColor: '#004ac6',
+        barColor: 'linear-gradient(90deg, #004ac6, #2563eb)',
     },
 }
 
@@ -63,6 +63,13 @@ export function ToastProvider({ children }) {
         setTimeout(() => {
             setToasts(prev => prev.map(t => t.id === id ? { ...t, entering: false } : t))
         }, 50)
+        const removeTimer = setTimeout(() => {
+            setToasts(prev => prev.map(t => t.id === id && !t.exiting ? { ...t, exiting: true } : t))
+            setTimeout(() => {
+                setToasts(prev => prev.filter(t => t.id !== id))
+            }, 300)
+        }, duration)
+        return () => clearTimeout(removeTimer)
     }, [])
 
     const removeToast = useCallback((id) => {
@@ -120,7 +127,7 @@ export function ToastProvider({ children }) {
                             <Box sx={{
                                 height: '3px',
                                 background: cfg.barColor,
-                                animation: 'progress-fill 4s linear both',
+                                animation: `progress-fill ${toast.duration}ms linear both`,
                             }} />
 
                             <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5, p: 2 }}>
@@ -155,7 +162,7 @@ export function ToastProvider({ children }) {
                                         transition: 'all 0.2s ease',
                                         '&:hover': {
                                             color: 'text.primary',
-                                            background: 'rgba(99, 102, 241, 0.1)',
+                                            background: 'rgba(0, 74, 198, 0.1)',
                                         },
                                     }}
                                 >

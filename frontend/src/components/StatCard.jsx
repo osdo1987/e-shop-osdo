@@ -30,7 +30,7 @@ function useCountUp(target, duration = 1000) {
     return count
 }
 
-function StatCard({ title, value, icon, color = '#6366f1', subtitle, progress }) {
+function StatCard({ title, value, icon, color = '#004ac6', subtitle, progress }) {
     const theme = useTheme()
     const isDark = theme.palette.mode === 'dark'
     const numericValue = typeof value === 'number' || (typeof value === 'string' && /^\d+/.test(value))
@@ -46,8 +46,8 @@ function StatCard({ title, value, icon, color = '#6366f1', subtitle, progress })
                 minHeight: 120,
                 ...(isDark && {
                     backdropFilter: 'blur(12px)',
-                    background: 'rgba(14, 14, 36, 0.6)',
-                    border: '1px solid rgba(129, 140, 248, 0.12)',
+                    background: 'rgba(15, 17, 20, 0.6)',
+                    border: '1px solid rgba(180, 197, 255, 0.12)',
                 }),
                 /* Gradient glow behind card */
                 '&::before': {
@@ -147,7 +147,7 @@ function StatCard({ title, value, icon, color = '#6366f1', subtitle, progress })
                 <Box sx={{ px: 2.5, pb: 2 }}>
                     <Box sx={{
                         height: 4, borderRadius: 99,
-                        background: isDark ? 'rgba(129,140,248,0.08)' : 'rgba(99,102,241,0.06)',
+                        background: isDark ? 'rgba(180,197,255,0.08)' : 'rgba(0,74,198,0.06)',
                         overflow: 'hidden',
                     }}>
                         <Box sx={{

@@ -21,15 +21,15 @@ function NotFound() {
                 position: 'absolute', inset: 0, zIndex: 0,
                 background: isDark
                     ? `
-                        radial-gradient(ellipse 90% 70% at 50% 10%, rgba(99, 102, 241, 0.25) 0%, transparent 55%),
+                        radial-gradient(ellipse 90% 70% at 50% 10%, rgba(0, 74, 198, 0.25) 0%, transparent 55%),
                         radial-gradient(ellipse 70% 60% at 20% 80%, rgba(239, 68, 68, 0.15) 0%, transparent 50%),
-                        radial-gradient(ellipse 60% 50% at 85% 50%, rgba(139, 92, 246, 0.18) 0%, transparent 50%),
+                        radial-gradient(ellipse 60% 50% at 85% 50%, rgba(37, 99, 235, 0.18) 0%, transparent 50%),
                         #07071a
                     `
                     : `
-                        radial-gradient(ellipse 90% 70% at 50% 10%, rgba(99, 102, 241, 0.15) 0%, transparent 55%),
+                        radial-gradient(ellipse 90% 70% at 50% 10%, rgba(0, 74, 198, 0.15) 0%, transparent 55%),
                         radial-gradient(ellipse 70% 60% at 20% 80%, rgba(239, 68, 68, 0.08) 0%, transparent 50%),
-                        radial-gradient(ellipse 60% 50% at 85% 50%, rgba(139, 92, 246, 0.10) 0%, transparent 50%),
+                        radial-gradient(ellipse 60% 50% at 85% 50%, rgba(37, 99, 235, 0.10) 0%, transparent 50%),
                         #f6f6fe
                     `,
             }} />
@@ -37,7 +37,7 @@ function NotFound() {
             {/* Floating orbs */}
             <Box sx={{
                 position: 'absolute', width: 500, height: 500, borderRadius: '50%',
-                background: 'radial-gradient(circle, rgba(99,102,241,0.25) 0%, transparent 60%)',
+                background: 'radial-gradient(circle, rgba(0,74,198,0.25) 0%, transparent 60%)',
                 top: '-15%', left: '-10%',
                 filter: 'blur(60px)',
                 animation: 'orb-float-1 18s ease-in-out infinite',
@@ -54,7 +54,7 @@ function NotFound() {
             }} />
             <Box sx={{
                 position: 'absolute', width: 300, height: 300, borderRadius: '50%',
-                background: 'radial-gradient(circle, rgba(139,92,246,0.15) 0%, transparent 60%)',
+                background: 'radial-gradient(circle, rgba(37,99,235,0.15) 0%, transparent 60%)',
                 top: '50%', right: '20%',
                 filter: 'blur(45px)',
                 animation: 'orb-float-1 14s ease-in-out infinite',
@@ -66,8 +66,8 @@ function NotFound() {
             <Box sx={{
                 position: 'absolute', inset: 0, pointerEvents: 'none',
                 backgroundImage: isDark
-                    ? 'radial-gradient(circle, rgba(99,102,241,0.06) 1px, transparent 1px)'
-                    : 'radial-gradient(circle, rgba(99,102,241,0.07) 1px, transparent 1px)',
+                    ? 'radial-gradient(circle, rgba(0,74,198,0.06) 1px, transparent 1px)'
+                    : 'radial-gradient(circle, rgba(0,74,198,0.07) 1px, transparent 1px)',
                 backgroundSize: '32px 32px',
             }} />
 

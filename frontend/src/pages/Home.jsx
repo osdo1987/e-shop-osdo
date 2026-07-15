@@ -15,10 +15,10 @@ import GroupsIcon from '@mui/icons-material/Groups'
 import BoltIcon from '@mui/icons-material/Bolt'
 
 const features = [
-    { icon: <StorefrontIcon sx={{ fontSize: 30 }} />, title: 'Catálogo Digital', desc: 'Crea y comparte tu catálogo en segundos con un link único por WhatsApp.', color: '#6366f1', gradient: 'linear-gradient(135deg, #6366f1, #8b5cf6)' },
+    { icon: <StorefrontIcon sx={{ fontSize: 30 }} />, title: 'Catálogo Digital', desc: 'Crea y comparte tu catálogo en segundos con un link único por WhatsApp.', color: '#004ac6', gradient: 'linear-gradient(135deg, #004ac6, #2563eb)' },
     { icon: <ChatIcon sx={{ fontSize: 30 }} />, title: 'Pedidos por WhatsApp', desc: 'Tus clientes ordenan directo por WhatsApp con un solo toque.', color: '#10b981', gradient: 'linear-gradient(135deg, #10b981, #059669)' },
     { icon: <SpeedIcon sx={{ fontSize: 30 }} />, title: 'POS Ultrarrápido', desc: 'Punto de venta local que no frena tus ventas presenciales.', color: '#f59e0b', gradient: 'linear-gradient(135deg, #f59e0b, #d97706)' },
-    { icon: <InventoryIcon sx={{ fontSize: 30 }} />, title: 'Inventario Inteligente', desc: 'Gestiona stock, variantes y categorías desde un solo lugar.', color: '#8b5cf6', gradient: 'linear-gradient(135deg, #8b5cf6, #7c3aed)' },
+    { icon: <InventoryIcon sx={{ fontSize: 30 }} />, title: 'Inventario Inteligente', desc: 'Gestiona stock, variantes y categorías desde un solo lugar.', color: '#2563eb', gradient: 'linear-gradient(135deg, #2563eb, #7c3aed)' },
     { icon: <ReceiptLongIcon sx={{ fontSize: 30 }} />, title: 'Facturación Auto', desc: 'Genera facturas y reportes de venta automáticos.', color: '#ef4444', gradient: 'linear-gradient(135deg, #ef4444, #dc2626)' },
     { icon: <InsightsIcon sx={{ fontSize: 30 }} />, title: 'Métricas en Vivo', desc: 'Dashboard con estadísticas de ventas, pedidos y rendimiento.', color: '#06b6d4', gradient: 'linear-gradient(135deg, #06b6d4, #0891b2)' },
 ]
@@ -36,7 +36,7 @@ function Sparkle({ top, left, size, delay, duration }) {
             pointerEvents: 'none', zIndex: 0,
             '&::before, &::after': {
                 content: '""', position: 'absolute',
-                background: 'rgba(99, 102, 241, 0.6)',
+                background: 'rgba(0, 74, 198, 0.6)',
             },
             '&::before': {
                 width: '100%', height: '2px', top: '50%', left: 0,
@@ -63,15 +63,15 @@ function Home() {
                 position: 'absolute', inset: 0, zIndex: 0,
                 background: isDark
                     ? `
-                        radial-gradient(ellipse 80% 60% at 20% 10%, rgba(99, 102, 241, 0.25) 0%, transparent 60%),
-                        radial-gradient(ellipse 60% 50% at 80% 30%, rgba(139, 92, 246, 0.20) 0%, transparent 55%),
+                        radial-gradient(ellipse 80% 60% at 20% 10%, rgba(0, 74, 198, 0.25) 0%, transparent 60%),
+                        radial-gradient(ellipse 60% 50% at 80% 30%, rgba(37, 99, 235, 0.20) 0%, transparent 55%),
                         radial-gradient(ellipse 70% 40% at 50% 80%, rgba(16, 185, 129, 0.12) 0%, transparent 50%),
                         radial-gradient(ellipse 40% 30% at 10% 60%, rgba(6, 182, 212, 0.10) 0%, transparent 45%),
                         #07071a
                     `
                     : `
-                        radial-gradient(ellipse 80% 60% at 20% 10%, rgba(99, 102, 241, 0.15) 0%, transparent 60%),
-                        radial-gradient(ellipse 60% 50% at 80% 30%, rgba(139, 92, 246, 0.12) 0%, transparent 55%),
+                        radial-gradient(ellipse 80% 60% at 20% 10%, rgba(0, 74, 198, 0.15) 0%, transparent 60%),
+                        radial-gradient(ellipse 60% 50% at 80% 30%, rgba(37, 99, 235, 0.12) 0%, transparent 55%),
                         radial-gradient(ellipse 70% 40% at 50% 80%, rgba(16, 185, 129, 0.08) 0%, transparent 50%),
                         radial-gradient(ellipse 40% 30% at 10% 60%, rgba(6, 182, 212, 0.06) 0%, transparent 45%),
                         #f6f6fe
@@ -81,7 +81,7 @@ function Home() {
             {/* Floating orbs — much bigger and more visible */}
             <Box sx={{
                 position: 'absolute', width: 600, height: 600, borderRadius: '50%',
-                background: 'radial-gradient(circle, rgba(99,102,241,0.25) 0%, transparent 65%)',
+                background: 'radial-gradient(circle, rgba(0,74,198,0.25) 0%, transparent 65%)',
                 top: '-15%', left: '-10%',
                 filter: 'blur(60px)',
                 animation: 'orb-float-1 18s ease-in-out infinite',
@@ -89,7 +89,7 @@ function Home() {
             }} />
             <Box sx={{
                 position: 'absolute', width: 500, height: 500, borderRadius: '50%',
-                background: 'radial-gradient(circle, rgba(139,92,246,0.20) 0%, transparent 65%)',
+                background: 'radial-gradient(circle, rgba(37,99,235,0.20) 0%, transparent 65%)',
                 top: '20%', right: '-12%',
                 filter: 'blur(50px)',
                 animation: 'orb-float-2 20s ease-in-out infinite',
@@ -128,8 +128,8 @@ function Home() {
             <Box sx={{
                 position: 'absolute', inset: 0, pointerEvents: 'none',
                 backgroundImage: isDark
-                    ? 'radial-gradient(circle, rgba(99,102,241,0.06) 1px, transparent 1px)'
-                    : 'radial-gradient(circle, rgba(99,102,241,0.08) 1px, transparent 1px)',
+                    ? 'radial-gradient(circle, rgba(0,74,198,0.06) 1px, transparent 1px)'
+                    : 'radial-gradient(circle, rgba(0,74,198,0.08) 1px, transparent 1px)',
                 backgroundSize: '32px 32px',
             }} />
 
@@ -174,13 +174,13 @@ function Home() {
                             lineHeight: 1.05,
                             letterSpacing: '-0.02em',
                             background: isDark
-                                ? 'linear-gradient(135deg, #c7d2fe 0%, #818cf8 30%, #a78bfa 60%, #c4b5fd 100%)'
-                                : 'linear-gradient(135deg, #4f46e5 0%, #6366f1 30%, #8b5cf6 60%, #a78bfa 100%)',
+                                ? 'linear-gradient(135deg, #dbe1ff 0%, #b4c5ff 30%, #5092f7 60%, #7eb3ff 100%)'
+                                : 'linear-gradient(135deg, #003ea8 0%, #004ac6 30%, #2563eb 60%, #5092f7 100%)',
                             WebkitBackgroundClip: 'text',
                             WebkitTextFillColor: 'transparent',
                             backgroundClip: 'text',
                             animation: 'hero-glow 4s ease-in-out infinite',
-                            filter: 'drop-shadow(0 2px 12px rgba(99, 102, 241, 0.2))',
+                            filter: 'drop-shadow(0 2px 12px rgba(0, 74, 198, 0.2))',
                         }}
                     >
                         E-Shop WhatsApp
@@ -243,8 +243,8 @@ function Home() {
                                 fontWeight: 700,
                                 borderRadius: '16px',
                                 gap: 1.5,
-                                borderColor: isDark ? 'rgba(129, 140, 248, 0.3)' : 'rgba(99, 102, 241, 0.3)',
-                                color: isDark ? '#a5b4fc' : '#4f46e5',
+                                borderColor: isDark ? 'rgba(180, 197, 255, 0.3)' : 'rgba(0, 74, 198, 0.3)',
+                                color: isDark ? '#a5b4fc' : '#003ea8',
                                 '& .whatsapp-icon': {
                                     fill: '#25D366',
                                     filter: 'drop-shadow(0 0 4px rgba(37, 211, 102, 0.3))',
@@ -323,8 +323,8 @@ function Home() {
                                     backdropFilter: 'blur(16px)',
                                     WebkitBackdropFilter: 'blur(16px)',
                                     border: isDark
-                                        ? '1px solid rgba(129, 140, 248, 0.12)'
-                                        : '1px solid rgba(99, 102, 241, 0.10)',
+                                        ? '1px solid rgba(180, 197, 255, 0.12)'
+                                        : '1px solid rgba(0, 74, 198, 0.10)',
                                     transition: 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
                                     animation: `fade-in-up 0.5s ease both`,
                                     animationDelay: `${idx * 100}ms`,

@@ -67,8 +67,8 @@ const MONTHS = [
 ]
 
 const sectionBoxSx = (isDark) => ({
-    background: isDark ? 'rgba(99,102,241,0.04)' : 'rgba(99,102,241,0.03)',
-    border: isDark ? '1px solid rgba(129,140,248,0.10)' : '1px solid rgba(99,102,241,0.08)',
+    background: isDark ? 'rgba(0,74,198,0.04)' : 'rgba(0,74,198,0.03)',
+    border: isDark ? '1px solid rgba(180,197,255,0.10)' : '1px solid rgba(0,74,198,0.08)',
     borderRadius: '14px',
 })
 
@@ -77,8 +77,8 @@ const accentCardSx = (isDark) => ({
     overflow: 'visible',
     borderRadius: '16px',
     boxShadow: isDark
-        ? '0 4px 24px rgba(0,0,0,0.25), 0 0 0 1px rgba(129,140,248,0.08)'
-        : '0 4px 24px rgba(99,102,241,0.06), 0 0 0 1px rgba(99,102,241,0.05)',
+        ? '0 4px 24px rgba(0,0,0,0.25), 0 0 0 1px rgba(180,197,255,0.08)'
+        : '0 4px 24px rgba(0,74,198,0.06), 0 0 0 1px rgba(0,74,198,0.05)',
     background: isDark ? 'rgba(20,20,42,0.95)' : '#ffffff',
     '&::before': {
         content: '""',
@@ -87,7 +87,7 @@ const accentCardSx = (isDark) => ({
         left: 0,
         right: 0,
         height: '3px',
-        background: 'linear-gradient(90deg, #6366f1, #8b5cf6, #a78bfa)',
+        background: 'linear-gradient(90deg, #004ac6, #2563eb, #5092f7)',
         borderRadius: '16px 16px 0 0',
     },
 })
@@ -97,12 +97,12 @@ const inputSx = (isDark) => ({
     '& .MuiOutlinedInput-root': {
         borderRadius: '14px',
         '&:hover .MuiOutlinedInput-notchedOutline': {
-            borderColor: isDark ? 'rgba(129,140,248,0.4)' : 'rgba(99,102,241,0.4)',
+            borderColor: isDark ? 'rgba(180,197,255,0.4)' : 'rgba(0,74,198,0.4)',
         },
         '&.Mui-focused': {
             boxShadow: isDark
-                ? '0 0 0 3px rgba(99,102,241,0.15)'
-                : '0 0 0 3px rgba(99,102,241,0.1)',
+                ? '0 0 0 3px rgba(0,74,198,0.15)'
+                : '0 0 0 3px rgba(0,74,198,0.1)',
         },
     },
 })
@@ -376,7 +376,7 @@ function SuperAdmin({ user, onLogout }) {
                     component="label"
                     sx={{
                         border: '2px dashed',
-                        borderColor: isDark ? 'rgba(129,140,248,0.2)' : 'rgba(99,102,241,0.2)',
+                        borderColor: isDark ? 'rgba(180,197,255,0.2)' : 'rgba(0,74,198,0.2)',
                         borderRadius: '14px',
                         p: 2.5,
                         textAlign: 'center',
@@ -384,11 +384,11 @@ function SuperAdmin({ user, onLogout }) {
                         fontSize: '0.8125rem',
                         cursor: 'pointer',
                         display: 'block',
-                        background: isDark ? 'rgba(99,102,241,0.03)' : 'rgba(99,102,241,0.02)',
+                        background: isDark ? 'rgba(0,74,198,0.03)' : 'rgba(0,74,198,0.02)',
                         transition: 'all 0.25s ease',
                         '&:hover': {
                             borderColor: 'primary.main',
-                            background: isDark ? 'rgba(99,102,241,0.06)' : 'rgba(99,102,241,0.04)',
+                            background: isDark ? 'rgba(0,74,198,0.06)' : 'rgba(0,74,198,0.04)',
                         }
                     }}
                 >
@@ -458,27 +458,27 @@ function SuperAdmin({ user, onLogout }) {
                                 py: 1,
                                 borderRadius: '12px !important',
                                 border: isDark
-                                    ? '1px solid rgba(129,140,248,0.2) !important'
-                                    : '1px solid rgba(99,102,241,0.15) !important',
+                                    ? '1px solid rgba(180,197,255,0.2) !important'
+                                    : '1px solid rgba(0,74,198,0.15) !important',
                                 textTransform: 'none',
                                 transition: 'all 0.25s ease',
                                 '&.Mui-selected': {
                                     background: isDark
-                                        ? 'linear-gradient(135deg, rgba(99,102,241,0.25), rgba(139,92,246,0.25))'
-                                        : 'linear-gradient(135deg, rgba(99,102,241,0.1), rgba(139,92,246,0.1))',
+                                        ? 'linear-gradient(135deg, rgba(0,74,198,0.25), rgba(37,99,235,0.25))'
+                                        : 'linear-gradient(135deg, rgba(0,74,198,0.1), rgba(37,99,235,0.1))',
                                     color: 'primary.main',
                                     fontWeight: 800,
                                     boxShadow: isDark
-                                        ? '0 2px 12px rgba(99,102,241,0.2)'
-                                        : '0 2px 12px rgba(99,102,241,0.1)',
+                                        ? '0 2px 12px rgba(0,74,198,0.2)'
+                                        : '0 2px 12px rgba(0,74,198,0.1)',
                                     '&:hover': {
                                         background: isDark
-                                            ? 'linear-gradient(135deg, rgba(99,102,241,0.3), rgba(139,92,246,0.3))'
-                                            : 'linear-gradient(135deg, rgba(99,102,241,0.15), rgba(139,92,246,0.15))',
+                                            ? 'linear-gradient(135deg, rgba(0,74,198,0.3), rgba(37,99,235,0.3))'
+                                            : 'linear-gradient(135deg, rgba(0,74,198,0.15), rgba(37,99,235,0.15))',
                                     },
                                 },
                                 '&:hover': {
-                                    background: isDark ? 'rgba(99,102,241,0.08)' : 'rgba(99,102,241,0.04)',
+                                    background: isDark ? 'rgba(0,74,198,0.08)' : 'rgba(0,74,198,0.04)',
                                 },
                             },
                             mx: 'auto',
@@ -493,7 +493,7 @@ function SuperAdmin({ user, onLogout }) {
                     <>
                         {!loading && (
                             <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 2, mb: 3 }}>
-                                <StatCard title="Negocios" value={stats.total} icon="🏪" color="#6366f1" />
+                                <StatCard title="Negocios" value={stats.total} icon="🏪" color="#004ac6" />
                                 <StatCard title="Con WhatsApp" value={stats.withWhatsapp} icon="💬" color="#10b981" />
                                 <StatCard title="Productos" value={stats.totalProducts} icon="📦" color="#f59e0b" />
                             </Box>
@@ -527,16 +527,16 @@ function SuperAdmin({ user, onLogout }) {
                                                 textTransform: 'none',
                                                 px: 2.5,
                                                 py: 1,
-                                                background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
+                                                background: 'linear-gradient(135deg, #004ac6, #2563eb)',
                                                 boxShadow: isDark
-                                                    ? '0 4px 16px rgba(99,102,241,0.3)'
-                                                    : '0 4px 16px rgba(99,102,241,0.2)',
+                                                    ? '0 4px 16px rgba(0,74,198,0.3)'
+                                                    : '0 4px 16px rgba(0,74,198,0.2)',
                                                 transition: 'all 0.25s ease',
                                                 '&:hover': {
                                                     background: 'linear-gradient(135deg, #5558e6, #7c4fe0)',
                                                     boxShadow: isDark
-                                                        ? '0 6px 24px rgba(99,102,241,0.4)'
-                                                        : '0 6px 24px rgba(99,102,241,0.25)',
+                                                        ? '0 6px 24px rgba(0,74,198,0.4)'
+                                                        : '0 6px 24px rgba(0,74,198,0.25)',
                                                     transform: 'translateY(-1px)',
                                                 },
                                             }}
@@ -570,8 +570,8 @@ function SuperAdmin({ user, onLogout }) {
                                                 overflow: 'hidden',
                                                 borderRadius: '14px',
                                                 border: isDark
-                                                    ? '1px solid rgba(129,140,248,0.1)'
-                                                    : '1px solid rgba(99,102,241,0.08)',
+                                                    ? '1px solid rgba(180,197,255,0.1)'
+                                                    : '1px solid rgba(0,74,198,0.08)',
                                                 display: { xs: 'none', md: 'block' },
                                                 background: 'transparent',
                                                 boxShadow: 'none',
@@ -605,8 +605,8 @@ function SuperAdmin({ user, onLogout }) {
                                                                 cursor: 'default',
                                                                 '&:hover': {
                                                                     background: isDark
-                                                                        ? 'rgba(99,102,241,0.06)'
-                                                                        : 'rgba(99,102,241,0.03)',
+                                                                        ? 'rgba(0,74,198,0.06)'
+                                                                        : 'rgba(0,74,198,0.03)',
                                                                     '& td': { color: 'text.primary' },
                                                                 },
                                                                 '&:last-child td': {
@@ -638,7 +638,7 @@ function SuperAdmin({ user, onLogout }) {
                                                                         textDecoration: 'none',
                                                                         fontWeight: 600,
                                                                         fontSize: '0.875rem',
-                                                                        fontFamily: 'monospace',
+                                                                        fontFamily: '"Inter", "Helvetica", "Arial", sans-serif',
                                                                         px: 1,
                                                                         py: 0.3,
                                                                         borderRadius: '6px',
@@ -646,8 +646,8 @@ function SuperAdmin({ user, onLogout }) {
                                                                         '&:hover': {
                                                                             textDecoration: 'underline',
                                                                             background: isDark
-                                                                                ? 'rgba(99,102,241,0.1)'
-                                                                                : 'rgba(99,102,241,0.06)',
+                                                                                ? 'rgba(0,74,198,0.1)'
+                                                                                : 'rgba(0,74,198,0.06)',
                                                                         },
                                                                     }}
                                                                 >
@@ -685,7 +685,7 @@ function SuperAdmin({ user, onLogout }) {
                                                                             borderRadius: '10px',
                                                                             textTransform: 'none',
                                                                             transition: 'all 0.2s ease',
-                                                                            '&:hover': { color: 'primary.main', background: isDark ? 'rgba(99,102,241,0.1)' : 'rgba(99,102,241,0.06)' },
+                                                                            '&:hover': { color: 'primary.main', background: isDark ? 'rgba(0,74,198,0.1)' : 'rgba(0,74,198,0.06)' },
                                                                         }}
                                                                     >
                                                                         Ver
@@ -740,7 +740,7 @@ function SuperAdmin({ user, onLogout }) {
                                                     variant="outlined"
                                                     sx={{
                                                         borderRadius: '14px',
-                                                        border: isDark ? '1px solid rgba(129,140,248,0.1)' : '1px solid rgba(99,102,241,0.08)',
+                                                        border: isDark ? '1px solid rgba(180,197,255,0.1)' : '1px solid rgba(0,74,198,0.08)',
                                                         animation: 'fade-in-up 0.3s ease',
                                                         animationDelay: `${index * 0.05}s`,
                                                         animationFillMode: 'backwards',
@@ -748,8 +748,8 @@ function SuperAdmin({ user, onLogout }) {
                                                         '&:hover': {
                                                             borderColor: 'primary.main',
                                                             boxShadow: isDark
-                                                                ? '0 4px 16px rgba(99,102,241,0.15)'
-                                                                : '0 4px 16px rgba(99,102,241,0.08)',
+                                                                ? '0 4px 16px rgba(0,74,198,0.15)'
+                                                                : '0 4px 16px rgba(0,74,198,0.08)',
                                                         },
                                                     }}
                                                 >
@@ -763,7 +763,7 @@ function SuperAdmin({ user, onLogout }) {
                                                             />
                                                         </Box>
                                                         <Box sx={{ display: 'flex', gap: 1.5, mb: 1.5, fontSize: '0.8125rem', color: 'text.secondary' }}>
-                                                            <Typography component="span" sx={{ fontFamily: 'monospace', fontWeight: 600, color: 'primary.main' }}>/{store.slug}</Typography>
+                                                            <Typography component="span" sx={{ fontFamily: '"Inter", "Helvetica", "Arial", sans-serif', fontWeight: 600, color: 'primary.main' }}>/{store.slug}</Typography>
                                                             <Typography component="span">{store.whatsapp || 'Sin WhatsApp'}</Typography>
                                                         </Box>
                                                         <Box sx={{ display: 'flex', gap: 0.75 }}>
@@ -816,8 +816,8 @@ function SuperAdmin({ user, onLogout }) {
                                             borderRadius: '12px',
                                             fontWeight: 700,
                                             textTransform: 'none',
-                                            background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
-                                            boxShadow: isDark ? '0 4px 16px rgba(99,102,241,0.3)' : '0 4px 16px rgba(99,102,241,0.2)',
+                                            background: 'linear-gradient(135deg, #004ac6, #2563eb)',
+                                            boxShadow: isDark ? '0 4px 16px rgba(0,74,198,0.3)' : '0 4px 16px rgba(0,74,198,0.2)',
                                             transition: 'all 0.25s ease',
                                             '&:hover': {
                                                 background: 'linear-gradient(135deg, #5558e6, #7c4fe0)',
@@ -834,9 +834,9 @@ function SuperAdmin({ user, onLogout }) {
                         {!loading && metrics.length > 0 && (
                             <>
                                 <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 2, mb: 3 }}>
-                                    <StatCard title="Pedidos Totales" value={metricStats.totalOrders} icon="📋" color="#6366f1" subtitle="Histórico" />
+                                    <StatCard title="Pedidos Totales" value={metricStats.totalOrders} icon="📋" color="#004ac6" subtitle="Histórico" />
                                     <StatCard title="Pedidos Hoy" value={metricStats.ordersToday} icon="📊" color="#10b981" subtitle="Este día" />
-                                    <StatCard title={`Pedidos ${getPeriodLabel()}`} value={metricStats.ordersInPeriod} icon="📆" color="#8b5cf6" subtitle="Periodo filtrado" />
+                                    <StatCard title={`Pedidos ${getPeriodLabel()}`} value={metricStats.ordersInPeriod} icon="📆" color="#2563eb" subtitle="Periodo filtrado" />
                                     <StatCard title="Ingresos Totales" value={`$${metricStats.totalRevenue.toLocaleString()}`} icon="💰" color="#f59e0b" subtitle="Sin cancelados" />
                                     <StatCard title={`Ingresos ${getPeriodLabel()}`} value={`$${metricStats.revenueInPeriod.toLocaleString()}`} icon="📈" color="#1abc9c" subtitle="Periodo filtrado" />
                                     <StatCard title="Negocios Activos" value={metricStats.activeStores} icon="✅" color="#3b82f6" subtitle="Con actividad" />
@@ -863,19 +863,19 @@ function SuperAdmin({ user, onLogout }) {
                                                 animationDelay: `${index * 0.05}s`,
                                                 animationFillMode: 'backwards',
                                                 border: isDark
-                                                    ? '1px solid rgba(129,140,248,0.1)'
-                                                    : '1px solid rgba(99,102,241,0.08)',
+                                                    ? '1px solid rgba(180,197,255,0.1)'
+                                                    : '1px solid rgba(0,74,198,0.08)',
                                                 boxShadow: isExpanded
-                                                    ? (isDark ? '0 4px 24px rgba(99,102,241,0.15)' : '0 4px 24px rgba(99,102,241,0.08)')
+                                                    ? (isDark ? '0 4px 24px rgba(0,74,198,0.15)' : '0 4px 24px rgba(0,74,198,0.08)')
                                                     : (isDark ? '0 2px 8px rgba(0,0,0,0.15)' : '0 2px 8px rgba(0,0,0,0.04)'),
                                                 transition: 'all 0.25s ease',
                                                 '&::before': { display: 'none' },
                                                 background: isDark ? 'rgba(20,20,42,0.95)' : 'rgba(255,255,255,0.95)',
                                                 '&.Mui-expanded': {
-                                                    boxShadow: isDark ? '0 4px 24px rgba(99,102,241,0.15)' : '0 4px 24px rgba(99,102,241,0.08)',
+                                                    boxShadow: isDark ? '0 4px 24px rgba(0,74,198,0.15)' : '0 4px 24px rgba(0,74,198,0.08)',
                                                 },
                                                 '&:hover': {
-                                                    border: isDark ? '1px solid rgba(129,140,248,0.2)' : '1px solid rgba(99,102,241,0.15)',
+                                                    border: isDark ? '1px solid rgba(180,197,255,0.2)' : '1px solid rgba(0,74,198,0.15)',
                                                 },
                                                 '& .MuiAccordionSummary-root': {
                                                     borderLeft: '3px solid',
@@ -898,7 +898,7 @@ function SuperAdmin({ user, onLogout }) {
                                                             width: 36,
                                                             height: 36,
                                                             borderRadius: '10px',
-                                                            background: isDark ? 'rgba(99,102,241,0.12)' : 'rgba(99,102,241,0.08)',
+                                                            background: isDark ? 'rgba(0,74,198,0.12)' : 'rgba(0,74,198,0.08)',
                                                             display: 'flex',
                                                             alignItems: 'center',
                                                             justifyContent: 'center',
@@ -973,7 +973,7 @@ function SuperAdmin({ user, onLogout }) {
                                                                 {[
                                                                     { key: 'PENDIENTE', label: 'Pendientes', color: '#f59e0b' },
                                                                     { key: 'CONFIRMADO', label: 'Confirmados', color: '#3b82f6' },
-                                                                    { key: 'EN_PREPARACION', label: 'En preparación', color: '#8b5cf6' },
+                                                                    { key: 'EN_PREPARACION', label: 'En preparación', color: '#2563eb' },
                                                                     { key: 'EN_CAMINO', label: 'En camino', color: '#10b981' },
                                                                     { key: 'ENTREGADO', label: 'Entregados', color: '#22c55e' },
                                                                     { key: 'CANCELADO', label: 'Cancelados', color: '#ef4444' },
@@ -1078,17 +1078,17 @@ function SuperAdmin({ user, onLogout }) {
                         borderRadius: '20px',
                         background: isDark ? 'rgba(10, 10, 28, 0.95)' : 'rgba(255, 255, 255, 0.95)',
                         backdropFilter: 'blur(40px) saturate(200%)',
-                        border: isDark ? '1px solid rgba(129, 140, 248, 0.15)' : '1px solid rgba(99, 102, 241, 0.12)',
+                        border: isDark ? '1px solid rgba(180, 197, 255, 0.15)' : '1px solid rgba(0, 74, 198, 0.12)',
                         boxShadow: isDark
-                            ? '0 24px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(129,140,248,0.08)'
-                            : '0 24px 80px rgba(99,102,241,0.12), 0 0 0 1px rgba(99,102,241,0.05)',
+                            ? '0 24px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(180,197,255,0.08)'
+                            : '0 24px 80px rgba(0,74,198,0.12), 0 0 0 1px rgba(0,74,198,0.05)',
                     },
                 }}
             >
                 <DialogTitle sx={{
                     fontWeight: 800,
                     fontSize: '1.25rem',
-                    fontFamily: '"DM Serif Display", serif',
+                    fontFamily: '"Inter", "Helvetica", "Arial", sans-serif',
                     pt: 3,
                     px: 3,
                     display: 'flex',
@@ -1099,7 +1099,7 @@ function SuperAdmin({ user, onLogout }) {
                         width: 36,
                         height: 36,
                         borderRadius: '10px',
-                        background: isDark ? 'rgba(99,102,241,0.15)' : 'rgba(99,102,241,0.1)',
+                        background: isDark ? 'rgba(0,74,198,0.15)' : 'rgba(0,74,198,0.1)',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
@@ -1134,8 +1134,8 @@ function SuperAdmin({ user, onLogout }) {
                             textTransform: 'none',
                             fontWeight: 700,
                             py: 1.1,
-                            background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
-                            boxShadow: isDark ? '0 4px 16px rgba(99,102,241,0.3)' : '0 4px 16px rgba(99,102,241,0.2)',
+                            background: 'linear-gradient(135deg, #004ac6, #2563eb)',
+                            boxShadow: isDark ? '0 4px 16px rgba(0,74,198,0.3)' : '0 4px 16px rgba(0,74,198,0.2)',
                             '&:hover': {
                                 background: 'linear-gradient(135deg, #5558e6, #7c4fe0)',
                             },
@@ -1156,17 +1156,17 @@ function SuperAdmin({ user, onLogout }) {
                         borderRadius: '20px',
                         background: isDark ? 'rgba(10, 10, 28, 0.95)' : 'rgba(255, 255, 255, 0.95)',
                         backdropFilter: 'blur(40px) saturate(200%)',
-                        border: isDark ? '1px solid rgba(129, 140, 248, 0.15)' : '1px solid rgba(99, 102, 241, 0.12)',
+                        border: isDark ? '1px solid rgba(180, 197, 255, 0.15)' : '1px solid rgba(0, 74, 198, 0.12)',
                         boxShadow: isDark
-                            ? '0 24px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(129,140,248,0.08)'
-                            : '0 24px 80px rgba(99,102,241,0.12), 0 0 0 1px rgba(99,102,241,0.05)',
+                            ? '0 24px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(180,197,255,0.08)'
+                            : '0 24px 80px rgba(0,74,198,0.12), 0 0 0 1px rgba(0,74,198,0.05)',
                     },
                 }}
             >
                 <DialogTitle sx={{
                     fontWeight: 800,
                     fontSize: '1.25rem',
-                    fontFamily: '"DM Serif Display", serif',
+                    fontFamily: '"Inter", "Helvetica", "Arial", sans-serif',
                     pt: 3,
                     px: 3,
                     display: 'flex',
@@ -1177,7 +1177,7 @@ function SuperAdmin({ user, onLogout }) {
                         width: 36,
                         height: 36,
                         borderRadius: '10px',
-                        background: isDark ? 'rgba(99,102,241,0.15)' : 'rgba(99,102,241,0.1)',
+                        background: isDark ? 'rgba(0,74,198,0.15)' : 'rgba(0,74,198,0.1)',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
@@ -1212,8 +1212,8 @@ function SuperAdmin({ user, onLogout }) {
                             textTransform: 'none',
                             fontWeight: 700,
                             py: 1.1,
-                            background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
-                            boxShadow: isDark ? '0 4px 16px rgba(99,102,241,0.3)' : '0 4px 16px rgba(99,102,241,0.2)',
+                            background: 'linear-gradient(135deg, #004ac6, #2563eb)',
+                            boxShadow: isDark ? '0 4px 16px rgba(0,74,198,0.3)' : '0 4px 16px rgba(0,74,198,0.2)',
                             '&:hover': {
                                 background: 'linear-gradient(135deg, #5558e6, #7c4fe0)',
                             },

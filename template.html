@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+
+<html lang="es">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Catálogo Global</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-primary-fixed": "#00174b",
+                        "secondary-fixed": "#d3e4fe",
+                        "on-secondary": "#ffffff",
+                        "on-secondary-container": "#54647a",
+                        "surface-container-highest": "#e0e3e5",
+                        "surface": "#f7f9fb",
+                        "on-tertiary-fixed-variant": "#7d2d00",
+                        "surface-container-high": "#e6e8ea",
+                        "surface-variant": "#e0e3e5",
+                        "surface-bright": "#f7f9fb",
+                        "outline-variant": "#c3c6d7",
+                        "background": "#f7f9fb",
+                        "secondary": "#505f76",
+                        "on-tertiary": "#ffffff",
+                        "inverse-primary": "#b4c5ff",
+                        "surface-container": "#eceef0",
+                        "error": "#ba1a1a",
+                        "on-primary-container": "#eeefff",
+                        "tertiary-fixed-dim": "#ffb596",
+                        "surface-container-lowest": "#ffffff",
+                        "primary-fixed": "#dbe1ff",
+                        "tertiary": "#943700",
+                        "surface-tint": "#0053db",
+                        "primary": "#004ac6",
+                        "on-surface": "#191c1e",
+                        "outline": "#737686",
+                        "error-container": "#ffdad6",
+                        "primary-fixed-dim": "#b4c5ff",
+                        "tertiary-container": "#bc4800",
+                        "on-error": "#ffffff",
+                        "secondary-container": "#d0e1fb",
+                        "inverse-surface": "#2d3133",
+                        "on-secondary-fixed-variant": "#38485d",
+                        "on-error-container": "#93000a",
+                        "on-background": "#191c1e",
+                        "surface-dim": "#d8dadc",
+                        "secondary-fixed-dim": "#b7c8e1",
+                        "primary-container": "#2563eb",
+                        "tertiary-fixed": "#ffdbcd",
+                        "inverse-on-surface": "#eff1f3",
+                        "on-primary": "#ffffff",
+                        "on-tertiary-container": "#ffede6",
+                        "surface-container-low": "#f2f4f6",
+                        "on-surface-variant": "#434655",
+                        "on-tertiary-fixed": "#360f00",
+                        "on-secondary-fixed": "#0b1c30",
+                        "on-primary-fixed-variant": "#003ea8"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "stack-lg": "24px",
+                        "stack-sm": "8px",
+                        "stack-md": "16px",
+                        "gutter": "16px",
+                        "unit": "4px",
+                        "container-padding": "24px"
+                    },
+                    "fontFamily": {
+                        "headline-lg-mobile": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "label-md": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "display": ["Inter"],
+                        "body-md": ["Inter"]
+                    },
+                    "fontSize": {
+                        "headline-lg-mobile": ["20px", { "lineHeight": "28px", "fontWeight": "600" }],
+                        "headline-md": ["20px", { "lineHeight": "28px", "fontWeight": "600" }],
+                        "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600" }],
+                        "headline-lg": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "display": ["36px", { "lineHeight": "44px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+    <style>
+        body {
+            min-height: max(884px, 100dvh);
+        }
+    </style>
+</head>
+
+<body class="bg-background text-on-background min-h-screen flex flex-col">
+    <header
+        class="bg-surface-container-lowest text-primary font-headline-md text-headline-md w-full top-0 sticky border-b border-outline-variant hover:bg-surface-container cursor-pointer active:opacity-80 flex items-center justify-between px-container-padding py-stack-md w-full max-w-full z-50">
+        <div class="flex items-center gap-stack-md">
+            <span class="material-symbols-outlined" data-icon="menu">menu</span>
+            <span class="font-display text-display text-primary">Global Catalog</span>
+        </div>
+        <div class="flex items-center gap-stack-md text-secondary">
+            <span class="material-symbols-outlined hover:text-primary transition-colors">search</span>
+            <div class="relative hover:text-primary transition-colors">
+                <span class="material-symbols-outlined" data-icon="shopping_cart">shopping_cart</span>
+                <span
+                    class="absolute -top-2 -right-2 bg-error text-on-error font-label-md text-label-md rounded-full w-5 h-5 flex items-center justify-center">3</span>
+            </div>
+        </div>
+    </header>
+    <div class="flex flex-1">
+        <aside
+            class="bg-surface text-primary font-body-md text-body-md w-[280px] h-screen fixed left-0 top-0 border-r border-outline-variant flex flex-col gap-unit p-stack-md overflow-y-auto hidden md:flex mt-[80px] z-40">
+            <h2 class="font-headline-lg text-headline-lg text-on-surface mb-stack-md">Categories</h2>
+            <nav class="flex flex-col gap-unit">
+                <a class="bg-secondary-container text-on-secondary-container font-semibold rounded-lg hover:bg-surface-container-high duration-200 ease-in-out p-stack-sm flex items-center gap-stack-sm"
+                    href="#">
+                    <span class="material-symbols-outlined" data-icon="grid_view">grid_view</span> All Products
+                </a>
+                <a class="text-secondary hover:bg-surface-container-low hover:bg-surface-container-high duration-200 ease-in-out p-stack-sm flex items-center gap-stack-sm rounded-lg"
+                    href="#">
+                    <span class="material-symbols-outlined" data-icon="devices">devices</span> Electronics
+                </a>
+                <a class="text-secondary hover:bg-surface-container-low hover:bg-surface-container-high duration-200 ease-in-out p-stack-sm flex items-center gap-stack-sm rounded-lg"
+                    href="#">
+                    <span class="material-symbols-outlined" data-icon="home">home</span> Home &amp; Living
+                </a>
+                <a class="text-secondary hover:bg-surface-container-low hover:bg-surface-container-high duration-200 ease-in-out p-stack-sm flex items-center gap-stack-sm rounded-lg"
+                    href="#">
+                    <span class="material-symbols-outlined" data-icon="apparel">apparel</span> Fashion
+                </a>
+                <a class="text-secondary hover:bg-surface-container-low hover:bg-surface-container-high duration-200 ease-in-out p-stack-sm flex items-center gap-stack-sm rounded-lg"
+                    href="#">
+                    <span class="material-symbols-outlined" data-icon="sell">sell</span> Sale
+                </a>
+            </nav>
+        </aside>
+        <main class="flex-1 md:ml-[280px] p-container-padding flex flex-col gap-stack-lg">
+            <div class="flex gap-stack-sm overflow-x-auto pb-2 md:hidden">
+                <button
+                    class="bg-primary-container text-on-primary-container font-label-md text-label-md px-4 py-2 rounded-full whitespace-nowrap">All
+                    Products</button>
+                <button
+                    class="bg-surface-container text-on-surface-variant font-label-md text-label-md px-4 py-2 rounded-full border border-outline-variant whitespace-nowrap">Electronics</button>
+                <button
+                    class="bg-surface-container text-on-surface-variant font-label-md text-label-md px-4 py-2 rounded-full border border-outline-variant whitespace-nowrap">Home
+                    &amp; Living</button>
+                <button
+                    class="bg-surface-container text-on-surface-variant font-label-md text-label-md px-4 py-2 rounded-full border border-outline-variant whitespace-nowrap">Fashion</button>
+            </div>
+            <section class="relative w-full h-64 rounded-xl overflow-hidden mb-stack-lg">
+                <img alt="Promotional Banner" class="absolute inset-0 w-full h-full object-cover"
+                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuACls8iZ0T1trH9AfEW-wUvaP193D-YRRUREpou93P6SfLgL2Xd0D1FHdGuN_s8IkbYNCpegX6Hkc2Zqg93ebzRFbCbIjjL1adr2Kv8Smi1nFJ8ShYW7jDHely8mtElVa8w4kqjWxHbWnt8YsSW_Bd9lkXAVpzqxYUnS9y4STknBD0PQgzaz8d5lop5l3O8l-xrarw1vao6y1u9wdcdKXPI7_7B3cIWzyi083FxnC-O5_2bUC4xCHw" />
+                <div class="absolute inset-0 bg-black/40 flex flex-col justify-center p-container-padding">
+                    <h2 class="font-display text-display text-white mb-unit">Ofertas de Temporada</h2>
+                    <p class="font-body-lg text-body-lg text-white/90 mb-stack-md">Hasta 40% de descuento en productos
+                        seleccionados</p>
+                    <button
+                        class="bg-primary text-on-primary font-label-md text-label-md py-2 px-6 rounded-lg w-fit hover:bg-primary-fixed-variant transition-colors">
+                        Ver Ofertas
+                    </button>
+                </div>
+            </section>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-gutter">
+                <div
+                    class="bg-surface-container-lowest rounded-xl border border-outline-variant overflow-hidden flex flex-col group hover:shadow-md transition-shadow duration-300">
+                    <div class="relative h-48 bg-surface-container-low">
+                        <img class="w-full h-full object-cover"
+                            data-alt="A sleek, modern wireless headphone resting on a minimalist white desk. Soft, natural lighting from a nearby window creates gentle shadows. High-resolution product photography style with a professional, clean corporate aesthetic. Light mode color palette featuring crisp whites and subtle cool grays."
+                            src="https://lh3.googleusercontent.com/aida-public/AB6AXuAzojGRq9oveuj4mOkh1FgCkRD3T4_b9CQ4osW4V_zn8kx01jJrYfAEaKuCXR1FTgoliO6dfS0alIJ5yzAaRLRj5hY0gbNZUUDFV1MSSjqgkhLUllmhyihgTyc2zL7tILFlCCqPBQ4gje3JyuL1HyuDOSVrgJyPuL_YQZbWiywUMVLcO1nqoAwZiNTkjPSEusm3ZxKH2AdYTR5P1QAXf7vvRyIFouJlW3Xk2cCvbfibrKwYak-4BO4" />
+                    </div>
+                    <div class="p-stack-md flex flex-col flex-1">
+                        <div class="flex justify-between items-start mb-unit">
+                            <h3 class="font-headline-md text-headline-md text-on-surface line-clamp-2">Auriculares
+                                Inalámbricos Pro</h3>
+                            <span class="font-headline-md text-headline-md text-primary ml-2">$299</span>
+                        </div>
+                        <div class="flex items-center gap-1 mb-stack-md">
+                            <span class="material-symbols-outlined text-tertiary-container text-sm"
+                                style="font-variation-settings: 'FILL' 1;">star</span>
+                            <span class="font-label-md text-label-md text-secondary">4.8 (124)</span>
+                        </div>
+                        <button
+                            class="mt-auto bg-primary text-on-primary font-label-md text-label-md py-2 px-4 rounded-lg w-full flex items-center justify-center gap-2 hover:bg-primary-fixed-variant transition-colors">
+                            <span class="material-symbols-outlined text-sm">add_shopping_cart</span> Añadir al carrito
+                        </button>
+                    </div>
+                </div>
+                <div
+                    class="bg-surface-container-lowest rounded-xl border border-outline-variant overflow-hidden flex flex-col group hover:shadow-md transition-shadow duration-300">
+                    <div class="relative h-48 bg-surface-container-low">
+                        <img class="w-full h-full object-cover"
+                            data-alt="A premium smart watch with a metal band displayed on a smooth, slightly reflective surface. Studio lighting highlights the polished metal and crisp digital display. Clean, minimalist composition typical of high-end consumer electronics advertising. Corporate modern style."
+                            src="https://lh3.googleusercontent.com/aida-public/AB6AXuAEEjSFRct4fDe-oMDtcyiLWC2n8KeBVW3c2eI3_W_bFuLggqBvZmCmLim5KizuLyIOy6CjUVNgT_Ts9k1mHpd6RryB53IBkpoj7pFPbYO1vTBq9I_mpm3_CjoQL9ZttrypRz2vaNkigdVnuoUzPWasWWrEFVAf9819yEmQwhfRz8BT8IX6l3pjyTP1fMvFtI4Ds1VxXj81UDpbggIOARoOrOFtHIJe1xkzOq3HUJLKGw-SN1qywZE" />
+                    </div>
+                    <div class="p-stack-md flex flex-col flex-1">
+                        <div class="flex justify-between items-start mb-unit">
+                            <h3 class="font-headline-md text-headline-md text-on-surface line-clamp-2">Reloj Inteligente
+                                Serie 5</h3>
+                            <span class="font-headline-md text-headline-md text-primary ml-2">$199</span>
+                        </div>
+                        <div class="flex items-center gap-1 mb-stack-md">
+                            <span class="material-symbols-outlined text-tertiary-container text-sm"
+                                style="font-variation-settings: 'FILL' 1;">star</span>
+                            <span class="font-label-md text-label-md text-secondary">4.5 (89)</span>
+                        </div>
+                        <button
+                            class="mt-auto bg-primary text-on-primary font-label-md text-label-md py-2 px-4 rounded-lg w-full flex items-center justify-center gap-2 hover:bg-primary-fixed-variant transition-colors">
+                            <span class="material-symbols-outlined text-sm">add_shopping_cart</span> Añadir al carrito
+                        </button>
+                    </div>
+                </div>
+                <div
+                    class="bg-surface-container-lowest rounded-xl border border-outline-variant overflow-hidden flex flex-col group hover:shadow-md transition-shadow duration-300">
+                    <div class="relative h-48 bg-surface-container-low">
+                        <img class="w-full h-full object-cover"
+                            data-alt="A modern, ergonomic office chair in dark grey fabric, positioned against a seamless light grey background. Bright, even lighting showcases the chair's texture and adjustability features. Professional office furniture photography with a minimalist corporate vibe."
+                            src="https://lh3.googleusercontent.com/aida-public/AB6AXuA6-WK0ijMHT6UJafmVOdglqq6Rtr6TQ-HXQSnX3irfMFj8DRW0Nlx8qcecAOqbJtrG_5z4SWHjKNjgbfCGXiEUapTXTwtHAhcUEFZQVxZoJlHrmRkUVsa8H_j05CRqkU7HH071MMmuV3VQFMw_WS3e55g2N4AEn8H4wvFm91YvY-HMCfvH9XisB0lMrVbhYQ3vCIjWp3FXX9RnpZ3h_tfh6asKowhmQWuqPqlv51QhAO0zJ93jiNI" />
+                    </div>
+                    <div class="p-stack-md flex flex-col flex-1">
+                        <div class="flex justify-between items-start mb-unit">
+                            <h3 class="font-headline-md text-headline-md text-on-surface line-clamp-2">Silla Ergonómica
+                                de Oficina</h3>
+                            <span class="font-headline-md text-headline-md text-primary ml-2">$450</span>
+                        </div>
+                        <div class="flex items-center gap-1 mb-stack-md">
+                            <span class="material-symbols-outlined text-tertiary-container text-sm"
+                                style="font-variation-settings: 'FILL' 1;">star</span>
+                            <span class="font-label-md text-label-md text-secondary">4.9 (42)</span>
+                        </div>
+                        <button
+                            class="mt-auto bg-primary text-on-primary font-label-md text-label-md py-2 px-4 rounded-lg w-full flex items-center justify-center gap-2 hover:bg-primary-fixed-variant transition-colors">
+                            <span class="material-symbols-outlined text-sm">add_shopping_cart</span> Añadir al carrito
+                        </button>
+                    </div>
+                </div>
+                <div
+                    class="bg-surface-container-lowest rounded-xl border border-outline-variant overflow-hidden flex flex-col group hover:shadow-md transition-shadow duration-300">
+                    <div class="relative h-48 bg-surface-container-low">
+                        <img class="w-full h-full object-cover"
+                            data-alt="A stylish, minimalist ceramic coffee mug sitting on a light wooden table next to a subtle green plant. Soft morning light casts long, gentle shadows. Lifestyle product photography designed to evoke calm and sophistication in a modern corporate setting."
+                            src="https://lh3.googleusercontent.com/aida-public/AB6AXuBYqZJh7Coy1eUG5EdvetnB2QUsfRkAAexn9CDPwe-rE5V9COnT9gnrH3hGhdqsYifHINeqvIiF_hB7U6q-CEHTbGMrbgEP2LPR74HTWIP8bcxP62C-iStURM9keoC92dj-5yqbIUaNbGmFZj2yrLyvUq5Me6fN0sZACpbo4wyTbTGdoqnRoJ8XncsgUu9NYFGtnEUaeT5IFZQhFJYkmI9wPw1JyvTfSby5aa9TsRdmyo-CM01L0ZA" />
+                    </div>
+                    <div class="p-stack-md flex flex-col flex-1">
+                        <div class="flex justify-between items-start mb-unit">
+                            <h3 class="font-headline-md text-headline-md text-on-surface line-clamp-2">Taza de Cerámica
+                                Artesanal</h3>
+                            <span class="font-headline-md text-headline-md text-primary ml-2">$24</span>
+                        </div>
+                        <div class="flex items-center gap-1 mb-stack-md">
+                            <span class="material-symbols-outlined text-tertiary-container text-sm"
+                                style="font-variation-settings: 'FILL' 1;">star</span>
+                            <span class="font-label-md text-label-md text-secondary">4.2 (18)</span>
+                        </div>
+                        <button
+                            class="mt-auto bg-primary text-on-primary font-label-md text-label-md py-2 px-4 rounded-lg w-full flex items-center justify-center gap-2 hover:bg-primary-fixed-variant transition-colors">
+                            <span class="material-symbols-outlined text-sm">add_shopping_cart</span> Añadir al carrito
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    <footer
+        class="bg-surface-container-low text-secondary font-label-md text-label-md w-full mt-auto border-t border-outline-variant flex flex-col md:flex-row justify-between items-center px-container-padding py-stack-lg gap-stack-md z-50 relative">
+        <div class="font-headline-md text-headline-md text-on-surface mb-stack-sm md:mb-0">
+            © 2024 Product Catalog. All rights reserved.
+        </div>
+        <nav class="flex flex-wrap justify-center gap-stack-md">
+            <a class="text-primary underline hover:text-primary transition-colors cursor-pointer" href="#">Privacy
+                Policy</a>
+            <a class="text-secondary hover:text-primary transition-colors cursor-pointer" href="#">Terms of Service</a>
+            <a class="text-secondary hover:text-primary transition-colors cursor-pointer" href="#">Help Center</a>
+            <a class="text-secondary hover:text-primary transition-colors cursor-pointer" href="#">Contact Us</a>
+        </nav>
+    </footer>
+</body>
+
+</html>

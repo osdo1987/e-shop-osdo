@@ -102,8 +102,8 @@ function Settings({ user, onLogout, darkMode, setDarkMode }) {
             fontSize: '0.95rem',
             '&.Mui-focused': {
                 boxShadow: isDark
-                    ? '0 0 0 4px rgba(129, 140, 248, 0.18), 0 0 20px rgba(129, 140, 248, 0.12)'
-                    : '0 0 0 4px rgba(99, 102, 241, 0.15), 0 0 16px rgba(99, 102, 241, 0.08)',
+                    ? '0 0 0 4px rgba(180, 197, 255, 0.18), 0 0 20px rgba(180, 197, 255, 0.12)'
+                    : '0 0 0 4px rgba(0, 74, 198, 0.15), 0 0 16px rgba(0, 74, 198, 0.08)',
             },
         },
     }
@@ -136,8 +136,8 @@ function Settings({ user, onLogout, darkMode, setDarkMode }) {
                             <Box sx={{
                                 display: 'flex', alignItems: 'center', gap: 1, mb: 2.5, p: 1.5,
                                 borderRadius: '12px',
-                                background: isDark ? 'rgba(99,102,241,0.06)' : 'rgba(99,102,241,0.04)',
-                                border: isDark ? '1px solid rgba(129,140,248,0.12)' : '1px solid rgba(99,102,241,0.10)',
+                                background: isDark ? 'rgba(0,74,198,0.06)' : 'rgba(0,74,198,0.04)',
+                                border: isDark ? '1px solid rgba(180,197,255,0.12)' : '1px solid rgba(0,74,198,0.10)',
                             }}>
                                 <LinkIcon sx={{ fontSize: 16, color: 'primary.main' }} />
                                 <Typography variant="body2" sx={{ fontWeight: 500 }}>
@@ -191,15 +191,15 @@ function Settings({ user, onLogout, darkMode, setDarkMode }) {
                                 component="label"
                                 sx={{
                                     border: '2px dashed',
-                                    borderColor: isDark ? 'rgba(129,140,248,0.2)' : 'rgba(99,102,241,0.15)',
+                                    borderColor: isDark ? 'rgba(180,197,255,0.2)' : 'rgba(0,74,198,0.15)',
                                     borderRadius: '14px',
                                     p: 3, textAlign: 'center', cursor: 'pointer', display: 'block',
                                     color: 'text.disabled', fontSize: '0.875rem',
-                                    background: isDark ? 'rgba(99,102,241,0.03)' : 'rgba(99,102,241,0.02)',
+                                    background: isDark ? 'rgba(0,74,198,0.03)' : 'rgba(0,74,198,0.02)',
                                     transition: 'all 0.25s ease',
                                     '&:hover': {
                                         borderColor: 'primary.main',
-                                        background: isDark ? 'rgba(99,102,241,0.06)' : 'rgba(99,102,241,0.04)',
+                                        background: isDark ? 'rgba(0,74,198,0.06)' : 'rgba(0,74,198,0.04)',
                                     },
                                 }}
                             >
@@ -220,7 +220,7 @@ function Settings({ user, onLogout, darkMode, setDarkMode }) {
                                 <Box sx={{ mt: 1.5, display: 'flex', alignItems: 'center', gap: 1.5 }}>
                                     <Box component="img" src={logoUrl} alt="Preview logo" sx={{
                                         width: 56, height: 56, objectFit: 'cover', borderRadius: '12px',
-                                        border: isDark ? '1px solid rgba(129,140,248,0.15)' : '1px solid rgba(99,102,241,0.1)',
+                                        border: isDark ? '1px solid rgba(180,197,255,0.15)' : '1px solid rgba(0,74,198,0.1)',
                                     }} />
                                     <Button variant="outlined" size="small" onClick={() => setLogoUrl('')} sx={{ borderRadius: '10px' }}>
                                         Quitar imagen
@@ -233,13 +233,13 @@ function Settings({ user, onLogout, darkMode, setDarkMode }) {
             )}
 
             {/* Dark Mode Toggle */}
-            <Card sx={{ animation: 'fade-in-up 0.5s ease both', animationDelay: '0.1s', mb: 3, position: 'relative', overflow: 'visible', '&::before': { content: '""', position: 'absolute', top: 0, left: 0, right: 0, height: '3px', background: 'linear-gradient(90deg, #6366f1, #8b5cf6, #a78bfa)', borderRadius: '16px 16px 0 0' } }}>
+            <Card sx={{ animation: 'fade-in-up 0.5s ease both', animationDelay: '0.1s', mb: 3, position: 'relative', overflow: 'visible', '&::before': { content: '""', position: 'absolute', top: 0, left: 0, right: 0, height: '3px', background: 'linear-gradient(90deg, #004ac6, #2563eb, #5092f7)', borderRadius: '16px 16px 0 0' } }}>
                 <CardContent sx={{ p: { xs: 3, sm: 4 }, '&:last-child': { pb: { xs: 3, sm: 4 } } }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1 }}>
                         <Box sx={{
                             width: 36, height: 36, borderRadius: '10px',
-                            background: isDark ? 'rgba(129,140,248,0.15)' : 'rgba(99,102,241,0.10)',
-                            border: isDark ? '1px solid rgba(129,140,248,0.2)' : '1px solid rgba(99,102,241,0.15)',
+                            background: isDark ? 'rgba(180,197,255,0.15)' : 'rgba(0,74,198,0.10)',
+                            border: isDark ? '1px solid rgba(180,197,255,0.2)' : '1px solid rgba(0,74,198,0.15)',
                             display: 'flex', alignItems: 'center', justifyContent: 'center',
                         }}>
                             <PaletteIcon sx={{ fontSize: 18, color: 'primary.main' }} />
@@ -250,7 +250,7 @@ function Settings({ user, onLogout, darkMode, setDarkMode }) {
                         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                         py: 1.5, mt: 1,
                         borderRadius: '12px', px: 2,
-                        background: isDark ? 'rgba(99,102,241,0.04)' : 'rgba(99,102,241,0.03)',
+                        background: isDark ? 'rgba(0,74,198,0.04)' : 'rgba(0,74,198,0.03)',
                     }}>
                         <Box>
                             <Typography variant="body2" sx={{ fontWeight: 600 }}>Modo Oscuro</Typography>
@@ -284,7 +284,7 @@ function Settings({ user, onLogout, darkMode, setDarkMode }) {
                         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                         py: 1.5, mt: 1,
                         borderRadius: '12px', px: 2,
-                        background: isDark ? 'rgba(99,102,241,0.04)' : 'rgba(99,102,241,0.03)',
+                        background: isDark ? 'rgba(0,74,198,0.04)' : 'rgba(0,74,198,0.03)',
                     }}>
                         <Box>
                             <Typography variant="body2" sx={{ fontWeight: 600 }}>Contraseña</Typography>
@@ -318,8 +318,8 @@ function Settings({ user, onLogout, darkMode, setDarkMode }) {
                     </Box>
                     <Box sx={{
                         display: 'grid', gap: 1, p: 2, borderRadius: '12px',
-                        background: isDark ? 'rgba(99,102,241,0.04)' : 'rgba(99,102,241,0.03)',
-                        border: isDark ? '1px solid rgba(129,140,248,0.08)' : '1px solid rgba(99,102,241,0.06)',
+                        background: isDark ? 'rgba(0,74,198,0.04)' : 'rgba(0,74,198,0.03)',
+                        border: isDark ? '1px solid rgba(180,197,255,0.08)' : '1px solid rgba(0,74,198,0.06)',
                     }}>
                         {[
                             { label: 'Email', value: user?.email },

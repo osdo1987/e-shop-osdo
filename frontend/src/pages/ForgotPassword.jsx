@@ -65,15 +65,15 @@ function ForgotPassword() {
                 position: 'absolute', inset: 0, zIndex: 0,
                 background: isDark
                     ? `
-                        radial-gradient(ellipse 90% 70% at 10% 10%, rgba(99, 102, 241, 0.30) 0%, transparent 55%),
-                        radial-gradient(ellipse 70% 60% at 90% 20%, rgba(139, 92, 246, 0.25) 0%, transparent 50%),
+                        radial-gradient(ellipse 90% 70% at 10% 10%, rgba(0, 74, 198, 0.30) 0%, transparent 55%),
+                        radial-gradient(ellipse 70% 60% at 90% 20%, rgba(37, 99, 235, 0.25) 0%, transparent 50%),
                         radial-gradient(ellipse 60% 50% at 30% 90%, rgba(16, 185, 129, 0.12) 0%, transparent 50%),
                         radial-gradient(ellipse 50% 40% at 80% 70%, rgba(6, 182, 212, 0.10) 0%, transparent 45%),
                         #07071a
                     `
                     : `
-                        radial-gradient(ellipse 90% 70% at 10% 10%, rgba(99, 102, 241, 0.18) 0%, transparent 55%),
-                        radial-gradient(ellipse 70% 60% at 90% 20%, rgba(139, 92, 246, 0.14) 0%, transparent 50%),
+                        radial-gradient(ellipse 90% 70% at 10% 10%, rgba(0, 74, 198, 0.18) 0%, transparent 55%),
+                        radial-gradient(ellipse 70% 60% at 90% 20%, rgba(37, 99, 235, 0.14) 0%, transparent 50%),
                         radial-gradient(ellipse 60% 50% at 30% 90%, rgba(16, 185, 129, 0.08) 0%, transparent 50%),
                         radial-gradient(ellipse 50% 40% at 80% 70%, rgba(6, 182, 212, 0.06) 0%, transparent 45%),
                         #f6f6fe
@@ -83,7 +83,7 @@ function ForgotPassword() {
             {/* Giant floating orbs */}
             <Box sx={{
                 position: 'absolute', width: 600, height: 600, borderRadius: '50%',
-                background: 'radial-gradient(circle, rgba(99,102,241,0.28) 0%, transparent 60%)',
+                background: 'radial-gradient(circle, rgba(0,74,198,0.28) 0%, transparent 60%)',
                 top: '-18%', left: '-12%',
                 filter: 'blur(70px)',
                 animation: 'orb-float-1 20s ease-in-out infinite',
@@ -91,7 +91,7 @@ function ForgotPassword() {
             }} />
             <Box sx={{
                 position: 'absolute', width: 450, height: 450, borderRadius: '50%',
-                background: 'radial-gradient(circle, rgba(139,92,246,0.20) 0%, transparent 60%)',
+                background: 'radial-gradient(circle, rgba(37,99,235,0.20) 0%, transparent 60%)',
                 top: '45%', right: '-15%',
                 filter: 'blur(60px)',
                 animation: 'orb-float-2 18s ease-in-out infinite',
@@ -112,8 +112,8 @@ function ForgotPassword() {
             <Box sx={{
                 position: 'absolute', inset: 0, pointerEvents: 'none',
                 backgroundImage: isDark
-                    ? 'radial-gradient(circle, rgba(99,102,241,0.06) 1px, transparent 1px)'
-                    : 'radial-gradient(circle, rgba(99,102,241,0.07) 1px, transparent 1px)',
+                    ? 'radial-gradient(circle, rgba(0,74,198,0.06) 1px, transparent 1px)'
+                    : 'radial-gradient(circle, rgba(0,74,198,0.07) 1px, transparent 1px)',
                 backgroundSize: '32px 32px',
             }} />
 
@@ -126,7 +126,7 @@ function ForgotPassword() {
                     content: '""',
                     position: 'absolute', inset: -2,
                     borderRadius: '24px',
-                    background: `linear-gradient(135deg, #6366f1, #8b5cf6, #a78bfa, #10b981, #6366f1)`,
+                    background: `linear-gradient(135deg, #004ac6, #2563eb, #5092f7, #10b981, #004ac6)`,
                     backgroundSize: '400% 400%',
                     animation: 'gradient-rotate 6s ease infinite',
                     zIndex: -1, opacity: 0.5, filter: 'blur(1px)',
@@ -141,21 +141,21 @@ function ForgotPassword() {
                     backdropFilter: 'blur(40px) saturate(200%)',
                     WebkitBackdropFilter: 'blur(40px) saturate(200%)',
                     border: isDark
-                        ? '1px solid rgba(129, 140, 248, 0.20)'
-                        : '1px solid rgba(99, 102, 241, 0.15)',
+                        ? '1px solid rgba(180, 197, 255, 0.20)'
+                        : '1px solid rgba(0, 74, 198, 0.15)',
                     boxShadow: isDark
-                        ? '0 32px 80px rgba(0,0,0,0.7), 0 0 0 1px rgba(129,140,248,0.08), inset 0 1px 0 rgba(255,255,255,0.03)'
-                        : '0 32px 80px rgba(99,102,241,0.16), 0 0 0 1px rgba(99,102,241,0.05), inset 0 1px 0 rgba(255,255,255,0.5)',
+                        ? '0 32px 80px rgba(0,0,0,0.7), 0 0 0 1px rgba(180,197,255,0.08), inset 0 1px 0 rgba(255,255,255,0.03)'
+                        : '0 32px 80px rgba(0,74,198,0.16), 0 0 0 1px rgba(0,74,198,0.05), inset 0 1px 0 rgba(255,255,255,0.5)',
                 }}>
                     {/* Brand icon */}
                     <Box sx={{ display: 'flex', justifyContent: 'center', mb: 3 }}>
                         <Box sx={{
                             width: 64, height: 64, borderRadius: '18px',
-                            background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 40%, #a78bfa 70%, #c4b5fd 100%)',
+                            background: 'linear-gradient(135deg, #004ac6 0%, #2563eb 40%, #5092f7 70%, #7eb3ff 100%)',
                             backgroundSize: '200% auto',
                             animation: 'float 4s ease-in-out infinite, shimmer 3s linear infinite',
                             display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            boxShadow: '0 12px 40px rgba(99,102,241,0.55), 0 0 0 1px rgba(99,102,241,0.2)',
+                            boxShadow: '0 12px 40px rgba(0,74,198,0.55), 0 0 0 1px rgba(0,74,198,0.2)',
                         }}>
                             {sent
                                 ? <MarkEmailReadIcon sx={{ fontSize: 32, color: '#fff' }} />
@@ -168,8 +168,8 @@ function ForgotPassword() {
                         fontWeight: 400, textAlign: 'center', mb: 0.75,
                         fontSize: { xs: '1.625rem', sm: '2rem' },
                         background: isDark
-                            ? 'linear-gradient(135deg, #c7d2fe, #818cf8, #a78bfa)'
-                            : 'linear-gradient(135deg, #4f46e5, #6366f1, #8b5cf6)',
+                            ? 'linear-gradient(135deg, #dbe1ff, #b4c5ff, #5092f7)'
+                            : 'linear-gradient(135deg, #003ea8, #004ac6, #2563eb)',
                         WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
                         backgroundClip: 'text', letterSpacing: '-0.04em',
                     }}>
@@ -202,8 +202,8 @@ function ForgotPassword() {
                                             fontSize: '0.95rem',
                                             '&.Mui-focused': {
                                                 boxShadow: isDark
-                                                    ? '0 0 0 4px rgba(129, 140, 248, 0.18), 0 0 20px rgba(129, 140, 248, 0.12)'
-                                                    : '0 0 0 4px rgba(99, 102, 241, 0.15), 0 0 16px rgba(99, 102, 241, 0.08)',
+                                                    ? '0 0 0 4px rgba(180, 197, 255, 0.18), 0 0 20px rgba(180, 197, 255, 0.12)'
+                                                    : '0 0 0 4px rgba(0, 74, 198, 0.15), 0 0 16px rgba(0, 74, 198, 0.08)',
                                             },
                                         },
                                     }}

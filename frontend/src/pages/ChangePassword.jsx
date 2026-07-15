@@ -77,8 +77,8 @@ function ChangePassword({ user, onLogout }) {
             fontSize: '0.95rem',
             '&.Mui-focused': {
                 boxShadow: isDark
-                    ? '0 0 0 4px rgba(129, 140, 248, 0.18), 0 0 20px rgba(129, 140, 248, 0.12)'
-                    : '0 0 0 4px rgba(99, 102, 241, 0.15), 0 0 16px rgba(99, 102, 241, 0.08)',
+                    ? '0 0 0 4px rgba(180, 197, 255, 0.18), 0 0 20px rgba(180, 197, 255, 0.12)'
+                    : '0 0 0 4px rgba(0, 74, 198, 0.15), 0 0 16px rgba(0, 74, 198, 0.08)',
             },
         },
     }
@@ -91,11 +91,11 @@ function ChangePassword({ user, onLogout }) {
                     <Box sx={{
                         width: 48, height: 48, borderRadius: '14px',
                         background: isDark
-                            ? 'linear-gradient(135deg, rgba(99,102,241,0.2), rgba(99,102,241,0.08))'
-                            : 'linear-gradient(135deg, rgba(99,102,241,0.12), rgba(99,102,241,0.04))',
-                        border: isDark ? '1px solid rgba(129,140,248,0.2)' : '1px solid rgba(99,102,241,0.15)',
+                            ? 'linear-gradient(135deg, rgba(0,74,198,0.2), rgba(0,74,198,0.08))'
+                            : 'linear-gradient(135deg, rgba(0,74,198,0.12), rgba(0,74,198,0.04))',
+                        border: isDark ? '1px solid rgba(180,197,255,0.2)' : '1px solid rgba(0,74,198,0.15)',
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        boxShadow: '0 4px 12px rgba(99,102,241,0.1)',
+                        boxShadow: '0 4px 12px rgba(0,74,198,0.1)',
                     }}>
                         <ShieldIcon sx={{ fontSize: 24, color: 'primary.main' }} />
                     </Box>
@@ -118,7 +118,7 @@ function ChangePassword({ user, onLogout }) {
                         content: '""',
                         position: 'absolute', top: 0, left: 0, right: 0,
                         height: '3px',
-                        background: 'linear-gradient(90deg, #6366f1, #8b5cf6, #a78bfa)',
+                        background: 'linear-gradient(90deg, #004ac6, #2563eb, #5092f7)',
                         borderRadius: '16px 16px 0 0',
                     },
                 }}>

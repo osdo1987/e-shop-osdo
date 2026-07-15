@@ -3,8 +3,6 @@ import AdminLayout from '../components/AdminLayout'
 import ConfirmModal from '../components/ConfirmModal'
 import { useToast } from '../components/Toast'
 import Box from '@mui/material/Box'
-import Card from '@mui/material/Card'
-import CardContent from '@mui/material/CardContent'
 import Typography from '@mui/material/Typography'
 import TextField from '@mui/material/TextField'
 import Button from '@mui/material/Button'
@@ -14,12 +12,10 @@ import AddIcon from '@mui/icons-material/Add'
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutlined'
 import CategoryIcon from '@mui/icons-material/Category'
 import Inventory2Icon from '@mui/icons-material/Inventory2'
-import CheckCircleIcon from '@mui/icons-material/CheckCircle'
-import CloseIcon from '@mui/icons-material/Close'
 
 const categoryColors = [
-    { bg: 'rgba(99,102,241,0.10)', color: '#6366f1', gradient: 'linear-gradient(135deg, rgba(99,102,241,0.15), rgba(99,102,241,0.05))' },
-    { bg: 'rgba(139,92,246,0.10)', color: '#8b5cf6', gradient: 'linear-gradient(135deg, rgba(139,92,246,0.15), rgba(139,92,246,0.05))' },
+    { bg: 'rgba(0,74,198,0.10)', color: '#004ac6', gradient: 'linear-gradient(135deg, rgba(0,74,198,0.15), rgba(0,74,198,0.05))' },
+    { bg: 'rgba(37,99,235,0.10)', color: '#2563eb', gradient: 'linear-gradient(135deg, rgba(37,99,235,0.15), rgba(37,99,235,0.05))' },
     { bg: 'rgba(16,185,129,0.10)', color: '#10b981', gradient: 'linear-gradient(135deg, rgba(16,185,129,0.15), rgba(16,185,129,0.05))' },
     { bg: 'rgba(245,158,11,0.10)', color: '#f59e0b', gradient: 'linear-gradient(135deg, rgba(245,158,11,0.15), rgba(245,158,11,0.05))' },
     { bg: 'rgba(239,68,68,0.10)', color: '#ef4444', gradient: 'linear-gradient(135deg, rgba(239,68,68,0.15), rgba(239,68,68,0.05))' },
@@ -109,187 +105,138 @@ function Categories({ user }) {
     return (
         <>
             <AdminLayout title="Categorías" user={user}>
-                {/* Header stats */}
+                {/* Header stats — compact inline */}
                 <Box sx={{
-                    display: 'grid',
-                    gridTemplateColumns: { xs: 'repeat(2, 1fr)', md: 'repeat(2, 1fr)' },
-                    gap: 2, mb: 3,
+                    display: 'flex', gap: 0.75, mb: 2, flexWrap: 'wrap',
                 }}>
-                    {[
-                        { label: 'Categorías', value: categories.length, icon: <CategoryIcon sx={{ fontSize: 22 }} />, color: '#8b5cf6' },
-                        { label: 'Productos Totales', value: products.length, icon: <Inventory2Icon sx={{ fontSize: 22 }} />, color: '#6366f1' },
-                    ].map((s, i) => (
-                        <Card key={s.label} sx={{ animation: `fade-in-up 0.4s ease both`, animationDelay: `${i * 80}ms`, position: 'relative', overflow: 'hidden' }}>
-                            <Box sx={{ position: 'absolute', top: 0, left: 0, right: 0, height: '3px', background: `linear-gradient(90deg, ${s.color}, ${s.color}66)` }} />
-                            <CardContent sx={{ display: 'flex', alignItems: 'center', gap: 1.5, p: '16px !important', '&:last-child': { pb: '16px !important' } }}>
-                                <Box sx={{ width: 42, height: 42, borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: `${s.color}15`, color: s.color }}>
-                                    {s.icon}
-                                </Box>
-                                <Box>
-                                    <Typography sx={{ fontWeight: 900, fontSize: '1.25rem', lineHeight: 1.1, letterSpacing: '-0.03em' }}>{s.value}</Typography>
-                                    <Typography sx={{ fontSize: '0.65rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'text.secondary' }}>{s.label}</Typography>
-                                </Box>
-                            </CardContent>
-                        </Card>
-                    ))}
+                    <Box sx={{
+                        display: 'flex', alignItems: 'center', gap: 1,
+                        px: 1.5, py: 0.75, borderRadius: '10px', flex: 1, minWidth: 120,
+                        bgcolor: isDark ? 'rgba(37,99,235,0.08)' : 'rgba(37,99,235,0.04)',
+                        border: `1px solid ${isDark ? 'rgba(37,99,235,0.15)' : 'rgba(37,99,235,0.10)'}`,
+                    }}>
+                        <CategoryIcon sx={{ fontSize: 18, color: '#2563eb' }} />
+                        <Box>
+                            <Typography sx={{ fontWeight: 800, fontSize: '1rem', lineHeight: 1.1 }}>{categories.length}</Typography>
+                            <Typography sx={{ fontSize: '0.55rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'text.secondary' }}>Categorías</Typography>
+                        </Box>
+                    </Box>
+                    <Box sx={{
+                        display: 'flex', alignItems: 'center', gap: 1,
+                        px: 1.5, py: 0.75, borderRadius: '10px', flex: 1, minWidth: 120,
+                        bgcolor: isDark ? 'rgba(0,74,198,0.08)' : 'rgba(0,74,198,0.04)',
+                        border: `1px solid ${isDark ? 'rgba(0,74,198,0.15)' : 'rgba(0,74,198,0.10)'}`,
+                    }}>
+                        <Inventory2Icon sx={{ fontSize: 18, color: '#004ac6' }} />
+                        <Box>
+                            <Typography sx={{ fontWeight: 800, fontSize: '1rem', lineHeight: 1.1 }}>{products.length}</Typography>
+                            <Typography sx={{ fontSize: '0.55rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'text.secondary' }}>Productos</Typography>
+                        </Box>
+                    </Box>
                 </Box>
 
-                {/* Create form — inline premium */}
-                <Card sx={{ mb: 3, animation: 'fade-in-up 0.4s ease both', animationDelay: '0.16s' }}>
-                    <CardContent sx={{ p: '16px !important', '&:last-child': { pb: '16px !important' } }}>
-                        <Box component="form" onSubmit={handleCreate} sx={{ display: 'flex', gap: 1.5, alignItems: 'center' }}>
-                            <Box sx={{
-                                width: 42, height: 42, borderRadius: '12px',
-                                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                background: isDark ? 'rgba(139,92,246,0.12)' : 'rgba(139,92,246,0.06)',
-                                color: '#8b5cf6', flexShrink: 0,
-                            }}>
-                                <AddIcon sx={{ fontSize: 22 }} />
-                            </Box>
-                            <TextField
-                                value={newCategoryName}
-                                onChange={(e) => setNewCategoryName(e.target.value)}
-                                placeholder="Nombre de la nueva categoría..."
-                                required
-                                size="small"
-                                sx={{
-                                    flex: 1,
-                                    '& .MuiOutlinedInput-root': {
-                                        borderRadius: '12px',
-                                        background: isDark ? 'rgba(129,140,248,0.04)' : 'rgba(99,102,241,0.03)',
-                                    },
-                                }}
-                            />
-                            <Button
-                                type="submit"
-                                variant="contained"
-                                disabled={!newCategoryName.trim() || creating}
-                                startIcon={creating ? null : <AddIcon sx={{ fontSize: 18 }} />}
-                                sx={{ borderRadius: '12px', px: 3, py: 0.85, fontWeight: 700, minWidth: 120 }}
-                            >
-                                {creating ? 'Creando...' : 'Crear'}
-                            </Button>
-                        </Box>
-                    </CardContent>
-                </Card>
+                {/* Create form — compact inline */}
+                <Box sx={{
+                    display: 'flex', gap: 1, mb: 2, alignItems: 'center',
+                    p: 1, borderRadius: '10px',
+                    border: `1px solid ${isDark ? 'rgba(37,99,235,0.12)' : 'rgba(37,99,235,0.08)'}`,
+                    bgcolor: isDark ? 'rgba(37,99,235,0.04)' : 'rgba(37,99,235,0.02)',
+                }}>
+                    <TextField
+                        value={newCategoryName}
+                        onChange={(e) => setNewCategoryName(e.target.value)}
+                        placeholder="Nueva categoría..."
+                        required
+                        size="small"
+                        fullWidth
+                        sx={{
+                            '& .MuiOutlinedInput-root': {
+                                borderRadius: '8px', fontSize: '0.85rem',
+                            },
+                        }}
+                    />
+                    <Button
+                        type="button"
+                        variant="contained"
+                        disabled={!newCategoryName.trim() || creating}
+                        startIcon={creating ? null : <AddIcon sx={{ fontSize: 16 }} />}
+                        onClick={handleCreate}
+                        sx={{ borderRadius: '8px', px: 2, py: 0.6, fontWeight: 700, fontSize: '0.8rem', minWidth: 90, flexShrink: 0 }}
+                    >
+                        {creating ? '...' : 'Crear'}
+                    </Button>
+                </Box>
 
                 {/* Categories grid */}
                 {loading ? (
-                    <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' }, gap: 2 }}>
-                        {[1, 2, 3].map(i => (
-                            <Card key={i} sx={{ height: 140, animation: 'card-glow-pulse 2s ease-in-out infinite', animationDelay: `${i * 200}ms` }} />
+                    <Box sx={{ display: 'grid', gridTemplateColumns: { xs: 'repeat(2, 1fr)', sm: 'repeat(3, 1fr)', md: 'repeat(4, 1fr)' }, gap: 1 }}>
+                        {[1, 2, 3, 4].map(i => (
+                            <Box key={i} sx={{ height: 60, borderRadius: '10px', animation: 'card-glow-pulse 2s ease-in-out infinite', animationDelay: `${i * 200}ms`,
+                                bgcolor: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)' }} />
                         ))}
                     </Box>
                 ) : categories.length === 0 ? (
-                    <Card sx={{ animation: 'fade-in-up 0.4s ease both' }}>
-                        <CardContent sx={{ textAlign: 'center', py: 8, px: 3 }}>
-                            <Box sx={{
-                                width: 80, height: 80, borderRadius: '24px',
-                                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                background: isDark ? 'rgba(139,92,246,0.1)' : 'rgba(139,92,246,0.06)',
-                                mx: 'auto', mb: 3,
-                            }}>
-                                <CategoryIcon sx={{ fontSize: 40, color: '#8b5cf6', opacity: 0.6 }} />
-                            </Box>
-                            <Typography variant="h5" sx={{ fontWeight: 700, mb: 1 }}>
-                                Sin categorías aún
-                            </Typography>
-                            <Typography color="text.secondary" sx={{ mb: 1, maxWidth: 400, mx: 'auto' }}>
-                                Crea tu primera categoría para organizar tus productos.
-                            </Typography>
-                        </CardContent>
-                    </Card>
+                    <Box sx={{ textAlign: 'center', py: 6, borderRadius: '12px', border: `1px dashed ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}` }}>
+                        <CategoryIcon sx={{ fontSize: 36, color: '#2563eb', opacity: 0.4, mb: 1 }} />
+                        <Typography sx={{ fontWeight: 700, fontSize: '0.9rem', mb: 0.5 }}>Sin categorías</Typography>
+                        <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.78rem' }}>Crea una para organizar tus productos</Typography>
+                    </Box>
                 ) : (
                     <Box sx={{
                         display: 'grid',
-                        gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' },
-                        gap: 2,
+                        gridTemplateColumns: { xs: 'repeat(2, 1fr)', sm: 'repeat(3, 1fr)', md: 'repeat(4, 1fr)', lg: 'repeat(5, 1fr)' },
+                        gap: 1,
                     }}>
                         {categories.map((cat, idx) => {
                             const colorSet = categoryColors[idx % categoryColors.length]
                             const productCount = getProductCount(cat.id)
 
                             return (
-                                <Card
+                                <Box
                                     key={cat.id}
                                     sx={{
-                                        animation: `fade-in-up 0.4s ease both`,
-                                        animationDelay: `${idx * 60}ms`,
-                                        position: 'relative',
-                                        overflow: 'hidden',
-                                        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                                        display: 'flex', alignItems: 'center', gap: 1,
+                                        p: 1, borderRadius: '10px',
+                                        border: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}`,
+                                        bgcolor: isDark ? 'rgba(15,15,35,0.7)' : '#fff',
+                                        transition: 'all 0.2s ease',
                                         '&:hover': {
-                                            transform: 'translateY(-4px)',
-                                            boxShadow: isDark
-                                                ? `0 16px 48px -8px rgba(0,0,0,0.5), 0 0 0 1px ${colorSet.color}25`
-                                                : `0 16px 48px -8px rgba(0,0,0,0.1), 0 0 0 1px ${colorSet.color}20`,
-                                            '& .delete-btn': { opacity: 1 },
+                                            borderColor: `${colorSet.color}40`,
+                                            boxShadow: isDark ? `0 4px 16px rgba(0,0,0,0.3)` : `0 4px 16px rgba(0,0,0,0.06)`,
+                                            '& .del-btn': { opacity: 1 },
                                         },
                                     }}
                                 >
-                                    {/* Top accent */}
                                     <Box sx={{
-                                        position: 'absolute', top: 0, left: 0, right: 0, height: '3px',
-                                        background: `linear-gradient(90deg, ${colorSet.color}, ${colorSet.color}66)`,
-                                    }} />
-
-                                    <CardContent sx={{ p: '18px !important', '&:last-child': { pb: '18px !important' } }}>
-                                        <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', mb: 2 }}>
-                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                                                <Box sx={{
-                                                    width: 46, height: 46, borderRadius: '14px',
-                                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                                    background: colorSet.gradient,
-                                                    border: `1px solid ${colorSet.color}20`,
-                                                }}>
-                                                    <CategoryIcon sx={{ fontSize: 22, color: colorSet.color }} />
-                                                </Box>
-                                                <Box>
-                                                    <Typography sx={{ fontWeight: 800, fontSize: '1rem', lineHeight: 1.2 }}>
-                                                        {cat.name}
-                                                    </Typography>
-                                                    <Typography sx={{
-                                                        fontSize: '0.7rem', fontWeight: 600,
-                                                        color: 'text.secondary', mt: 0.25,
-                                                    }}>
-                                                        {productCount} {productCount === 1 ? 'producto' : 'productos'}
-                                                    </Typography>
-                                                </Box>
-                                            </Box>
-
-                                            <IconButton
-                                                className="delete-btn"
-                                                size="small"
-                                                onClick={() => setDeleteTarget(cat)}
-                                                sx={{
-                                                    opacity: { xs: 1, md: 0 },
-                                                    transition: 'all 0.2s ease',
-                                                    color: 'text.secondary',
-                                                    '&:hover': {
-                                                        color: 'error.main',
-                                                        background: isDark ? 'rgba(239,68,68,0.12)' : 'rgba(239,68,68,0.08)',
-                                                    },
-                                                }}
-                                            >
-                                                <DeleteOutlineIcon sx={{ fontSize: 18 }} />
-                                            </IconButton>
-                                        </Box>
-
-                                        {/* Product count visual bar */}
-                                        <Box sx={{
-                                            height: 4, borderRadius: 99,
-                                            background: isDark ? 'rgba(129,140,248,0.08)' : 'rgba(99,102,241,0.06)',
-                                            overflow: 'hidden',
-                                        }}>
-                                            <Box sx={{
-                                                height: '100%', borderRadius: 99,
-                                                width: `${Math.min((productCount / Math.max(products.length, 1)) * 100, 100)}%`,
-                                                background: `linear-gradient(90deg, ${colorSet.color}, ${colorSet.color}88)`,
-                                                transition: 'width 0.8s cubic-bezier(0.4, 0, 0.2, 1)',
-                                            }} />
-                                        </Box>
-                                    </CardContent>
-                                </Card>
+                                        width: 36, height: 36, borderRadius: '9px', flexShrink: 0,
+                                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                        background: colorSet.gradient,
+                                        border: `1px solid ${colorSet.color}20`,
+                                    }}>
+                                        <CategoryIcon sx={{ fontSize: 18, color: colorSet.color }} />
+                                    </Box>
+                                    <Box sx={{ flex: 1, minWidth: 0 }}>
+                                        <Typography sx={{ fontWeight: 700, fontSize: '0.8rem', lineHeight: 1.2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                            {cat.name}
+                                        </Typography>
+                                        <Typography sx={{ fontSize: '0.6rem', fontWeight: 600, color: 'text.secondary' }}>
+                                            {productCount} {productCount === 1 ? 'prod' : 'prods'}
+                                        </Typography>
+                                    </Box>
+                                    <IconButton
+                                        className="del-btn"
+                                        size="small"
+                                        onClick={() => setDeleteTarget(cat)}
+                                        sx={{
+                                            opacity: { xs: 1, md: 0 },
+                                            width: 24, height: 24, flexShrink: 0,
+                                            color: 'text.secondary',
+                                            '&:hover': { color: 'error.main', bgcolor: isDark ? 'rgba(239,68,68,0.12)' : 'rgba(239,68,68,0.08)' },
+                                        }}
+                                    >
+                                        <DeleteOutlineIcon sx={{ fontSize: 14 }} />
+                                    </IconButton>
+                                </Box>
                             )
                         })}
                     </Box>

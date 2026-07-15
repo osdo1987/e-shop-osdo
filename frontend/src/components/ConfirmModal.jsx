@@ -41,11 +41,11 @@ function ConfirmModal({ isOpen, title, message, onConfirm, onCancel, confirmText
                     backdropFilter: 'blur(40px) saturate(200%)',
                     WebkitBackdropFilter: 'blur(40px) saturate(200%)',
                     border: isDark
-                        ? '1px solid rgba(129, 140, 248, 0.15)'
-                        : '1px solid rgba(99, 102, 241, 0.12)',
+                        ? '1px solid rgba(180, 197, 255, 0.15)'
+                        : '1px solid rgba(0, 74, 198, 0.12)',
                     boxShadow: isDark
-                        ? '0 32px 80px rgba(0,0,0,0.7), 0 0 0 1px rgba(129,140,248,0.08)'
-                        : '0 32px 80px rgba(99,102,241,0.18), 0 0 0 1px rgba(99,102,241,0.05)',
+                        ? '0 32px 80px rgba(0,0,0,0.7), 0 0 0 1px rgba(180,197,255,0.08)'
+                        : '0 32px 80px rgba(0,74,198,0.18), 0 0 0 1px rgba(0,74,198,0.05)',
                     p: 0,
                     animation: 'fade-in-up 0.35s cubic-bezier(0.4, 0, 0.2, 1) both',
                 },
@@ -70,14 +70,14 @@ function ConfirmModal({ isOpen, title, message, onConfirm, onCancel, confirmText
                                 ? 'linear-gradient(135deg, rgba(239,68,68,0.2), rgba(239,68,68,0.08))'
                                 : 'linear-gradient(135deg, rgba(239,68,68,0.12), rgba(239,68,68,0.04))'
                             : isDark
-                                ? 'linear-gradient(135deg, rgba(99,102,241,0.2), rgba(99,102,241,0.08))'
-                                : 'linear-gradient(135deg, rgba(99,102,241,0.12), rgba(99,102,241,0.04))',
+                                ? 'linear-gradient(135deg, rgba(0,74,198,0.2), rgba(0,74,198,0.08))'
+                                : 'linear-gradient(135deg, rgba(0,74,198,0.12), rgba(0,74,198,0.04))',
                         border: `1px solid ${danger
                             ? isDark ? 'rgba(239,68,68,0.2)' : 'rgba(239,68,68,0.15)'
-                            : isDark ? 'rgba(129,140,248,0.2)' : 'rgba(99,102,241,0.15)'}`,
+                            : isDark ? 'rgba(180,197,255,0.2)' : 'rgba(0,74,198,0.15)'}`,
                         boxShadow: danger
                             ? '0 0 0 8px rgba(239,68,68,0.06), 0 8px 24px rgba(239,68,68,0.12)'
-                            : '0 0 0 8px rgba(99,102,241,0.06), 0 8px 24px rgba(99,102,241,0.12)',
+                            : '0 0 0 8px rgba(0,74,198,0.06), 0 8px 24px rgba(0,74,198,0.12)',
                         animation: 'icon-bounce 0.6s cubic-bezier(0.4, 0, 0.2, 1) both',
                         animationDelay: '0.15s',
                     }}>

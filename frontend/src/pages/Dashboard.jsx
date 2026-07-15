@@ -36,7 +36,7 @@ import AddCircleOutlinedIcon from '@mui/icons-material/AddCircleOutlined'
 import RemoveCircleOutlinedIcon from '@mui/icons-material/RemoveCircleOutlined'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 
-const catColors = ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4', '#84cc16']
+const catColors = ['#004ac6', '#10b981', '#f59e0b', '#ef4444', '#2563eb', '#ec4899', '#06b6d4', '#84cc16']
 
 function Dashboard({ user, onLogout }) {
     const theme = useTheme()
@@ -188,12 +188,12 @@ function Dashboard({ user, onLogout }) {
 
     const c = {
         bg: isDark ? 'rgba(255,255,255,0.02)' : '#fff',
-        border: isDark ? 'rgba(129,140,248,0.10)' : 'rgba(0,0,0,0.06)',
-        borderHover: isDark ? 'rgba(129,140,248,0.20)' : 'rgba(99,102,241,0.15)',
-        dim: isDark ? '#6060a0' : '#94a3b8',
-        accent: isDark ? '#818cf8' : '#4f46e5',
-        accentBg: isDark ? 'rgba(129,140,248,0.10)' : 'rgba(79,70,229,0.06)',
-        surfaceHover: isDark ? 'rgba(129,140,248,0.04)' : 'rgba(0,0,0,0.02)',
+        border: isDark ? 'rgba(180,197,255,0.10)' : 'rgba(0,0,0,0.06)',
+        borderHover: isDark ? 'rgba(180,197,255,0.20)' : 'rgba(0,74,198,0.15)',
+        dim: isDark ? '#8d909f' : '#94a3b8',
+        accent: isDark ? '#b4c5ff' : '#004ac6',
+        accentBg: isDark ? 'rgba(180,197,255,0.10)' : 'rgba(0,74,198,0.06)',
+        surfaceHover: isDark ? 'rgba(180,197,255,0.04)' : 'rgba(0,0,0,0.02)',
     }
 
     return (
@@ -203,11 +203,11 @@ function Dashboard({ user, onLogout }) {
                 {/* ── Stats ── */}
                 <Box sx={{ display: 'grid', gridTemplateColumns: { xs: 'repeat(2, 1fr)', sm: 'repeat(3, 1fr)', md: 'repeat(5, 1fr)' }, gap: 1.25, mb: 2.5 }}>
                     {[
-                        { label: 'Productos', value: stats.total, color: '#6366f1', icon: <Inventory2Icon sx={{ fontSize: 16 }} /> },
+                        { label: 'Productos', value: stats.total, color: '#004ac6', icon: <Inventory2Icon sx={{ fontSize: 16 }} /> },
                         { label: 'Stock total', value: stats.totalStock, color: '#10b981', icon: <LocalShippingIcon sx={{ fontSize: 16 }} /> },
                         { label: 'Bajo stock', value: stats.lowStock, color: '#f59e0b', icon: <TrendingUpIcon sx={{ fontSize: 16 }} /> },
                         { label: 'Promos', value: stats.promoCount, color: '#ef4444', icon: <SellIcon sx={{ fontSize: 16 }} /> },
-                        { label: 'Margen prom.', value: stats.avgMargin !== null ? `${stats.avgMargin.toFixed(0)}%` : '—', color: '#8b5cf6', icon: <TrendingUpIcon sx={{ fontSize: 16 }} /> },
+                        { label: 'Margen prom.', value: stats.avgMargin !== null ? `${stats.avgMargin.toFixed(0)}%` : '—', color: '#2563eb', icon: <TrendingUpIcon sx={{ fontSize: 16 }} /> },
                     ].map(s => (
                         <Tooltip key={s.label} title={`${s.label}: ${s.value}`} arrow placement="top">
                             <Box sx={{
@@ -226,7 +226,7 @@ function Dashboard({ user, onLogout }) {
                                     {s.icon}
                                 </Box>
                                 <Box>
-                                    <Typography sx={{ fontFamily: '"JetBrains Mono", monospace', fontWeight: 700, fontSize: '1rem', lineHeight: 1.1 }}>
+                                    <Typography sx={{ fontFamily: '"Inter", "Helvetica", "Arial", sans-serif', fontWeight: 700, fontSize: '1rem', lineHeight: 1.1 }}>
                                         {s.value}
                                     </Typography>
                                     <Typography sx={{ fontSize: '0.62rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', color: c.dim, lineHeight: 1.2 }}>
@@ -339,7 +339,7 @@ function Dashboard({ user, onLogout }) {
                         ))}
                     </Box>
 
-                    <Typography sx={{ fontSize: '0.7rem', fontWeight: 500, color: c.dim, fontFamily: '"JetBrains Mono", monospace', ml: 'auto' }}>
+                    <Typography sx={{ fontSize: '0.7rem', fontWeight: 500, color: c.dim, fontFamily: '"Inter", "Helvetica", "Arial", sans-serif', ml: 'auto' }}>
                         {filteredProducts.length} resultado{filteredProducts.length !== 1 ? 's' : ''}
                     </Typography>
 
@@ -439,7 +439,7 @@ function Dashboard({ user, onLogout }) {
                                                 size="small"
                                                 sx={{
                                                     position: 'absolute', top: 8, right: 8, height: 20,
-                                                    fontSize: '0.58rem', fontWeight: 700, fontFamily: '"JetBrains Mono", monospace',
+                                                    fontSize: '0.58rem', fontWeight: 700, fontFamily: '"Inter", "Helvetica", "Arial", sans-serif',
                                                     bgcolor: `${getStockColor(product.stock)}18`, color: getStockColor(product.stock),
                                                     border: `1px solid ${getStockColor(product.stock)}25`,
                                                 }}
@@ -453,18 +453,18 @@ function Dashboard({ user, onLogout }) {
                                             </Typography>
 
                                             <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 0.5, mb: 0.75 }}>
-                                                <Typography sx={{ fontFamily: '"JetBrains Mono", monospace', fontWeight: 700, fontSize: '0.95rem', color: hasPromo ? '#ef4444' : 'text.primary' }}>
+                                                <Typography sx={{ fontFamily: '"Inter", "Helvetica", "Arial", sans-serif', fontWeight: 700, fontSize: '0.95rem', color: hasPromo ? '#ef4444' : 'text.primary' }}>
                                                     ${activePrice.toLocaleString()}
                                                 </Typography>
                                                 {hasPromo && (
-                                                    <Typography sx={{ fontFamily: '"JetBrains Mono", monospace', fontSize: '0.62rem', textDecoration: 'line-through', color: c.dim }}>
+                                                    <Typography sx={{ fontFamily: '"Inter", "Helvetica", "Arial", sans-serif', fontSize: '0.62rem', textDecoration: 'line-through', color: c.dim }}>
                                                         ${product.price.toLocaleString()}
                                                     </Typography>
                                                 )}
                                                 {margin !== null && (
                                                     <Chip label={`${margin >= 0 ? '+' : ''}${margin.toFixed(0)}%`} size="small"
                                                         sx={{
-                                                            height: 18, ml: 'auto', fontSize: '0.55rem', fontWeight: 700, fontFamily: '"JetBrains Mono", monospace',
+                                                            height: 18, ml: 'auto', fontSize: '0.55rem', fontWeight: 700, fontFamily: '"Inter", "Helvetica", "Arial", sans-serif',
                                                             bgcolor: margin >= 0 ? 'rgba(16,185,129,0.10)' : 'rgba(239,68,68,0.10)',
                                                             color: margin >= 0 ? '#10b981' : '#ef4444', borderRadius: '5px',
                                                         }}
@@ -487,7 +487,7 @@ function Dashboard({ user, onLogout }) {
                                                         sx={{ width: 22, height: 22, color: c.dim, '&:hover': { color: '#ef4444' } }}>
                                                         <RemoveCircleOutlinedIcon sx={{ fontSize: 14 }} />
                                                     </IconButton>
-                                                    <Typography sx={{ fontFamily: '"JetBrains Mono", monospace', fontSize: '0.68rem', fontWeight: 700, minWidth: 18, textAlign: 'center', color: getStockColor(product.stock) }}>
+                                                    <Typography sx={{ fontFamily: '"Inter", "Helvetica", "Arial", sans-serif', fontSize: '0.68rem', fontWeight: 700, minWidth: 18, textAlign: 'center', color: getStockColor(product.stock) }}>
                                                         {product.stock}
                                                     </Typography>
                                                     <IconButton size="small" disabled={updatingStock === product.id}
@@ -564,18 +564,18 @@ function Dashboard({ user, onLogout }) {
                                                     </TableCell>
                                                     <TableCell>
                                                         <Box>
-                                                            <Typography sx={{ fontFamily: '"JetBrains Mono", monospace', fontWeight: 700, fontSize: '0.85rem', color: product.promo_price ? '#ef4444' : 'text.primary' }}>
+                                                            <Typography sx={{ fontFamily: '"Inter", "Helvetica", "Arial", sans-serif', fontWeight: 700, fontSize: '0.85rem', color: product.promo_price ? '#ef4444' : 'text.primary' }}>
                                                                 ${activePrice.toLocaleString()}
                                                             </Typography>
                                                             {product.promo_price && (
-                                                                <Typography sx={{ fontFamily: '"JetBrains Mono", monospace', fontSize: '0.62rem', textDecoration: 'line-through', color: c.dim }}>
+                                                                <Typography sx={{ fontFamily: '"Inter", "Helvetica", "Arial", sans-serif', fontSize: '0.62rem', textDecoration: 'line-through', color: c.dim }}>
                                                                     ${product.price.toLocaleString()}
                                                                 </Typography>
                                                             )}
                                                         </Box>
                                                     </TableCell>
                                                     <TableCell>
-                                                        <Typography sx={{ fontFamily: '"JetBrains Mono", monospace', fontSize: '0.85rem', color: product.purchase_price ? 'text.primary' : c.dim }}>
+                                                        <Typography sx={{ fontFamily: '"Inter", "Helvetica", "Arial", sans-serif', fontSize: '0.85rem', color: product.purchase_price ? 'text.primary' : c.dim }}>
                                                             {product.purchase_price ? `$${product.purchase_price.toLocaleString()}` : '—'}
                                                         </Typography>
                                                     </TableCell>
@@ -584,13 +584,13 @@ function Dashboard({ user, onLogout }) {
                                                             <Chip label={`${margin >= 0 ? '+' : ''}${margin.toFixed(0)}%`} size="small"
                                                                 sx={{
                                                                     fontWeight: 700, fontSize: '0.68rem', height: 24, borderRadius: '7px',
-                                                                    fontFamily: '"JetBrains Mono", monospace',
+                                                                    fontFamily: '"Inter", "Helvetica", "Arial", sans-serif',
                                                                     bgcolor: margin >= 0 ? 'rgba(16,185,129,0.10)' : 'rgba(239,68,68,0.10)',
                                                                     color: margin >= 0 ? '#10b981' : '#ef4444',
                                                                 }}
                                                             />
                                                         ) : (
-                                                            <Typography sx={{ fontFamily: '"JetBrains Mono", monospace', fontSize: '0.85rem', color: c.dim }}>—</Typography>
+                                                            <Typography sx={{ fontFamily: '"Inter", "Helvetica", "Arial", sans-serif', fontSize: '0.85rem', color: c.dim }}>—</Typography>
                                                         )}
                                                     </TableCell>
                                                     <TableCell>
@@ -602,7 +602,7 @@ function Dashboard({ user, onLogout }) {
                                                                 <RemoveCircleOutlinedIcon sx={{ fontSize: 14 }} />
                                                             </IconButton>
                                                             <Typography sx={{
-                                                                fontFamily: '"JetBrains Mono", monospace', fontSize: '0.82rem', fontWeight: 700,
+                                                                fontFamily: '"Inter", "Helvetica", "Arial", sans-serif', fontSize: '0.82rem', fontWeight: 700,
                                                                 minWidth: 24, textAlign: 'center', color: getStockColor(product.stock),
                                                             }}>
                                                                 {product.stock}

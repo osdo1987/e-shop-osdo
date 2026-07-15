@@ -24,15 +24,15 @@ export function TableSkeleton({ rows = 5, cols = 5 }) {
         <Box sx={{
             display: 'flex', flexDirection: 'column', gap: 0, pt: 1,
             borderRadius: '14px', overflow: 'hidden',
-            border: isDark ? '1px solid rgba(129,140,248,0.08)' : '1px solid rgba(99,102,241,0.06)',
+            border: isDark ? '1px solid rgba(180,197,255,0.08)' : '1px solid rgba(0,74,198,0.06)',
         }}>
             {/* Header row */}
             <Box sx={{
                 display: 'grid',
                 gridTemplateColumns: `repeat(${cols}, 1fr)`,
                 gap: 2, py: 1.5, px: 2,
-                background: isDark ? 'rgba(129,140,248,0.04)' : 'rgba(99,102,241,0.03)',
-                borderBottom: isDark ? '1px solid rgba(129,140,248,0.08)' : '1px solid rgba(99,102,241,0.06)',
+                background: isDark ? 'rgba(180,197,255,0.04)' : 'rgba(0,74,198,0.03)',
+                borderBottom: isDark ? '1px solid rgba(180,197,255,0.08)' : '1px solid rgba(0,74,198,0.06)',
             }}>
                 {Array.from({ length: cols }).map((_, j) => (
                     <SkeletonMui key={j} variant="text" height="12px" sx={{
@@ -50,12 +50,12 @@ export function TableSkeleton({ rows = 5, cols = 5 }) {
                         gridTemplateColumns: `repeat(${cols}, 1fr)`,
                         gap: 2, py: 1.5, px: 2,
                         borderBottom: i < rows - 1
-                            ? isDark ? '1px solid rgba(129,140,248,0.06)' : '1px solid rgba(99,102,241,0.04)'
+                            ? isDark ? '1px solid rgba(180,197,255,0.06)' : '1px solid rgba(0,74,198,0.04)'
                             : 'none',
                         animation: `fade-in-up 0.4s ease both`,
                         animationDelay: `${i * 60}ms`,
                         '&:hover': {
-                            background: isDark ? 'rgba(129,140,248,0.03)' : 'rgba(99,102,241,0.02)',
+                            background: isDark ? 'rgba(180,197,255,0.03)' : 'rgba(0,74,198,0.02)',
                         },
                     }}
                 >
@@ -89,12 +89,12 @@ export function GridSkeleton({ count = 8 }) {
                         overflow: 'hidden',
                         background: isDark ? 'rgba(14, 14, 36, 0.6)' : 'rgba(255, 255, 255, 0.8)',
                         backdropFilter: 'blur(8px)',
-                        border: isDark ? '1px solid rgba(129,140,248,0.10)' : '1px solid rgba(99,102,241,0.08)',
+                        border: isDark ? '1px solid rgba(180,197,255,0.10)' : '1px solid rgba(0,74,198,0.08)',
                         transition: 'all 0.3s ease',
                         animation: `fade-in-up 0.4s ease both`,
                         animationDelay: `${i * 80}ms`,
                         '&:hover': {
-                            borderColor: isDark ? 'rgba(129,140,248,0.18)' : 'rgba(99,102,241,0.15)',
+                            borderColor: isDark ? 'rgba(180,197,255,0.18)' : 'rgba(0,74,198,0.15)',
                             transform: 'translateY(-2px)',
                         },
                     }}

@@ -1,6 +1,5 @@
 import { useState, useEffect, useMemo, useCallback } from 'react'
 import AdminLayout from '../components/AdminLayout'
-import StatCard from '../components/StatCard'
 import ConfirmModal from '../components/ConfirmModal'
 import { TableSkeleton } from '../components/Skeleton'
 import { useToast } from '../components/Toast'
@@ -56,7 +55,7 @@ const STATUS_FLOW = ['PENDIENTE', 'CONFIRMADO', 'EN_PREPARACION', 'EN_CAMINO', '
 const STATUS_META = {
     PENDIENTE:      { label: 'Pendiente',      color: '#f59e0b', bg: '#FEF3C7', darkBg: 'rgba(245,158,11,0.12)',  icon: '⏳', progress: 0 },
     CONFIRMADO:     { label: 'Confirmado',     color: '#3b82f6', bg: '#DBEAFE', darkBg: 'rgba(59,130,246,0.12)',  icon: '✓',  progress: 25 },
-    EN_PREPARACION: { label: 'En Preparación',  color: '#8b5cf6', bg: '#EDE9FE', darkBg: 'rgba(139,92,246,0.12)',  icon: '🔥', progress: 50 },
+    EN_PREPARACION: { label: 'En Preparación',  color: '#2563eb', bg: '#dbe1ff', darkBg: 'rgba(37,99,235,0.12)',  icon: '🔥', progress: 50 },
     EN_CAMINO:      { label: 'En Camino',      color: '#06b6d4', bg: '#CFFAFE', darkBg: 'rgba(6,182,212,0.12)',   icon: '🚗', progress: 75 },
     ENTREGADO:      { label: 'Entregado',      color: '#22c55e', bg: '#DCFCE7', darkBg: 'rgba(34,197,94,0.12)',   icon: '📦', progress: 100 },
     CANCELADO:      { label: 'Cancelado',      color: '#ef4444', bg: '#FEE2E2', darkBg: 'rgba(239,68,68,0.12)',   icon: '✕',  progress: 0 },
@@ -74,7 +73,7 @@ const STATUS_TRANSITIONS = {
 const PAYMENT_LABELS = {
     EFECTIVO: { label: 'Efectivo', color: '#22c55e', icon: '💵' },
     TARJETA:  { label: 'Tarjeta',  color: '#3b82f6', icon: '💳' },
-    TRANSFERENCIA: { label: 'Transferencia', color: '#8b5cf6', icon: '🏦' },
+    TRANSFERENCIA: { label: 'Transferencia', color: '#2563eb', icon: '🏦' },
     NEQUI:    { label: 'Nequi',    color: '#06b6d4', icon: '📱' },
     DAVIPLATA:{ label: 'Daviplata', color: '#f59e0b', icon: '📱' },
 }
@@ -383,7 +382,7 @@ function OrderDetailModal({ order, onClose, onStatusChange, onUpdateNotes, onCop
                 {/* Customer Info */}
                 <Box sx={{
                     p: 1.5, borderRadius: '12px', mb: 2,
-                    bgcolor: isDark ? 'rgba(99,102,241,0.04)' : 'rgba(99,102,241,0.03)',
+                    bgcolor: isDark ? 'rgba(0,74,198,0.04)' : 'rgba(0,74,198,0.03)',
                     border: '1px solid', borderColor: 'divider',
                 }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.75 }}>
@@ -459,7 +458,7 @@ function OrderDetailModal({ order, onClose, onStatusChange, onUpdateNotes, onCop
                                                         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.3, mt: 0.5 }}>
                                                             {toppingList.map((t, ti) => (
                                                                 <Chip key={ti} label={`+${typeof t === 'string' ? t : t.name || t}`} size="small"
-                                                                    sx={{ fontSize: '0.58rem', height: 17, bgcolor: alpha('#8b5cf6', 0.08), color: '#8b5cf6', fontWeight: 500 }} />
+                                                                    sx={{ fontSize: '0.58rem', height: 17, bgcolor: alpha('#2563eb', 0.08), color: '#2563eb', fontWeight: 500 }} />
                                                             ))}
                                                         </Box>
                                                     )
@@ -542,7 +541,7 @@ function OrderDetailModal({ order, onClose, onStatusChange, onUpdateNotes, onCop
                         </Typography>
                         <Box sx={{
                             p: 1.5, borderRadius: '12px',
-                            bgcolor: isDark ? 'rgba(99,102,241,0.03)' : 'rgba(99,102,241,0.02)',
+                            bgcolor: isDark ? 'rgba(0,74,198,0.03)' : 'rgba(0,74,198,0.02)',
                             border: '1px solid', borderColor: 'divider',
                         }}>
                             {history.map((h, idx) => {
@@ -573,7 +572,7 @@ function OrderDetailModal({ order, onClose, onStatusChange, onUpdateNotes, onCop
                 {order.tracking_token && (
                     <Box sx={{
                         p: 1.5, borderRadius: '12px', mb: 1,
-                        bgcolor: isDark ? 'rgba(99,102,241,0.04)' : 'rgba(99,102,241,0.03)',
+                        bgcolor: isDark ? 'rgba(0,74,198,0.04)' : 'rgba(0,74,198,0.03)',
                         border: '1px solid', borderColor: 'divider',
                     }}>
                         <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600, display: 'block', mb: 0.75 }}>
@@ -840,21 +839,44 @@ function Orders({ user, onLogout }) {
         <AdminLayout title="Seguimiento de Pedidos" user={user} onLogout={onLogout}>
             {/* Stats */}
             {!loading && (
-                <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: 1, mb: 2 }}>
-                    <StatCard title="Activos" value={stats.active} icon="🔥" color="#f59e0b" />
-                    <StatCard title="Pendientes" value={stats.pending} icon="⏳" color="#ef4444" />
-                    <StatCard title="En Proceso" value={stats.confirmed + stats.preparing} icon="🔄" color="#3b82f6" />
-                    <StatCard title="En Camino" value={stats.shipping} icon="🚗" color="#06b6d4" />
-                    <StatCard title="Entregados" value={stats.delivered} icon="✅" color="#22c55e" />
-                    <StatCard title="Ventas" value={`$${stats.totalRevenue.toLocaleString()}`} icon="💰" color="#10b981" />
+                <Box sx={{
+                    display: 'flex', gap: 0.5, mb: 2, p: 1, borderRadius: '12px', flexWrap: 'wrap',
+                    bgcolor: isDark ? 'rgba(180,197,255,0.04)' : 'rgba(0,74,198,0.03)',
+                    border: `1px solid ${isDark ? 'rgba(180,197,255,0.08)' : 'rgba(0,74,198,0.06)'}`,
+                }}>
+                    {[
+                        { label: 'Activos', value: stats.active, color: '#f59e0b', icon: '🔥' },
+                        { label: 'Pendientes', value: stats.pending, color: '#ef4444', icon: '⏳' },
+                        { label: 'Proceso', value: stats.confirmed + stats.preparing, color: '#3b82f6', icon: '🔄' },
+                        { label: 'Camino', value: stats.shipping, color: '#06b6d4', icon: '🚗' },
+                        { label: 'Entregados', value: stats.delivered, color: '#22c55e', icon: '✅' },
+                        { label: 'Ventas', value: `$${stats.totalRevenue.toLocaleString()}`, color: '#10b981', icon: '💰' },
+                    ].map(s => (
+                        <Box key={s.label} sx={{
+                            display: 'flex', alignItems: 'center', gap: 0.75,
+                            px: 1.25, py: 0.6, borderRadius: '8px', flex: '1 1 auto', minWidth: 100,
+                            bgcolor: isDark ? `${s.color}08` : `${s.color}06`,
+                            border: `1px solid ${isDark ? `${s.color}15` : `${s.color}12`}`,
+                        }}>
+                            <Typography sx={{ fontSize: '0.85rem' }}>{s.icon}</Typography>
+                            <Box>
+                                <Typography sx={{ fontWeight: 800, fontSize: '0.85rem', lineHeight: 1.1, fontFamily: '"Inter", "Helvetica", "Arial", sans-serif' }}>
+                                    {s.value}
+                                </Typography>
+                                <Typography sx={{ fontSize: '0.55rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em', color: 'text.secondary' }}>
+                                    {s.label}
+                                </Typography>
+                            </Box>
+                        </Box>
+                    ))}
                 </Box>
             )}
 
             {/* Filters */}
             <Box sx={{
                 p: 1.5, borderRadius: '16px', mb: 2,
-                bgcolor: isDark ? 'rgba(129,140,248,0.04)' : 'rgba(99,102,241,0.03)',
-                border: '1px solid', borderColor: isDark ? 'rgba(129,140,248,0.08)' : 'rgba(99,102,241,0.06)',
+                bgcolor: isDark ? 'rgba(180,197,255,0.04)' : 'rgba(0,74,198,0.03)',
+                border: '1px solid', borderColor: isDark ? 'rgba(180,197,255,0.08)' : 'rgba(0,74,198,0.06)',
             }}>
                 <Box sx={{ display: 'flex', gap: 1, mb: 1.5, alignItems: 'center' }}>
                     <TextField
@@ -867,13 +889,15 @@ function Orders({ user, onLogout }) {
                                 bgcolor: isDark ? 'rgba(255,255,255,0.04)' : '#fff',
                             },
                         }}
-                        InputProps={{
-                            startAdornment: <SearchIcon sx={{ fontSize: 18, mr: 0.5, color: 'text.secondary' }} />,
-                            endAdornment: searchTerm && (
-                                <IconButton size="small" onClick={() => setSearchTerm('')}>
-                                    <ClearIcon sx={{ fontSize: 16 }} />
-                                </IconButton>
-                            ),
+                        slotProps={{
+                            input: {
+                                startAdornment: <SearchIcon sx={{ fontSize: 18, mr: 0.5, color: 'text.secondary' }} />,
+                                endAdornment: searchTerm && (
+                                    <IconButton size="small" onClick={() => setSearchTerm('')}>
+                                        <ClearIcon sx={{ fontSize: 16 }} />
+                                    </IconButton>
+                                ),
+                            },
                         }}
                     />
                     <Tooltip title="Filtrar por fecha" arrow>
@@ -914,17 +938,17 @@ function Orders({ user, onLogout }) {
                                     fontWeight: 600, fontSize: '0.68rem', height: 28,
                                     cursor: 'pointer',
                                     bgcolor: isActive
-                                        ? chip.key === 'ALL' ? 'primary.main' : alpha(meta?.color || '#6366f1', 0.15)
+                                        ? chip.key === 'ALL' ? 'primary.main' : alpha(meta?.color || '#004ac6', 0.15)
                                         : 'background.paper',
                                     color: isActive
                                         ? chip.key === 'ALL' ? '#fff' : meta?.color || 'text.primary'
                                         : 'text.secondary',
                                     border: '1px solid',
                                     borderColor: isActive
-                                        ? chip.key === 'ALL' ? 'primary.main' : alpha(meta?.color || '#6366f1', 0.3)
+                                        ? chip.key === 'ALL' ? 'primary.main' : alpha(meta?.color || '#004ac6', 0.3)
                                         : 'divider',
                                     '&:hover': {
-                                        bgcolor: chip.key === 'ALL' ? alpha('#6366f1', 0.12) : alpha(meta?.color || '#6366f1', 0.08),
+                                        bgcolor: chip.key === 'ALL' ? alpha('#004ac6', 0.12) : alpha(meta?.color || '#004ac6', 0.08),
                                     },
                                 }}
                             />
@@ -939,7 +963,7 @@ function Orders({ user, onLogout }) {
                 '&::before': {
                     content: '""', position: 'absolute', top: 0, left: 0, right: 0,
                     height: '3px', borderRadius: '16px 16px 0 0',
-                    background: 'linear-gradient(90deg, #6366f1, #8b5cf6, #10b981)',
+                    background: 'linear-gradient(90deg, #004ac6, #2563eb, #10b981)',
                 },
             }}>
                 <CardContent sx={{ p: { xs: 2, sm: 3 }, '&:last-child': { pb: { xs: 2, sm: 3 } } }}>

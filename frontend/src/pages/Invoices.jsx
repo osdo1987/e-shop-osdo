@@ -152,18 +152,18 @@ function Invoices({ user }) {
                 p: { xs: 2.5, sm: 3 },
                 borderRadius: '18px',
                 background: isDark
-                    ? 'linear-gradient(135deg, rgba(99,102,241,0.18) 0%, rgba(139,92,246,0.12) 50%, rgba(16,185,129,0.08) 100%)'
-                    : 'linear-gradient(135deg, rgba(99,102,241,0.10) 0%, rgba(139,92,246,0.06) 50%, rgba(16,185,129,0.04) 100%)',
-                border: isDark ? '1px solid rgba(129,140,248,0.12)' : '1px solid rgba(99,102,241,0.08)',
+                    ? 'linear-gradient(135deg, rgba(0,74,198,0.18) 0%, rgba(37,99,235,0.12) 50%, rgba(16,185,129,0.08) 100%)'
+                    : 'linear-gradient(135deg, rgba(0,74,198,0.10) 0%, rgba(37,99,235,0.06) 50%, rgba(16,185,129,0.04) 100%)',
+                border: isDark ? '1px solid rgba(180,197,255,0.12)' : '1px solid rgba(0,74,198,0.08)',
                 display: 'flex', alignItems: 'center', gap: 2,
                 animation: 'fade-in-up 0.4s ease both',
             }}>
                 <Box sx={{
                     width: 52, height: 52, borderRadius: '14px',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
+                    background: 'linear-gradient(135deg, #004ac6, #2563eb)',
                     color: '#fff', flexShrink: 0,
-                    boxShadow: '0 4px 16px rgba(99,102,241,0.3)',
+                    boxShadow: '0 4px 16px rgba(0,74,198,0.3)',
                     animation: 'icon-bounce 2s ease-in-out infinite',
                 }}>
                     <ReceiptIcon sx={{ fontSize: 26 }} />
@@ -187,7 +187,7 @@ function Invoices({ user }) {
                     content: '""',
                     position: 'absolute', top: 0, left: 0, right: 0,
                     height: '3px',
-                    background: 'linear-gradient(90deg, #6366f1, #8b5cf6, #10b981)',
+                    background: 'linear-gradient(90deg, #004ac6, #2563eb, #10b981)',
                     borderRadius: '16px 16px 0 0',
                 },
             }}>
@@ -196,8 +196,8 @@ function Invoices({ user }) {
                     <Box sx={{
                         mb: 2.5,
                         p: 1.5, borderRadius: '14px',
-                        background: isDark ? 'rgba(99,102,241,0.04)' : 'rgba(99,102,241,0.03)',
-                        border: isDark ? '1px solid rgba(129,140,248,0.10)' : '1px solid rgba(99,102,241,0.08)',
+                        background: isDark ? 'rgba(0,74,198,0.04)' : 'rgba(0,74,198,0.03)',
+                        border: isDark ? '1px solid rgba(180,197,255,0.10)' : '1px solid rgba(0,74,198,0.08)',
                     }}>
                         <TextField
                             fullWidth
@@ -217,17 +217,17 @@ function Invoices({ user }) {
                             sx={{
                                 '& .MuiOutlinedInput-root': {
                                     borderRadius: '12px',
-                                    background: isDark ? 'rgba(129,140,248,0.04)' : 'rgba(255,255,255,0.7)',
+                                    background: isDark ? 'rgba(180,197,255,0.04)' : 'rgba(255,255,255,0.7)',
                                     transition: 'all 0.2s ease',
                                     '& fieldset': {
-                                        borderColor: isDark ? 'rgba(129,140,248,0.15)' : 'rgba(99,102,241,0.12)',
+                                        borderColor: isDark ? 'rgba(180,197,255,0.15)' : 'rgba(0,74,198,0.12)',
                                     },
                                     '&:hover fieldset': {
-                                        borderColor: '#6366f1',
+                                        borderColor: '#004ac6',
                                     },
                                     '&.Mui-focused fieldset': {
-                                        borderColor: '#6366f1',
-                                        boxShadow: '0 0 0 3px rgba(99,102,241,0.12)',
+                                        borderColor: '#004ac6',
+                                        boxShadow: '0 0 0 3px rgba(0,74,198,0.12)',
                                     },
                                 },
                             }}
@@ -243,10 +243,10 @@ function Invoices({ user }) {
                             <Box sx={{
                                 width: 80, height: 80, borderRadius: '24px',
                                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                background: isDark ? 'rgba(139,92,246,0.1)' : 'rgba(139,92,246,0.06)',
+                                background: isDark ? 'rgba(37,99,235,0.1)' : 'rgba(37,99,235,0.06)',
                                 mb: 3,
                             }}>
-                                <ReceiptLongIcon sx={{ fontSize: 40, color: '#8b5cf6', opacity: 0.6 }} />
+                                <ReceiptLongIcon sx={{ fontSize: 40, color: '#2563eb', opacity: 0.6 }} />
                             </Box>
                             <Typography variant="h5" sx={{ fontWeight: 700, mb: 1 }}>
                                 Sin facturas
@@ -267,7 +267,7 @@ function Invoices({ user }) {
                                                 textTransform: 'uppercase',
                                                 letterSpacing: '0.06em',
                                                 color: 'text.secondary',
-                                                borderBottom: isDark ? '1px solid rgba(129,140,248,0.10)' : '1px solid rgba(99,102,241,0.08)',
+                                                borderBottom: isDark ? '1px solid rgba(180,197,255,0.10)' : '1px solid rgba(0,74,198,0.08)',
                                                 py: 1.25,
                                             }}>
                                                 {label}
@@ -285,14 +285,14 @@ function Invoices({ user }) {
                                                 animationDelay: `${idx * 40}ms`,
                                                 transition: 'all 0.2s ease',
                                                 '&:hover': {
-                                                    background: isDark ? 'rgba(99,102,241,0.06)' : 'rgba(99,102,241,0.04)',
+                                                    background: isDark ? 'rgba(0,74,198,0.06)' : 'rgba(0,74,198,0.04)',
                                                 },
                                                 '& td': {
-                                                    borderBottom: isDark ? '1px solid rgba(129,140,248,0.06)' : '1px solid rgba(99,102,241,0.05)',
+                                                    borderBottom: isDark ? '1px solid rgba(180,197,255,0.06)' : '1px solid rgba(0,74,198,0.05)',
                                                 },
                                             }}
                                         >
-                                            <TableCell sx={{ fontWeight: 700, fontFamily: 'monospace', fontSize: '0.8125rem' }}>
+                                            <TableCell sx={{ fontWeight: 700, fontFamily: '"Inter", "Helvetica", "Arial", sans-serif', fontSize: '0.8125rem' }}>
                                                 {inv.invoice_number}
                                             </TableCell>
                                             <TableCell sx={{ fontSize: '0.8125rem', color: 'text.secondary' }}>
@@ -344,7 +344,7 @@ function Invoices({ user }) {
                                                         borderRadius: '8px',
                                                         transition: 'all 0.2s ease',
                                                         '&:hover': {
-                                                            boxShadow: '0 2px 10px rgba(99,102,241,0.25)',
+                                                            boxShadow: '0 2px 10px rgba(0,74,198,0.25)',
                                                             transform: 'translateY(-1px)',
                                                         },
                                                     }}
@@ -369,11 +369,11 @@ function Invoices({ user }) {
                     sx: {
                         background: isDark ? 'rgba(10, 10, 28, 0.95)' : 'rgba(255, 255, 255, 0.95)',
                         backdropFilter: 'blur(40px) saturate(200%)',
-                        border: isDark ? '1px solid rgba(129, 140, 248, 0.15)' : '1px solid rgba(99, 102, 241, 0.12)',
+                        border: isDark ? '1px solid rgba(180, 197, 255, 0.15)' : '1px solid rgba(0, 74, 198, 0.12)',
                         borderRadius: '20px',
                         boxShadow: isDark
-                            ? '0 24px 80px rgba(0,0,0,0.5), 0 0 40px rgba(99,102,241,0.08)'
-                            : '0 24px 80px rgba(0,0,0,0.12), 0 0 40px rgba(99,102,241,0.05)',
+                            ? '0 24px 80px rgba(0,0,0,0.5), 0 0 40px rgba(0,74,198,0.08)'
+                            : '0 24px 80px rgba(0,0,0,0.12), 0 0 40px rgba(0,74,198,0.05)',
                         overflow: 'hidden',
                     },
                 }}
@@ -386,13 +386,13 @@ function Invoices({ user }) {
                 <DialogTitle sx={{
                     display: 'flex', justifyContent: 'space-between', alignItems: 'center',
                     pb: 1.5,
-                    borderBottom: isDark ? '1px solid rgba(129,140,248,0.08)' : '1px solid rgba(99,102,241,0.06)',
+                    borderBottom: isDark ? '1px solid rgba(180,197,255,0.08)' : '1px solid rgba(0,74,198,0.06)',
                 }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                         <Box sx={{
                             width: 38, height: 38, borderRadius: '10px',
                             display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
+                            background: 'linear-gradient(135deg, #004ac6, #2563eb)',
                             color: '#fff',
                         }}>
                             <ReceiptIcon sx={{ fontSize: 20 }} />
@@ -422,32 +422,32 @@ function Invoices({ user }) {
                                 variant="outlined"
                                 sx={{
                                     p: 3,
-                                    fontFamily: 'monospace',
+                                    fontFamily: '"Inter", "Helvetica", "Arial", sans-serif',
                                     fontSize: '0.8125rem',
                                     borderRadius: '14px',
-                                    border: isDark ? '1px solid rgba(129,140,248,0.12)' : '1px solid rgba(99,102,241,0.10)',
-                                    background: isDark ? 'rgba(99,102,241,0.03)' : 'rgba(99,102,241,0.02)',
+                                    border: isDark ? '1px solid rgba(180,197,255,0.12)' : '1px solid rgba(0,74,198,0.10)',
+                                    background: isDark ? 'rgba(0,74,198,0.03)' : 'rgba(0,74,198,0.02)',
                                     color: isDark ? '#e2e8f0' : '#333',
                                 }}
                                 ref={printAreaRef}
                             >
                                 {/* Store Header */}
                                 <Box sx={{ textAlign: 'center', mb: 2 }}>
-                                    <Typography variant="subtitle1" sx={{ fontFamily: 'monospace', fontWeight: 700, mt: 1 }}>
+                                    <Typography variant="subtitle1" sx={{ fontFamily: '"Inter", "Helvetica", "Arial", sans-serif', fontWeight: 700, mt: 1 }}>
                                         {receiptData.order?.store?.name || user?.storeName || 'E-SHOP'}
                                     </Typography>
-                                    <Typography variant="caption" sx={{ fontFamily: 'monospace', color: 'text.secondary' }}>
+                                    <Typography variant="caption" sx={{ fontFamily: '"Inter", "Helvetica", "Arial", sans-serif', color: 'text.secondary' }}>
                                         NIT/Reg: {receiptData.invoice.store_id || '900800700-1'}<br />
                                         Dirección: {receiptData.order?.store?.address || 'Local Comercial'}<br />
                                         WhatsApp: {receiptData.order?.store?.whatsapp || 'N/A'}
                                     </Typography>
                                 </Box>
 
-                                <Box sx={{ borderBottom: `1px dashed ${isDark ? 'rgba(129,140,248,0.2)' : 'rgba(0,0,0,0.15)'}`, mb: 2 }} />
+                                <Box sx={{ borderBottom: `1px dashed ${isDark ? 'rgba(180,197,255,0.2)' : 'rgba(0,0,0,0.15)'}`, mb: 2 }} />
 
                                 {/* Invoice Meta */}
                                 <Box sx={{ mb: 2 }}>
-                                    <Typography variant="caption" sx={{ fontFamily: 'monospace', display: 'block' }}>
+                                    <Typography variant="caption" sx={{ fontFamily: '"Inter", "Helvetica", "Arial", sans-serif', display: 'block' }}>
                                         <strong>Factura Nro:</strong> {receiptData.invoice.invoice_number}<br />
                                         <strong>Fecha:</strong> {new Date(receiptData.invoice.created_at).toLocaleString()}<br />
                                         <strong>Cliente:</strong> {receiptData.invoice.customer_name}<br />
@@ -458,12 +458,12 @@ function Invoices({ user }) {
                                     </Typography>
                                 </Box>
 
-                                <Box sx={{ borderBottom: `1px dashed ${isDark ? 'rgba(129,140,248,0.2)' : 'rgba(0,0,0,0.15)'}`, mb: 1 }} />
+                                <Box sx={{ borderBottom: `1px dashed ${isDark ? 'rgba(180,197,255,0.2)' : 'rgba(0,0,0,0.15)'}`, mb: 1 }} />
 
                                 {/* Items Table */}
-                                <table style={{ width: '100%', fontFamily: 'monospace', fontSize: '0.8125rem' }}>
+                                <table style={{ width: '100%', fontFamily: '"Inter", "Helvetica", "Arial", sans-serif', fontSize: '0.8125rem' }}>
                                     <thead>
-                                        <tr style={{ borderBottom: `1px solid ${isDark ? 'rgba(129,140,248,0.15)' : 'rgba(0,0,0,0.1)'}` }}>
+                                        <tr style={{ borderBottom: `1px solid ${isDark ? 'rgba(180,197,255,0.15)' : 'rgba(0,0,0,0.1)'}` }}>
                                             <th style={{ textAlign: 'left' }}>Detalle</th>
                                             <th style={{ textAlign: 'center' }}>Cant.</th>
                                             <th style={{ textAlign: 'right' }}>Total</th>
@@ -485,7 +485,7 @@ function Invoices({ user }) {
                                     </tbody>
                                 </table>
 
-                                <Box sx={{ borderBottom: `1px dashed ${isDark ? 'rgba(129,140,248,0.2)' : 'rgba(0,0,0,0.15)'}`, mt: 2, mb: 1 }} />
+                                <Box sx={{ borderBottom: `1px dashed ${isDark ? 'rgba(180,197,255,0.2)' : 'rgba(0,0,0,0.15)'}`, mt: 2, mb: 1 }} />
 
                                 {/* Summary */}
                                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, alignItems: 'flex-end' }}>
@@ -500,17 +500,17 @@ function Invoices({ user }) {
                                     <Box sx={{
                                         display: 'flex', width: '100%', justifyContent: 'space-between',
                                         fontWeight: 'bold', fontSize: '0.9rem', pt: 1,
-                                        borderTop: `1px solid ${isDark ? 'rgba(129,140,248,0.2)' : 'rgba(0,0,0,0.15)'}`,
+                                        borderTop: `1px solid ${isDark ? 'rgba(180,197,255,0.2)' : 'rgba(0,0,0,0.15)'}`,
                                     }}>
                                         <span>Total:</span>
                                         <span>${receiptData.invoice.total.toLocaleString()}</span>
                                     </Box>
                                 </Box>
 
-                                <Box sx={{ borderBottom: `1px dashed ${isDark ? 'rgba(129,140,248,0.2)' : 'rgba(0,0,0,0.15)'}`, mt: 2, mb: 2 }} />
+                                <Box sx={{ borderBottom: `1px dashed ${isDark ? 'rgba(180,197,255,0.2)' : 'rgba(0,0,0,0.15)'}`, mt: 2, mb: 2 }} />
 
                                 <Box sx={{ textAlign: 'center' }}>
-                                    <Typography variant="caption" sx={{ fontFamily: 'monospace', fontWeight: 600 }}>
+                                    <Typography variant="caption" sx={{ fontFamily: '"Inter", "Helvetica", "Arial", sans-serif', fontWeight: 600 }}>
                                         ¡Gracias por su compra!<br />
                                         Conserve su factura para cualquier reclamo.
                                     </Typography>
@@ -522,7 +522,7 @@ function Invoices({ user }) {
 
                 <DialogActions sx={{
                     p: 2,
-                    borderTop: isDark ? '1px solid rgba(129,140,248,0.08)' : '1px solid rgba(99,102,241,0.06)',
+                    borderTop: isDark ? '1px solid rgba(180,197,255,0.08)' : '1px solid rgba(0,74,198,0.06)',
                 }}>
                     <Button
                         onClick={() => setShowReceipt(false)}
@@ -543,10 +543,10 @@ function Invoices({ user }) {
                             borderRadius: '10px',
                             fontWeight: 700,
                             textTransform: 'none',
-                            boxShadow: '0 4px 14px rgba(99,102,241,0.3)',
+                            boxShadow: '0 4px 14px rgba(0,74,198,0.3)',
                             transition: 'all 0.2s ease',
                             '&:hover': {
-                                boxShadow: '0 6px 20px rgba(99,102,241,0.4)',
+                                boxShadow: '0 6px 20px rgba(0,74,198,0.4)',
                                 transform: 'translateY(-1px)',
                             },
                         }}
