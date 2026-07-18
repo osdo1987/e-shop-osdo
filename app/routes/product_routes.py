@@ -1,4 +1,6 @@
-from flask import Blueprint, request, jsonify
+import os
+import hashlib
+from flask import Blueprint, request, jsonify, send_from_directory
 from app.services.product_service import ProductService
 from app.schemas.product_schema import ProductSchema
 from flask_jwt_extended import jwt_required, get_jwt_identity
@@ -7,6 +9,34 @@ from app.models.product import Product
 from app.extensions import socketio
 
 product_bp = Blueprint('products', __name__)
+
+UPLOAD_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), 'uploads')
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp', 'svg'}
+MAX_FILE_SIZE = 5 * 1024 * 1024  # 5MB
+
+
+def _allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+
+def _save_upload(file):
+    if not file or not file.filename or not _allowed_file(file.filename):
+        return None
+    ext = file.filename.rsplit('.', 1)[1].lower()
+    file_bytes = file.read()
+    file.seek(0)
+    sha256 = hashlib.sha256(file_bytes).hexdigest()
+    filename = f"{sha256}.{ext}"
+    os.makedirs(UPLOAD_DIR, exist_ok=True)
+    filepath = os.path.join(UPLOAD_DIR, filename)
+    if not os.path.exists(filepath):
+        file.save(filepath)
+    return f"/uploads/{filename}"
+
+
+def _is_blob_url(url):
+    return url and isinstance(url, str) and url.startswith('blob:')
+
 product_schema = ProductSchema()
 products_schema = ProductSchema(many=True)
 
@@ -139,6 +169,15 @@ def create_product():
     if not data.get('store_id'):
         return jsonify({'error': 'El store_id es requerido'}), 400
     
+    uploaded_url = None
+    if 'image' in request.files:
+        file = request.files['image']
+        uploaded_url = _save_upload(file)
+        if uploaded_url:
+            data['image_url'] = uploaded_url
+    if _is_blob_url(data.get('image_url')):
+        data['image_url'] = None
+    
     try:
         product = ProductService.create_product(data['store_id'], data)
         socketio.emit('product_created', product, namespace='/')
@@ -215,6 +254,15 @@ def update_product(product_id):
                     pass
     
     try:
+        uploaded_url = None
+        if 'image' in request.files:
+            file = request.files['image']
+            uploaded_url = _save_upload(file)
+            if uploaded_url:
+                data['image_url'] = uploaded_url
+        if _is_blob_url(data.get('image_url')):
+            data['image_url'] = product_obj.image_url or None
+        
         product = ProductService.update_product(product_id, data)
         if not product:
             return jsonify({'error': 'Producto no encontrado'}), 404

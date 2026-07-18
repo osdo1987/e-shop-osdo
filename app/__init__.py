@@ -1,7 +1,10 @@
-from flask import Flask, jsonify
+import os
+from flask import Flask, jsonify, send_from_directory
 from app.config import Config
 from app.extensions import db, migrate, jwt, ma, bcrypt, swagger, cors, mail, socketio
 from flask_cors import CORS
+
+UPLOAD_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'uploads')
 
 def create_app(config_class=Config):
     app = Flask(__name__)
@@ -9,6 +12,10 @@ def create_app(config_class=Config):
     
     # Enable CORS for all domains on all routes
     CORS(app)
+
+    @app.route('/uploads/<path:filename>')
+    def serve_upload(filename):
+        return send_from_directory(UPLOAD_DIR, filename)
 
     # Configure Swagger UI
     app.config['SWAGGER'] = {

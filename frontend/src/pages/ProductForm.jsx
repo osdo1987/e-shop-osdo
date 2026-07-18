@@ -630,7 +630,7 @@ export default function ProductForm({ user, onLogout }) {
   const toppingGroups = parseToppingsSafe(data.toppings_config);
 
   return (
-    <AdminLayout>
+    <AdminLayout user={user} onLogout={onLogout}>
       <Toast open={toast.open} message={toast.message} severity={toast.severity} onClose={() => setToast((t) => ({ ...t, open: false }))} />
       <ConfirmModal
         open={confirmOpen}

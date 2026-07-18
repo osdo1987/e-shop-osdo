@@ -38,6 +38,7 @@ function App({ darkMode, setDarkMode }) {
         localStorage.removeItem('user')
         localStorage.removeItem('token')
         setUser(null)
+        window.location.href = '/login'
     }, [])
 
     const forceLogout = useCallback(() => {
