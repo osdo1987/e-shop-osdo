@@ -117,7 +117,18 @@ def create_product():
     if current_user.role == 'STAFF':
         return jsonify({'error': 'No autorizado: los empleados no pueden crear productos'}), 403
     
-    data = request.get_json()
+    # Handle both JSON and multipart/form-data requests
+    if request.is_json:
+        data = request.get_json()
+    else:
+        data = request.form.to_dict()
+        # Parse numeric fields from form data
+        for field in ['price', 'promo_price', 'purchase_price', 'stock', 'category_id', 'store_id']:
+            if field in data and data[field]:
+                try:
+                    data[field] = float(data[field]) if field in ['price', 'promo_price', 'purchase_price'] else int(data[field])
+                except ValueError:
+                    pass
     
     if current_user.store_id != data.get('store_id') and current_user.role != 'SUPERADMIN':
         return jsonify({'error': 'No autorizado'}), 403
@@ -125,9 +136,15 @@ def create_product():
     if not data.get('name') or not data.get('price') or not data.get('category_id'):
         return jsonify({'error': 'Faltan campos obligatorios (name, price, category_id)'}), 400
     
-    product = ProductService.create_product(data['store_id'], data)
-    socketio.emit('product_created', product, namespace='/')
-    return jsonify(product), 201
+    if not data.get('store_id'):
+        return jsonify({'error': 'El store_id es requerido'}), 400
+    
+    try:
+        product = ProductService.create_product(data['store_id'], data)
+        socketio.emit('product_created', product, namespace='/')
+        return jsonify(product), 201
+    except Exception as e:
+        return jsonify({'error': f'Error al crear el producto: {str(e)}'}), 500
 
 @product_bp.route('/<int:product_id>', methods=['PUT'])
 @jwt_required()
@@ -184,11 +201,27 @@ def update_product(product_id):
     if current_user.role != 'SUPERADMIN' and current_user.store_id != product_obj.store_id:
         return jsonify({'error': 'No autorizado'}), 403
     
-    data = request.get_json()
-    product = ProductService.update_product(product_id, data)
+    # Handle both JSON and multipart/form-data requests
+    if request.is_json:
+        data = request.get_json()
+    else:
+        data = request.form.to_dict()
+        # Parse numeric fields from form data
+        for field in ['price', 'promo_price', 'purchase_price', 'stock', 'category_id']:
+            if field in data and data[field]:
+                try:
+                    data[field] = float(data[field]) if field in ['price', 'promo_price', 'purchase_price'] else int(data[field])
+                except ValueError:
+                    pass
     
-    socketio.emit('product_updated', product, namespace='/')
-    return jsonify(product), 200
+    try:
+        product = ProductService.update_product(product_id, data)
+        if not product:
+            return jsonify({'error': 'Producto no encontrado'}), 404
+        socketio.emit('product_updated', product, namespace='/')
+        return jsonify(product), 200
+    except Exception as e:
+        return jsonify({'error': f'Error al actualizar el producto: {str(e)}'}), 500
 
 @product_bp.route('/<int:product_id>', methods=['DELETE'])
 @jwt_required()
@@ -225,9 +258,12 @@ def delete_product(product_id):
     if current_user.role != 'SUPERADMIN' and current_user.store_id != product_obj.store_id:
         return jsonify({'error': 'No autorizado'}), 403
     
-    success = ProductService.delete_product(product_id)
-    if not success:
-        return jsonify({'error': 'Producto no encontrado'}), 404
-    
-    socketio.emit('product_deleted', {'product_id': product_id}, namespace='/')
-    return jsonify({'message': 'Producto eliminado'}), 200
+    try:
+        success = ProductService.delete_product(product_id)
+        if not success:
+            return jsonify({'error': 'Producto no encontrado'}), 404
+        
+        socketio.emit('product_deleted', {'product_id': product_id}, namespace='/')
+        return jsonify({'message': 'Producto eliminado'}), 200
+    except Exception as e:
+        return jsonify({'error': f'Error al eliminar el producto: {str(e)}'}), 500

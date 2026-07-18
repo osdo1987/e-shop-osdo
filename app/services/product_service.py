@@ -26,61 +26,73 @@ class ProductService:
     @staticmethod
     def create_product(store_id, data):
         """Create a new product"""
-        product = Product(
-            name=data['name'],
-            description=data.get('description'),
-            price=data['price'],
-            promo_price=data.get('promo_price'),
-            purchase_price=data.get('purchase_price'),
-            image_url=data.get('image_url'),
-            stock=data.get('stock', 0),
-            sizes=data.get('sizes'),
-            toppings_config=data.get('toppings_config'),
-            category_id=data['category_id'],
-            store_id=store_id
-        )
-        db.session.add(product)
-        db.session.commit()
-        return product_schema.dump(product)
+        try:
+            product = Product(
+                name=data['name'],
+                description=data.get('description'),
+                price=data['price'],
+                promo_price=data.get('promo_price'),
+                purchase_price=data.get('purchase_price'),
+                image_url=data.get('image_url'),
+                stock=data.get('stock', 0),
+                sizes=data.get('sizes'),
+                toppings_config=data.get('toppings_config'),
+                category_id=data['category_id'],
+                store_id=store_id
+            )
+            db.session.add(product)
+            db.session.commit()
+            return product_schema.dump(product)
+        except Exception as e:
+            db.session.rollback()
+            raise e
     
     @staticmethod
     def update_product(product_id, data):
         """Update a product"""
-        product = Product.query.get(product_id)
-        if not product:
-            return None
-        
-        if 'name' in data:
-            product.name = data['name']
-        if 'description' in data:
-            product.description = data['description']
-        if 'price' in data:
-            product.price = data['price']
-        if 'promo_price' in data:
-            product.promo_price = data['promo_price']
-        if 'purchase_price' in data:
-            product.purchase_price = data['purchase_price']
-        if 'image_url' in data:
-            product.image_url = data['image_url']
-        if 'stock' in data:
-            product.stock = data['stock']
-        if 'sizes' in data:
-            product.sizes = data['sizes']
-        if 'toppings_config' in data:
-            product.toppings_config = data['toppings_config']
-        if 'category_id' in data:
-            product.category_id = data['category_id']
-        
-        db.session.commit()
-        return product_schema.dump(product)
+        try:
+            product = Product.query.get(product_id)
+            if not product:
+                return None
+            
+            if 'name' in data:
+                product.name = data['name']
+            if 'description' in data:
+                product.description = data['description']
+            if 'price' in data:
+                product.price = data['price']
+            if 'promo_price' in data:
+                product.promo_price = data['promo_price']
+            if 'purchase_price' in data:
+                product.purchase_price = data['purchase_price']
+            if 'image_url' in data:
+                product.image_url = data['image_url']
+            if 'stock' in data:
+                product.stock = data['stock']
+            if 'sizes' in data:
+                product.sizes = data['sizes']
+            if 'toppings_config' in data:
+                product.toppings_config = data['toppings_config']
+            if 'category_id' in data:
+                product.category_id = data['category_id']
+            
+            db.session.commit()
+            return product_schema.dump(product)
+        except Exception as e:
+            db.session.rollback()
+            raise e
     
     @staticmethod
     def delete_product(product_id):
         """Delete a product"""
-        product = Product.query.get(product_id)
-        if not product:
-            return False
-        
-        db.session.delete(product)
-        db.session.commit()
-        return True
+        try:
+            product = Product.query.get(product_id)
+            if not product:
+                return False
+            
+            db.session.delete(product)
+            db.session.commit()
+            return True
+        except Exception as e:
+            db.session.rollback()
+            raise e

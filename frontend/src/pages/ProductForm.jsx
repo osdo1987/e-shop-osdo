@@ -84,25 +84,25 @@ const parseToppingsSafe = (v) => {
 };
 
 const fieldMeta = {
-  name:           { section: "basic",      label: "Nombre del producto", required: true,  placeholder: "Ej: Burger Especial" },
-  description:    { section: "basic",      label: "Descripción",         required: false, placeholder: "Describe el producto..." },
-  category_id:    { section: "category",   label: "Categoría",           required: true  },
-  price:          { section: "pricing",    label: "Precio de venta ($)", required: true  },
-  purchase_price: { section: "pricing",    label: "Costo / precio de compra ($)", required: false },
-  promo_price:    { section: "pricing",    label: "Precio promo ($) (opcional)", required: false },
-  stock:          { section: "stock",      label: "Stock actual",        required: false },
-  sizes:          { section: "sizes",      label: "Configuración de tamaños",  required: false },
-  toppings_config:{ section: "toppings",   label: "Configuración de toppings", required: false },
+  name: { section: "basic", label: "Nombre del producto", required: true, placeholder: "Ej: Burger Especial" },
+  description: { section: "basic", label: "Descripción", required: false, placeholder: "Describe el producto..." },
+  category_id: { section: "category", label: "Categoría", required: true },
+  price: { section: "pricing", label: "Precio de venta ($)", required: true },
+  purchase_price: { section: "pricing", label: "Costo / precio de compra ($)", required: false },
+  promo_price: { section: "pricing", label: "Precio promo ($) (opcional)", required: false },
+  stock: { section: "stock", label: "Stock actual", required: false },
+  sizes: { section: "sizes", label: "Configuración de tamaños", required: false },
+  toppings_config: { section: "toppings", label: "Configuración de toppings", required: false },
 };
 
 const sections = [
-  { id: "category",  label: "Categoría",  icon: <CategoryIcon fontSize="small" /> },
-  { id: "basic",     label: "Básico",      icon: <InfoIcon fontSize="small" /> },
-  { id: "pricing",   label: "Precios",     icon: <MoneyIcon fontSize="small" /> },
-  { id: "stock",     label: "Stock",       icon: <StockIcon fontSize="small" /> },
-  { id: "media",     label: "Imágenes",    icon: <ImageIcon fontSize="small" /> },
-  { id: "sizes",     label: "Tamaños",     icon: <SizeIcon fontSize="small" /> },
-  { id: "toppings",  label: "Toppings",    icon: <ToppingIcon fontSize="small" /> },
+  { id: "category", label: "Categoría", icon: <CategoryIcon fontSize="small" /> },
+  { id: "basic", label: "Básico", icon: <InfoIcon fontSize="small" /> },
+  { id: "pricing", label: "Precios", icon: <MoneyIcon fontSize="small" /> },
+  { id: "stock", label: "Stock", icon: <StockIcon fontSize="small" /> },
+  { id: "media", label: "Imágenes", icon: <ImageIcon fontSize="small" /> },
+  { id: "sizes", label: "Tamaños", icon: <SizeIcon fontSize="small" /> },
+  { id: "toppings", label: "Toppings", icon: <ToppingIcon fontSize="small" /> },
 ];
 
 function ProductPreview({ data, categories, theme }) {
@@ -549,6 +549,14 @@ export default function ProductForm({ user, onLogout }) {
         category_id: parseInt(data.category_id) || null,
         store_id: user?.storeId || user?.store_id || null,
       };
+
+      // Validate store_id is not null
+      if (!payload.store_id) {
+        setToast({ open: true, message: "Error: No se encontró la tienda. Por favor, recarga la página.", severity: "error" });
+        setLoading(false);
+        return;
+      }
+
       let body;
       let headers = { Authorization: `Bearer ${token}` };
       if (data.imageFile) {
