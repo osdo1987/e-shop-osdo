@@ -302,7 +302,8 @@ function OrderCard({ order, onView, onStatusChange, isDark }) {
     )
 }
 
-function OrderDetailModal({ order, onClose, onStatusChange, onUpdateNotes, onCopyLink, history, isDark }) {
+function OrderDetailModal({ order, onClose, onStatusChange, onUpdateNotes, onCopyLink, history, isDark, user }) {
+    const isStaff = user?.role === 'STAFF'
     const [sellerNotes, setSellerNotes] = useState(order.seller_notes || '')
     const [estimatedDelivery, setEstimatedDelivery] = useState(
         order.estimated_delivery ? order.estimated_delivery.slice(0, 16) : ''
@@ -327,12 +328,14 @@ function OrderDetailModal({ order, onClose, onStatusChange, onUpdateNotes, onCop
     return (
         <Dialog
             open={!!order} onClose={onClose} maxWidth="sm" fullWidth
-            PaperProps={{
-                sx: {
-                    borderRadius: '20px',
-                    maxHeight: '90vh',
-                    background: isDark ? 'rgba(10,10,28,0.98)' : '#fff',
-                },
+            slotProps={{
+                paper: {
+                    sx: {
+                        borderRadius: '20px',
+                        maxHeight: '90vh',
+                        background: isDark ? 'rgba(10,10,28,0.98)' : '#fff',
+                    },
+                }
             }}
         >
             <DialogTitle sx={{ pb: 1, pt: 2, px: 3 }}>
@@ -489,6 +492,8 @@ function OrderDetailModal({ order, onClose, onStatusChange, onUpdateNotes, onCop
                 <Divider sx={{ mb: 2 }} />
 
                 {/* Estimated Delivery */}
+                {!isStaff && (
+                <>
                 <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1, fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'text.secondary', display: 'flex', alignItems: 'center', gap: 0.5 }}>
                     <ScheduleIcon sx={{ fontSize: 16 }} />
                     Hora Estimada de Entrega
@@ -509,8 +514,12 @@ function OrderDetailModal({ order, onClose, onStatusChange, onUpdateNotes, onCop
                         Guardar
                     </Button>
                 </Box>
+                </>
+                )}
 
                 {/* Seller Notes */}
+                {!isStaff && (
+                <>
                 <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1, fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'text.secondary', display: 'flex', alignItems: 'center', gap: 0.5 }}>
                     <StickyNote2Icon sx={{ fontSize: 16 }} />
                     Notas Internas
@@ -531,6 +540,8 @@ function OrderDetailModal({ order, onClose, onStatusChange, onUpdateNotes, onCop
                         Guardar
                     </Button>
                 </Box>
+                </>
+                )}
 
                 {/* Status History */}
                 {history.length > 0 && (
@@ -608,7 +619,7 @@ function OrderDetailModal({ order, onClose, onStatusChange, onUpdateNotes, onCop
                 )}
 
                 {/* Quick Actions */}
-                {(trans.next || trans.canCancel || trans.canReactivate) && (
+                {(!isStaff || trans.next) && (
                     <>
                         <Divider sx={{ my: 2 }} />
                         <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
@@ -625,7 +636,7 @@ function OrderDetailModal({ order, onClose, onStatusChange, onUpdateNotes, onCop
                                     {STATUS_META[trans.next]?.icon} {trans.nextLabel}
                                 </Button>
                             )}
-                            {trans.skipTo && (
+                            {!isStaff && trans.skipTo && (
                                 <Button
                                     variant="outlined" fullWidth
                                     onClick={() => onStatusChange(order.id, trans.skipTo)}
@@ -634,7 +645,7 @@ function OrderDetailModal({ order, onClose, onStatusChange, onUpdateNotes, onCop
                                     {trans.skipLabel}
                                 </Button>
                             )}
-                            {trans.canCancel && (
+                            {!isStaff && trans.canCancel && (
                                 <Button
                                     variant="outlined" fullWidth
                                     onClick={() => onStatusChange(order.id, 'CANCELADO')}
@@ -643,7 +654,7 @@ function OrderDetailModal({ order, onClose, onStatusChange, onUpdateNotes, onCop
                                     Cancelar pedido
                                 </Button>
                             )}
-                            {trans.canReactivate && (
+                            {!isStaff && trans.canReactivate && (
                                 <Button
                                     variant="contained" fullWidth
                                     onClick={() => onStatusChange(order.id, 'PENDIENTE')}
@@ -661,6 +672,7 @@ function OrderDetailModal({ order, onClose, onStatusChange, onUpdateNotes, onCop
 }
 
 function Orders({ user, onLogout }) {
+    const isStaff = user?.role === 'STAFF'
     const [orders, setOrders] = useState([])
     const [loading, setLoading] = useState(true)
     const [statusFilter, setStatusFilter] = useState('ALL')
@@ -1087,7 +1099,7 @@ function Orders({ user, onLogout }) {
                                                                     />
                                                                 </Tooltip>
                                                             )}
-                                                            {trans.canCancel && (
+                                                            {!isStaff && trans.canCancel && (
                                                                 <Tooltip title="Cancelar" arrow>
                                                                     <Chip
                                                                         icon={<CancelIcon sx={{ fontSize: '0.7rem !important' }} />}
@@ -1102,7 +1114,7 @@ function Orders({ user, onLogout }) {
                                                                     />
                                                                 </Tooltip>
                                                             )}
-                                                            {trans.canReactivate && (
+                                                            {!isStaff && trans.canReactivate && (
                                                                 <Tooltip title="Reactivar" arrow>
                                                                     <Chip
                                                                         icon={<PlayArrowIcon sx={{ fontSize: '0.75rem !important' }} />}
@@ -1152,6 +1164,7 @@ function Orders({ user, onLogout }) {
                     onCopyLink={copyTrackingLink}
                     history={orderHistory}
                     isDark={isDark}
+                    user={user}
                 />
             )}
 

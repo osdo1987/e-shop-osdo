@@ -3,7 +3,7 @@ import {
   Box, TextField, Button, Typography, Grid, IconButton,
   CircularProgress, Chip, Tooltip, Card, CardContent,
   LinearProgress, useMediaQuery, Dialog, DialogTitle,
-  DialogContent, Zoom, Fade, Grow,
+  DialogContent, Zoom, Fade, Grow, FormControlLabel, Switch,
 } from "@mui/material";
 import { useTheme, alpha } from "@mui/material/styles";
 import {
@@ -16,7 +16,7 @@ import {
   Inventory as StockIcon,
   Fullscreen as FullscreenIcon,
 } from "@mui/icons-material";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, Navigate } from "react-router-dom";
 import AdminLayout from "../components/AdminLayout";
 import Toast from "../components/Toast";
 import ConfirmModal from "../components/ConfirmModal";
@@ -252,7 +252,7 @@ function SectionHeader({ icon, label, filled, onClick }) {
   );
 }
 
-export default function ProductForm({ user }) {
+export default function ProductForm({ user, onLogout }) {
   const theme = useTheme();
   const navigate = useNavigate();
   const { id } = useParams();
@@ -274,6 +274,15 @@ export default function ProductForm({ user }) {
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const formRef = useRef(null);
   const formSectionRef = useRef({});
+  const dataRef = useRef(data);
+  const loadingRef = useRef(loading);
+  const errorsRef = useRef(errors);
+
+  useEffect(() => { dataRef.current = data; }, [data]);
+  useEffect(() => { loadingRef.current = loading; }, [loading]);
+  useEffect(() => { errorsRef.current = errors; }, [errors]);
+  const dirtyRef = useRef(dirty);
+  useEffect(() => { dirtyRef.current = dirty; }, [dirty]);
 
   const sectionFilled = useCallback((sectionId) => {
     if (sectionId === "category") return !!data.category_id;
@@ -308,12 +317,12 @@ export default function ProductForm({ user }) {
     if (d.stock !== "" && d.stock !== undefined && parseInt(d.stock) < 0)
       e.stock = "El stock no puede ser negativo";
     return e;
-  }, [data]);
+  }, []);
 
   useEffect(() => {
     if (isEditing) {
       setPageLoading(true);
-      fetch(`${import.meta.env.VITE_API_URL}/api/products/${id}`, {
+      fetch(`/api/products/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       })
         .then((r) => r.json())
@@ -338,40 +347,45 @@ export default function ProductForm({ user }) {
   }, [id, isEditing, token]);
 
   useEffect(() => {
-    fetch(`${import.meta.env.VITE_API_URL}/api/categories`, {
+    fetch(`/api/categories`, {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then((r) => r.json())
       .then((d) => setCategories(Array.isArray(d) ? d : d.categories || []))
-      .catch(() => {});
+      .catch((err) => {
+        console.error("Error fetching categories:", err);
+        setToast({ open: true, message: "Error al cargar categorías", severity: "error" });
+      });
   }, [token]);
 
   useEffect(() => {
-    const e = validate(data);
-    setErrors(e);
+    const timer = setTimeout(() => {
+      setErrors(validate(data));
+    }, 300);
+    return () => clearTimeout(timer);
   }, [data, validate]);
 
   useEffect(() => {
     const handler = (e) => {
       if ((e.ctrlKey || e.metaKey) && e.key === "s") {
         e.preventDefault();
-        if (!loading && Object.keys(errors).length === 0) handleSubmit();
+        if (!loadingRef.current && Object.keys(errorsRef.current).length === 0) handleSubmitRef.current();
       }
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [loading, errors, data]);
+  }, []);
 
   useEffect(() => {
     const handler = (e) => {
-      if (dirty && !loading) {
+      if (dirtyRef.current && !loadingRef.current) {
         e.preventDefault();
         e.returnValue = "";
       }
     };
     window.addEventListener("beforeunload", handler);
     return () => window.removeEventListener("beforeunload", handler);
-  }, [dirty, loading]);
+  }, []);
 
   const handleChange = (field) => (e) => {
     let value = e.target.type === "checkbox" ? e.target.checked : e.target.value;
@@ -548,8 +562,8 @@ export default function ProductForm({ user }) {
         headers["Content-Type"] = "application/json";
       }
       const url = isEditing
-        ? `${import.meta.env.VITE_API_URL}/api/products/${id}`
-        : `${import.meta.env.VITE_API_URL}/api/products`;
+        ? `/api/products/${id}`
+        : `/api/products`;
       const res = await fetch(url, {
         method: isEditing ? "PUT" : "POST",
         headers,
@@ -566,6 +580,9 @@ export default function ProductForm({ user }) {
       setLoading(false);
     }
   };
+
+  const handleSubmitRef = useRef(handleSubmit);
+  useEffect(() => { handleSubmitRef.current = handleSubmit; }, [handleSubmit]);
 
   const handleCancel = () => {
     if (dirty) {
@@ -589,9 +606,11 @@ export default function ProductForm({ user }) {
     if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
+  if (user?.role === 'STAFF') return <Navigate to="/admin/pos" />
+
   if (pageLoading) {
     return (
-      <AdminLayout>
+      <AdminLayout title={isEditing ? "Editar Producto" : "Nuevo Producto"} user={user} onLogout={onLogout}>
         <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "60vh" }}>
           <CircularProgress />
         </Box>
@@ -659,33 +678,6 @@ export default function ProductForm({ user }) {
               </Tooltip>
             </Box>
           </Box>
-
-          {fillPercentage < 100 && (
-            <Box sx={{ mb: 3 }}>
-              <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 0.5 }}>
-                <Typography variant="caption" sx={{ color: "text.secondary" }}>
-                  Progreso del formulario
-                </Typography>
-                <Typography variant="caption" sx={{ fontWeight: 700, color: fillPercentage >= 75 ? "success.main" : "primary.main" }}>
-                  {fillPercentage}%
-                </Typography>
-              </Box>
-              <LinearProgress
-                variant="determinate"
-                value={fillPercentage}
-                sx={{
-                  height: 6, borderRadius: 3,
-                  backgroundColor: "action.hover",
-                  "& .MuiLinearProgress-bar": {
-                    borderRadius: 3,
-                    background: fillPercentage >= 75
-                      ? "linear-gradient(90deg, #4CAF50, #66BB6A)"
-                      : "linear-gradient(90deg, #667eea, #764ba2)",
-                  },
-                }}
-              />
-            </Box>
-          )}
 
           <Box sx={{
             display: "flex", gap: 3,
@@ -760,7 +752,7 @@ export default function ProductForm({ user }) {
                 <Box ref={(el) => (formSectionRef.current.basic = el)} sx={{ ...sectionBox, p: { xs: 2, md: 3 }, mb: 2.5 }}>
                   <SectionHeader icon={<InfoIcon fontSize="small" />} label="Información básica" filled={!!data.name} onClick={() => scrollToSection("basic")} />
                   <Grid container spacing={2}>
-                    <Grid item xs={12}>
+                    <Grid xs={12}>
                       <TextField
                         fullWidth label={fieldMeta.name.label} value={data.name}
                         onChange={handleChange("name")} onBlur={handleBlur("name")}
@@ -769,7 +761,7 @@ export default function ProductForm({ user }) {
                         required sx={inputSx}
                       />
                     </Grid>
-                    <Grid item xs={12}>
+                    <Grid xs={12}>
                       <TextField
                         fullWidth label={fieldMeta.description.label} value={data.description}
                         onChange={handleChange("description")} onBlur={handleBlur("description")}
@@ -784,30 +776,30 @@ export default function ProductForm({ user }) {
                 <Box ref={(el) => (formSectionRef.current.pricing = el)} sx={{ ...sectionBox, p: { xs: 2, md: 3 }, mb: 2.5 }}>
                   <SectionHeader icon={<MoneyIcon fontSize="small" />} label="Precios" filled={!!data.price} onClick={() => scrollToSection("pricing")} />
                   <Grid container spacing={2}>
-                    <Grid item xs={12} sm={4}>
+                    <Grid xs={12} sm={4}>
                       <TextField
                         fullWidth label={fieldMeta.price.label} value={data.price}
                         onChange={handleChange("price")} onBlur={handleBlur("price")}
-                        required type="number" inputProps={{ min: 0, step: 0.01 }}
+                        required type="number" slotProps={{ htmlInput: { min: 0, step: 0.01 } }}
                         error={touched.price && !!errors.price} helperText={touched.price && errors.price}
                         sx={inputSx}
                       />
                     </Grid>
-                    <Grid item xs={12} sm={4}>
+                    <Grid xs={12} sm={4}>
                       <TextField
                         fullWidth label={fieldMeta.purchase_price.label} value={data.purchase_price}
                         onChange={handleChange("purchase_price")} onBlur={handleBlur("purchase_price")}
-                        type="number" inputProps={{ min: 0, step: 0.01 }}
+                        type="number" slotProps={{ htmlInput: { min: 0, step: 0.01 } }}
                         error={touched.purchase_price && !!errors.purchase_price}
                         helperText={touched.purchase_price && errors.purchase_price}
                         sx={inputSx}
                       />
                     </Grid>
-                    <Grid item xs={12} sm={4}>
+                    <Grid xs={12} sm={4}>
                       <TextField
                         fullWidth label={fieldMeta.promo_price.label} value={data.promo_price}
                         onChange={handleChange("promo_price")} onBlur={handleBlur("promo_price")}
-                        type="number" inputProps={{ min: 0, step: 0.01 }}
+                        type="number" slotProps={{ htmlInput: { min: 0, step: 0.01 } }}
                         error={touched.promo_price && !!errors.promo_price}
                         helperText={touched.promo_price && errors.promo_price}
                         sx={inputSx}
@@ -857,11 +849,11 @@ export default function ProductForm({ user }) {
                 <Box ref={(el) => (formSectionRef.current.stock = el)} sx={{ ...sectionBox, p: { xs: 2, md: 3 }, mb: 2.5 }}>
                   <SectionHeader icon={<StockIcon fontSize="small" />} label="Inventario" filled={!!data.stock} onClick={() => scrollToSection("stock")} />
                   <Grid container spacing={2}>
-                    <Grid item xs={12} sm={6}>
+                    <Grid xs={12} sm={6}>
                       <TextField
                         fullWidth label={fieldMeta.stock.label} value={data.stock}
                         onChange={handleChange("stock")} onBlur={handleBlur("stock")}
-                        type="number" inputProps={{ min: 0, step: 1 }}
+                        type="number" slotProps={{ htmlInput: { min: 0, step: 1 } }}
                         error={touched.stock && !!errors.stock} helperText={touched.stock && errors.stock}
                         sx={inputSx}
                       />
@@ -932,13 +924,13 @@ export default function ProductForm({ user }) {
                         <TextField
                           label="Precio" value={size.price} type="number"
                           onChange={(e) => handleSizesChange(idx, "price", e.target.value)}
-                          size="small" inputProps={{ min: 0, step: 0.01 }}
+                          size="small" slotProps={{ htmlInput: { min: 0, step: 0.01 } }}
                           sx={{ flex: 1, ...inputSx }}
                         />
                         <TextField
                           label="Stock" value={size.stock} type="number"
                           onChange={(e) => handleSizesChange(idx, "stock", e.target.value)}
-                          size="small" inputProps={{ min: 0, step: 1 }}
+                          size="small" slotProps={{ htmlInput: { min: 0, step: 1 } }}
                           sx={{ flex: 1, ...inputSx }}
                         />
                         <Tooltip title="Eliminar tamaño" arrow>
@@ -986,19 +978,19 @@ export default function ProductForm({ user }) {
                           </Tooltip>
                         </Box>
                         <Grid container spacing={1} sx={{ mb: 1 }}>
-                          <Grid item xs={6}>
+                          <Grid xs={6}>
                             <TextField
                               label="Mín. selecciones" value={group.min ?? 0} type="number"
                               onChange={(e) => handleToppingsConfigChange(gIdx, "min", parseInt(e.target.value) || 0)}
-                              size="small" inputProps={{ min: 0 }}
+                              size="small" slotProps={{ htmlInput: { min: 0 } }}
                               sx={inputSx}
                             />
                           </Grid>
-                          <Grid item xs={6}>
+                          <Grid xs={6}>
                             <TextField
                               label="Máx. selecciones" value={group.max ?? 0} type="number"
                               onChange={(e) => handleToppingsConfigChange(gIdx, "max", parseInt(e.target.value) || 0)}
-                              size="small" inputProps={{ min: 0 }}
+                              size="small" slotProps={{ htmlInput: { min: 0 } }}
                               sx={inputSx}
                             />
                           </Grid>
@@ -1013,7 +1005,7 @@ export default function ProductForm({ user }) {
                             <TextField
                               label="Precio" value={opt.price} type="number"
                               onChange={(e) => handleToppingOptionChange(gIdx, oIdx, "price", e.target.value)}
-                              size="small" inputProps={{ min: 0, step: 0.01 }}
+                              size="small" slotProps={{ htmlInput: { min: 0, step: 0.01 } }}
                               sx={{ flex: 1, ...inputSx }}
                             />
                             <Tooltip title="Eliminar opción" arrow>
@@ -1067,6 +1059,32 @@ export default function ProductForm({ user }) {
             {!isMobile && (
               <Box sx={{ width: 340, flexShrink: 0, display: { xs: "none", md: "block" } }}>
                 <ProductPreview data={data} categories={categories} theme={theme} />
+                {fillPercentage < 100 && (
+                  <Box sx={{ mt: 2 }}>
+                    <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 0.5 }}>
+                      <Typography variant="caption" sx={{ color: "text.secondary" }}>
+                        Progreso del formulario
+                      </Typography>
+                      <Typography variant="caption" sx={{ fontWeight: 700, color: fillPercentage >= 75 ? "success.main" : "primary.main" }}>
+                        {fillPercentage}%
+                      </Typography>
+                    </Box>
+                    <LinearProgress
+                      variant="determinate"
+                      value={fillPercentage}
+                      sx={{
+                        height: 6, borderRadius: 3,
+                        backgroundColor: "action.hover",
+                        "& .MuiLinearProgress-bar": {
+                          borderRadius: 3,
+                          background: fillPercentage >= 75
+                            ? "linear-gradient(90deg, #4CAF50, #66BB6A)"
+                            : "linear-gradient(90deg, #667eea, #764ba2)",
+                        },
+                      }}
+                    />
+                  </Box>
+                )}
               </Box>
             )}
           </Box>
@@ -1077,7 +1095,7 @@ export default function ProductForm({ user }) {
         open={previewOpen} onClose={() => setPreviewOpen(false)}
         fullScreen={isMobile} maxWidth="sm" fullWidth
         TransitionComponent={Zoom}
-        PaperProps={{ sx: { borderRadius: isMobile ? 0 : "20px", overflow: "hidden" } }}
+        slotProps={{ paper: { sx: { borderRadius: isMobile ? 0 : "20px", overflow: "hidden" } } }}
       >
         <DialogTitle sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", pb: 1 }}>
           <Typography variant="h6" sx={{ fontWeight: 700 }}>Vista previa</Typography>

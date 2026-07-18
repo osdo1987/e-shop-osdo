@@ -194,7 +194,7 @@ function ForgotPassword() {
                                 <TextField
                                     fullWidth label="Correo Electrónico" type="email"
                                     value={email} onChange={(e) => setEmail(e.target.value)}
-                                    placeholder="vendedor@tienda.com" required
+                                    placeholder="gerente@tienda.com" required
                                     sx={{
                                         mb: 3.5,
                                         '& .MuiOutlinedInput-root': {

@@ -10,7 +10,7 @@ class UserSchema(ma.SQLAlchemyAutoSchema):
     
     id = fields.Int(dump_only=True)
     email = fields.Email(required=True, validate=validate.Email())
-    role = fields.String(required=True, validate=validate.OneOf(['SUPERADMIN', 'SELLER']))
+    role = fields.String(required=True, validate=validate.OneOf(['SUPERADMIN', 'MANAGER', 'STAFF']))
     store_id = fields.Int(allow_none=True)
     created_at = fields.DateTime(dump_only=True)
     updated_at = fields.DateTime(dump_only=True)

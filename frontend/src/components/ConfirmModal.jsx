@@ -31,26 +31,26 @@ function ConfirmModal({ isOpen, title, message, onConfirm, onCancel, confirmText
             onClose={onCancel}
             maxWidth="xs"
             fullWidth
-            PaperProps={{
-                sx: {
-                    borderRadius: '20px',
-                    overflow: 'visible',
-                    background: isDark
-                        ? 'rgba(10, 10, 28, 0.95)'
-                        : 'rgba(255, 255, 255, 0.95)',
-                    backdropFilter: 'blur(40px) saturate(200%)',
-                    WebkitBackdropFilter: 'blur(40px) saturate(200%)',
-                    border: isDark
-                        ? '1px solid rgba(180, 197, 255, 0.15)'
-                        : '1px solid rgba(0, 74, 198, 0.12)',
-                    boxShadow: isDark
-                        ? '0 32px 80px rgba(0,0,0,0.7), 0 0 0 1px rgba(180,197,255,0.08)'
-                        : '0 32px 80px rgba(0,74,198,0.18), 0 0 0 1px rgba(0,74,198,0.05)',
-                    p: 0,
-                    animation: 'fade-in-up 0.35s cubic-bezier(0.4, 0, 0.2, 1) both',
-                },
-            }}
             slotProps={{
+                paper: {
+                    sx: {
+                        borderRadius: '20px',
+                        overflow: 'visible',
+                        background: isDark
+                            ? 'rgba(10, 10, 28, 0.95)'
+                            : 'rgba(255, 255, 255, 0.95)',
+                        backdropFilter: 'blur(40px) saturate(200%)',
+                        WebkitBackdropFilter: 'blur(40px) saturate(200%)',
+                        border: isDark
+                            ? '1px solid rgba(180, 197, 255, 0.15)'
+                            : '1px solid rgba(0, 74, 198, 0.12)',
+                        boxShadow: isDark
+                            ? '0 32px 80px rgba(0,0,0,0.7), 0 0 0 1px rgba(180,197,255,0.08)'
+                            : '0 32px 80px rgba(0,74,198,0.18), 0 0 0 1px rgba(0,74,198,0.05)',
+                        p: 0,
+                        animation: 'fade-in-up 0.35s cubic-bezier(0.4, 0, 0.2, 1) both',
+                    },
+                },
                 backdrop: {
                     sx: {
                         backdropFilter: 'blur(8px)',

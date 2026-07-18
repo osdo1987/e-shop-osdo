@@ -1,10 +1,12 @@
 import { useState, useEffect, useMemo } from 'react'
+import { Navigate } from 'react-router-dom'
 import AdminLayout from '../components/AdminLayout'
 import { useToast } from '../components/Toast'
 import Box from '@mui/material/Box'
 import Card from '@mui/material/Card'
 import CardContent from '@mui/material/CardContent'
 import Typography from '@mui/material/Typography'
+import Chip from '@mui/material/Chip'
 import SkeletonMui from '@mui/material/Skeleton'
 import { useTheme, alpha } from '@mui/material/styles'
 import AssessmentIcon from '@mui/icons-material/Assessment'
@@ -15,6 +17,9 @@ import ShoppingCartIcon from '@mui/icons-material/ShoppingCart'
 import BarChartIcon from '@mui/icons-material/BarChart'
 import WarningIcon from '@mui/icons-material/Warning'
 import CheckCircleIcon from '@mui/icons-material/CheckCircle'
+import DeliveryDiningIcon from '@mui/icons-material/DeliveryDining'
+import StorefrontIcon from '@mui/icons-material/Storefront'
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts'
 
 const catColors = ['#004ac6', '#10b981', '#f59e0b', '#ef4444', '#2563eb', '#ec4899', '#06b6d4', '#84cc16']
 
@@ -48,12 +53,14 @@ function SectionDivider({ label, isDark }) {
     )
 }
 
-function StatsDashboard({ user }) {
+function StatsDashboard({ user, onLogout }) {
     const theme = useTheme()
     const isDark = theme.palette.mode === 'dark'
     const [categories, setCategories] = useState([])
     const [products, setProducts] = useState([])
+    const [orders, setOrders] = useState([])
     const [loading, setLoading] = useState(true)
+    const [salesRange, setSalesRange] = useState(30)
     const toast = useToast()
 
     useEffect(() => {
@@ -65,9 +72,10 @@ function StatsDashboard({ user }) {
             const token = localStorage.getItem('token')
             const headers = { 'Authorization': `Bearer ${token}` }
 
-            const [categoriesRes, productsRes] = await Promise.all([
+            const [categoriesRes, productsRes, ordersRes] = await Promise.all([
                 fetch('/api/categories', { headers }),
-                fetch('/api/products', { headers })
+                fetch('/api/products', { headers }),
+                fetch('/api/orders', { headers })
             ])
 
             if (categoriesRes.ok) {
@@ -75,6 +83,9 @@ function StatsDashboard({ user }) {
             }
             if (productsRes.ok) {
                 setProducts(await productsRes.json())
+            }
+            if (ordersRes.ok) {
+                setOrders(await ordersRes.json())
             }
         } catch (error) {
             toast.error('Error al cargar estadísticas')
@@ -116,9 +127,44 @@ function StatsDashboard({ user }) {
         }
     }, [products, categories])
 
+    const salesStats = useMemo(() => {
+        const activeOrders = orders.filter(o => o.status !== 'CANCELADO')
+        const now = new Date()
+        const cutoff = new Date(now.getTime() - salesRange * 24 * 60 * 60 * 1000)
+        const filtered = salesRange === 0 ? activeOrders : activeOrders.filter(o => new Date(o.created_at) >= cutoff)
+
+        const webTotal = filtered.filter(o => o.origin === 'WEB').reduce((s, o) => s + (o.total_price || 0), 0)
+        const localTotal = filtered.filter(o => o.origin === 'LOCAL').reduce((s, o) => s + (o.total_price || 0), 0)
+        const webCount = filtered.filter(o => o.origin === 'WEB').length
+        const localCount = filtered.filter(o => o.origin === 'LOCAL').length
+
+        return { webTotal, localTotal, webCount, localCount, totalOrders: filtered.length, totalRevenue: webTotal + localTotal }
+    }, [orders, salesRange])
+
+    const salesChartData = useMemo(() => {
+        const activeOrders = orders.filter(o => o.status !== 'CANCELADO')
+        const now = new Date()
+        const cutoff = new Date(now.getTime() - salesRange * 24 * 60 * 60 * 1000)
+        const filtered = salesRange === 0 ? activeOrders : activeOrders.filter(o => new Date(o.created_at) >= cutoff)
+
+        const dayMap = {}
+        filtered.forEach(o => {
+            const d = new Date(o.created_at)
+            const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+            if (!dayMap[key]) dayMap[key] = { date: key, domicilio: 0, local: 0 }
+            if (o.origin === 'WEB') dayMap[key].domicilio += o.total_price || 0
+            else dayMap[key].local += o.total_price || 0
+        })
+
+        const result = Object.values(dayMap).sort((a, b) => a.date.localeCompare(b.date))
+        return result
+    }, [orders, salesRange])
+
+    if (user?.role === 'STAFF') return <Navigate to="/admin/pos" />
+
     if (loading) {
         return (
-            <AdminLayout title="Dashboard" user={user}>
+            <AdminLayout title="Dashboard" user={user} onLogout={onLogout}>
                 <Box sx={{ position: 'relative' }}>
                     <Box sx={{
                         position: 'absolute', top: -24, left: '50%', transform: 'translateX(-50%)',
@@ -147,7 +193,7 @@ function StatsDashboard({ user }) {
     }
 
     return (
-        <AdminLayout title="Dashboard" user={user}>
+        <AdminLayout title="Dashboard" user={user} onLogout={onLogout}>
             <Box sx={{ position: 'relative' }}>
                 {/* Ambient gradient orb */}
                 <Box sx={{
@@ -423,6 +469,152 @@ function StatsDashboard({ user }) {
                                 </Box>
                             </CardContent>
                         </Card>
+
+                        {/* ── Ventas por canal: Domicilio vs En Local ── */}
+                        {orders.length > 0 && (
+                            <Card sx={{
+                                animation: 'fade-in-up 0.5s ease 0.4s both',
+                                border: `1px solid ${isDark ? 'rgba(180,197,255,0.1)' : 'rgba(0,74,198,0.08)'}`,
+                                position: 'relative', overflow: 'visible',
+                                '&::before': {
+                                    content: '""', position: 'absolute', top: 0, left: 0, right: 0,
+                                    height: '3px', borderRadius: '16px 16px 0 0',
+                                    background: 'linear-gradient(90deg, #004ac6, #10b981)',
+                                },
+                            }}>
+                                <CardContent sx={{ p: '16px !important', '&:last-child': { pb: '16px !important' } }}>
+                                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2, flexWrap: 'wrap', gap: 1 }}>
+                                        <Box>
+                                            <Typography sx={{ fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'text.secondary', mb: 0.5 }}>
+                                                Ventas por canal
+                                            </Typography>
+                                            <Typography sx={{ fontSize: '0.95rem', fontWeight: 700, color: 'text.primary' }}>
+                                                Domicilio vs En Local
+                                            </Typography>
+                                        </Box>
+                                        <Box sx={{ display: 'flex', gap: 0.75, flexWrap: 'wrap' }}>
+                                            {[7, 30, 90, 0].map(d => (
+                                                <Chip
+                                                    key={d}
+                                                    label={d === 0 ? 'Todo' : `${d}d`}
+                                                    onClick={() => setSalesRange(d)}
+                                                    size="small"
+                                                    sx={{
+                                                        fontWeight: 600, fontSize: '0.6875rem',
+                                                        borderRadius: 2,
+                                                        bgcolor: salesRange === d ? 'primary-container' : 'surface-container',
+                                                        color: salesRange === d ? 'on-primary-container' : 'on-surface-variant',
+                                                        border: salesRange === d ? 'none' : '1px solid',
+                                                        borderColor: 'divider',
+                                                        '&:hover': { bgcolor: salesRange === d ? 'primary-container' : 'surface-container-high' },
+                                                    }}
+                                                />
+                                            ))}
+                                        </Box>
+                                    </Box>
+
+                                    {/* Summary chips */}
+                                    <Box sx={{ display: 'flex', gap: 1, mb: 2, flexWrap: 'wrap' }}>
+                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, px: 1.25, py: 0.5, borderRadius: 2, bgcolor: isDark ? 'rgba(0,74,198,0.12)' : 'rgba(0,74,198,0.06)', border: '1px solid', borderColor: isDark ? 'rgba(0,74,198,0.2)' : 'rgba(0,74,198,0.12)' }}>
+                                            <DeliveryDiningIcon sx={{ fontSize: 16, color: '#004ac6' }} />
+                                            <Typography sx={{ fontSize: '0.72rem', fontWeight: 600, color: '#004ac6' }}>
+                                                ${salesStats.webTotal.toLocaleString()}
+                                            </Typography>
+                                            <Typography sx={{ fontSize: '0.6rem', color: 'text.secondary' }}>
+                                                ({salesStats.webCount} pedidos)
+                                            </Typography>
+                                        </Box>
+                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, px: 1.25, py: 0.5, borderRadius: 2, bgcolor: isDark ? 'rgba(16,185,129,0.12)' : 'rgba(16,185,129,0.06)', border: '1px solid', borderColor: isDark ? 'rgba(16,185,129,0.2)' : 'rgba(16,185,129,0.12)' }}>
+                                            <StorefrontIcon sx={{ fontSize: 16, color: '#10b981' }} />
+                                            <Typography sx={{ fontSize: '0.72rem', fontWeight: 600, color: '#10b981' }}>
+                                                ${salesStats.localTotal.toLocaleString()}
+                                            </Typography>
+                                            <Typography sx={{ fontSize: '0.6rem', color: 'text.secondary' }}>
+                                                ({salesStats.localCount} pedidos)
+                                            </Typography>
+                                        </Box>
+                                    </Box>
+
+                                    {salesChartData.length > 0 ? (
+                                        <Box sx={{ width: '100%', height: 300 }}>
+                                            <ResponsiveContainer width="100%" height="100%">
+                                                <AreaChart data={salesChartData} margin={{ top: 5, right: 5, left: -10, bottom: 0 }}>
+                                                    <defs>
+                                                        <linearGradient id="gradDomicilio" x1="0" y1="0" x2="0" y2="1">
+                                                            <stop offset="0%" stopColor="#004ac6" stopOpacity={0.3} />
+                                                            <stop offset="100%" stopColor="#004ac6" stopOpacity={0.02} />
+                                                        </linearGradient>
+                                                        <linearGradient id="gradLocal" x1="0" y1="0" x2="0" y2="1">
+                                                            <stop offset="0%" stopColor="#10b981" stopOpacity={0.3} />
+                                                            <stop offset="100%" stopColor="#10b981" stopOpacity={0.02} />
+                                                        </linearGradient>
+                                                    </defs>
+                                                    <CartesianGrid strokeDasharray="3 3" stroke={isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'} vertical={false} />
+                                                    <XAxis
+                                                        dataKey="date"
+                                                        tick={{ fontSize: 11, fill: isDark ? 'rgba(255,255,255,0.45)' : 'rgba(0,0,0,0.4)' }}
+                                                        tickLine={false}
+                                                        axisLine={false}
+                                                        tickFormatter={v => {
+                                                            const [, m, d] = v.split('-')
+                                                            return `${d}/${m}`
+                                                        }}
+                                                    />
+                                                    <YAxis
+                                                        tick={{ fontSize: 11, fill: isDark ? 'rgba(255,255,255,0.45)' : 'rgba(0,0,0,0.4)' }}
+                                                        tickLine={false}
+                                                        axisLine={false}
+                                                        tickFormatter={v => `$${v >= 1000 ? `${(v / 1000).toFixed(0)}k` : v}`}
+                                                    />
+                                                    <Tooltip
+                                                        contentStyle={{
+                                                            backgroundColor: isDark ? '#1e1e2e' : '#ffffff',
+                                                            border: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)'}`,
+                                                            borderRadius: 8,
+                                                            fontSize: 12,
+                                                            boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                                                        }}
+                                                        formatter={(value, name) => [`$${value.toLocaleString()}`, name === 'domicilio' ? 'Domicilio' : 'En Local']}
+                                                        labelFormatter={label => {
+                                                            const [y, m, d] = label.split('-')
+                                                            return `${d}/${m}/${y}`
+                                                        }}
+                                                    />
+                                                    <Legend
+                                                        formatter={(value) => value === 'domicilio' ? 'Domicilio' : 'En Local'}
+                                                        wrapperStyle={{ fontSize: 12, fontWeight: 600 }}
+                                                    />
+                                                    <Area
+                                                        type="monotone"
+                                                        dataKey="domicilio"
+                                                        stroke="#004ac6"
+                                                        strokeWidth={2}
+                                                        fill="url(#gradDomicilio)"
+                                                        dot={false}
+                                                        activeDot={{ r: 5, strokeWidth: 2, stroke: '#004ac6', fill: isDark ? '#1e1e2e' : '#fff' }}
+                                                    />
+                                                    <Area
+                                                        type="monotone"
+                                                        dataKey="local"
+                                                        stroke="#10b981"
+                                                        strokeWidth={2}
+                                                        fill="url(#gradLocal)"
+                                                        dot={false}
+                                                        activeDot={{ r: 5, strokeWidth: 2, stroke: '#10b981', fill: isDark ? '#1e1e2e' : '#fff' }}
+                                                    />
+                                                </AreaChart>
+                                            </ResponsiveContainer>
+                                        </Box>
+                                    ) : (
+                                        <Box sx={{ textAlign: 'center', py: 4, color: 'text.disabled' }}>
+                                            <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                                                No hay ventas en este período
+                                            </Typography>
+                                        </Box>
+                                    )}
+                                </CardContent>
+                            </Card>
+                        )}
                     </>
                 )}
             </Box>

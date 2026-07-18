@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
+import { Navigate } from 'react-router-dom'
 import AdminLayout from '../components/AdminLayout'
 import { useToast } from '../components/Toast'
 import Box from '@mui/material/Box'
@@ -91,7 +92,7 @@ const paymentCardAccent = (isDark) => ({
     },
 })
 
-function CashRegister({ user }) {
+function CashRegister({ user, onLogout }) {
     const [activeTab, setActiveTab] = useState(0)
     const [activeSession, setActiveSession] = useState(null)
     const [history, setHistory] = useState([])
@@ -240,8 +241,10 @@ function CashRegister({ user }) {
         ? (activeSession.opening_balance ?? 0) + (activeSession.cash_sales ?? 0) + (activeSession.card_sales ?? 0) + (activeSession.transfer_sales ?? 0)
         : 0
 
+    if (user?.role === 'STAFF') return <Navigate to="/admin/pos" />
+
     return (
-        <AdminLayout title="Control de Caja Registradora" user={user}>
+        <AdminLayout title="Control de Caja Registradora" user={user} onLogout={onLogout}>
             {/* ── Styled Tab Bar ──────────────────────────────── */}
             <Box sx={{
                 mb: 3,
@@ -718,16 +721,18 @@ function CashRegister({ user }) {
                 onClose={() => setShowCloseModal(false)}
                 maxWidth="sm"
                 fullWidth
-                PaperProps={{
-                    sx: {
-                        background: isDark ? 'rgba(10, 10, 28, 0.95)' : 'rgba(255, 255, 255, 0.95)',
-                        backdropFilter: 'blur(40px) saturate(200%)',
-                        border: isDark ? '1px solid rgba(180, 197, 255, 0.15)' : '1px solid rgba(0, 74, 198, 0.12)',
-                        borderRadius: '20px',
-                        boxShadow: isDark
-                            ? '0 32px 80px rgba(0,0,0,0.7), 0 0 0 1px rgba(180,197,255,0.08)'
-                            : '0 32px 80px rgba(0,74,198,0.18), 0 0 0 1px rgba(0,74,198,0.05)',
-                        overflow: 'hidden',
+                slotProps={{
+                    paper: {
+                        sx: {
+                            background: isDark ? 'rgba(10, 10, 28, 0.95)' : 'rgba(255, 255, 255, 0.95)',
+                            backdropFilter: 'blur(40px) saturate(200%)',
+                            border: isDark ? '1px solid rgba(180, 197, 255, 0.15)' : '1px solid rgba(0, 74, 198, 0.12)',
+                            borderRadius: '20px',
+                            boxShadow: isDark
+                                ? '0 32px 80px rgba(0,0,0,0.7), 0 0 0 1px rgba(180,197,255,0.08)'
+                                : '0 32px 80px rgba(0,74,198,0.18), 0 0 0 1px rgba(0,74,198,0.05)',
+                            overflow: 'hidden',
+                        },
                     },
                 }}
             >

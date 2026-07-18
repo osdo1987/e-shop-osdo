@@ -53,39 +53,8 @@ def login():
 @jwt_required()
 def register_seller():
     """
-    Register a new seller (SUPERADMIN only)
-    ---
-    tags:
-      - Auth
-    parameters:
-      - name: body
-        in: body
-        required: true
-        schema:
-          type: object
-          properties:
-            storeName:
-              type: string
-              example: "Mi Tienda"
-            slug:
-              type: string
-              example: "mi-tienda"
-            whatsapp:
-              type: string
-              example: "+573001234567"
-            email:
-              type: string
-              example: "vendedor@mitienda.com"
-            password:
-              type: string
-              example: "password123"
-    responses:
-      201:
-        description: Seller and store created successfully
-      400:
-        description: Validation error
+    Register a new manager with store (SUPERADMIN only)
     """
-    # Check if current user is SUPERADMIN
     current_user_id = get_jwt_identity()
     current_user = User.query.get(current_user_id)
     
@@ -109,12 +78,96 @@ def register_seller():
         'password': data.get('password')
     }
     
-    # Validate required fields
     if not all([store_data['name'], store_data['slug'], user_data['email'], user_data['password']]):
         return jsonify({'error': 'Faltan campos obligatorios'}), 400
     
     result, status = AuthService.create_seller(store_data, user_data)
     return jsonify(result), status
+
+@auth_bp.route('/register-staff', methods=['POST'])
+@jwt_required()
+def register_staff():
+    """
+    Register a new staff user (MANAGER only)
+    """
+    current_user_id = get_jwt_identity()
+    current_user = User.query.get(current_user_id)
+    
+    if not current_user or current_user.role not in ('SUPERADMIN', 'MANAGER'):
+        return jsonify({'error': 'No autorizado'}), 403
+    
+    data = request.get_json()
+    email = data.get('email')
+    password = data.get('password')
+    
+    if not email or not password:
+        return jsonify({'error': 'Faltan campos obligatorios (email, password)'}), 400
+    
+    if current_user.role == 'SUPERADMIN':
+        store_id = data.get('store_id')
+        if not store_id:
+            return jsonify({'error': 'El store_id es requerido para SUPERADMIN'}), 400
+        from app.models.store import Store
+        store = Store.query.get(store_id)
+        if not store:
+            return jsonify({'error': 'Tienda no encontrada'}), 404
+        try:
+            user = User(email=email, role='STAFF', store_id=store_id)
+            user.set_password(password)
+            db.session.add(user)
+            db.session.commit()
+            return jsonify({'success': True, 'user': user.id}), 201
+        except Exception as e:
+            db.session.rollback()
+            return jsonify({'error': str(e)}), 500
+    else:
+        result, status = AuthService.create_staff(current_user, {'email': email, 'password': password})
+        return jsonify(result), status
+
+@auth_bp.route('/staff', methods=['GET'])
+@jwt_required()
+def get_staff():
+    """Get all STAFF users for the manager's store"""
+    current_user_id = get_jwt_identity()
+    current_user = User.query.get(current_user_id)
+    
+    if not current_user or current_user.role not in ('SUPERADMIN', 'MANAGER'):
+        return jsonify({'error': 'No autorizado'}), 403
+    
+    if current_user.role == 'SUPERADMIN':
+        store_id = request.args.get('store_id')
+        if not store_id:
+            users = User.query.filter_by(role='STAFF').all()
+        else:
+            users = User.query.filter_by(role='STAFF', store_id=store_id).all()
+    else:
+        users = User.query.filter_by(role='STAFF', store_id=current_user.store_id).all()
+    
+    return jsonify(users_schema.dump(users)), 200
+
+@auth_bp.route('/staff/<int:user_id>', methods=['DELETE'])
+@jwt_required()
+def delete_staff(user_id):
+    """Delete a STAFF user (MANAGER or SUPERADMIN only)"""
+    current_user_id = get_jwt_identity()
+    current_user = User.query.get(current_user_id)
+    
+    if not current_user or current_user.role not in ('SUPERADMIN', 'MANAGER'):
+        return jsonify({'error': 'No autorizado'}), 403
+    
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify({'error': 'Usuario no encontrado'}), 404
+    
+    if user.role != 'STAFF':
+        return jsonify({'error': 'Solo se pueden eliminar usuarios STAFF'}), 400
+    
+    if current_user.role == 'MANAGER' and user.store_id != current_user.store_id:
+        return jsonify({'error': 'No autorizado'}), 403
+    
+    db.session.delete(user)
+    db.session.commit()
+    return jsonify({'message': 'Empleado eliminado'}), 200
 
 @auth_bp.route('/users/<int:user_id>/email', methods=['PUT'])
 @jwt_required()
@@ -169,7 +222,7 @@ def update_seller_email(user_id):
     if not user:
         return jsonify({'error': 'Usuario no encontrado'}), 404
     
-    if user.role != 'SELLER':
+    if user.role not in ('MANAGER', 'STAFF'):
         return jsonify({'error': 'Solo se pueden modificar correos de vendedores'}), 400
     
     user.email = new_email

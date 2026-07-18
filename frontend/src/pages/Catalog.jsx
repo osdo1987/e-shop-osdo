@@ -22,8 +22,6 @@ import DialogTitle from '@mui/material/DialogTitle'
 import DialogContent from '@mui/material/DialogContent'
 import DialogActions from '@mui/material/DialogActions'
 import Button from '@mui/material/Button'
-import Card from '@mui/material/Card'
-import CardContent from '@mui/material/CardContent'
 import Chip from '@mui/material/Chip'
 import TextField from '@mui/material/TextField'
 import Snackbar from '@mui/material/Snackbar'
@@ -39,8 +37,10 @@ import DeleteIcon from '@mui/icons-material/Delete'
 import StorefrontIcon from '@mui/icons-material/Storefront'
 import LocationOnIcon from '@mui/icons-material/LocationOn'
 import ScheduleIcon from '@mui/icons-material/Schedule'
-import FilterListIcon from '@mui/icons-material/FilterList'
-import { useTheme } from '@mui/material/styles'
+import HomeIcon from '@mui/icons-material/Home'
+import CategoryIcon from '@mui/icons-material/Category'
+import ReceiptLongIcon from '@mui/icons-material/ReceiptLong'
+import PersonIcon from '@mui/icons-material/Person'
 
 const parseSizes = (sizesStr, overallStock) => {
     if (!sizesStr) return null
@@ -76,7 +76,6 @@ const parseToppingsConfig = (toppingsConfigStr) => {
 
 function Catalog() {
     const { slug } = useParams()
-    const theme = useTheme()
     const [store, setStore] = useState(null)
     const [categories, setCategories] = useState([])
     const [products, setProducts] = useState([])
@@ -517,10 +516,10 @@ function Catalog() {
                 <AppBar position="static" color="inherit" elevation={0} sx={{ borderBottom: 1, borderColor: 'divider' }}>
                     <Toolbar>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                            <Box sx={{ width: 40, height: 40, borderRadius: 2, background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white' }}>
+                            <Box sx={{ width: 40, height: 40, borderRadius: 2, bgcolor: 'primary.main', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white' }}>
                                 <StorefrontIcon fontSize="small" />
                             </Box>
-                            <Typography variant="h6" sx={{ fontWeight: 800 }}>Cargando<span style={{ color: '#6366f1' }}>.</span></Typography>
+                            <Typography variant="h6" sx={{ fontWeight: 800 }}>Cargando<Box component="span" sx={{ color: 'primary.main' }}>.</Box></Typography>
                         </Box>
                     </Toolbar>
                 </AppBar>
@@ -545,76 +544,67 @@ function Catalog() {
         ? promoProducts[promoIndex % promoProducts.length]
         : null
 
-    const sidebarContent = (
-        <Box sx={{ p: 2.5, width: 280 }}>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                <Typography variant="caption" sx={{ fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'text.disabled' }}>
-                    Filtros
-                </Typography>
-                <IconButton size="small" onClick={() => setSidebarOpen(false)} sx={{ display: { md: 'none' } }}>
+    const isRestaurant = store?.business_type === 'restaurant'
+
+    const filterDrawerContent = (
+        <Box sx={{ p: 2.5, width: 300 }}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+                <Typography variant="h6" sx={{ fontWeight: 700 }}>Filtros</Typography>
+                <IconButton size="small" onClick={() => setSidebarOpen(false)}>
                     <CloseIcon fontSize="small" />
                 </IconButton>
             </Box>
 
-            {/* Mobile Search */}
-            <Box sx={{ display: { xs: 'block', md: 'none' }, mb: 2 }}>
-                <Typography variant="caption" sx={{ fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'text.disabled', display: 'block', mb: 1 }}>
-                    Buscar
-                </Typography>
-                <Box sx={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-                    <SearchIcon sx={{ position: 'absolute', left: 13, color: 'text.disabled', pointerEvents: 'none' }} fontSize="small" />
-                    <InputBase
-                        placeholder="Buscar productos..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        sx={{
-                            pl: 4.5,
-                            pr: 2,
-                            py: 1,
-                            width: '100%',
-                            border: '1.5px solid',
-                            borderColor: 'divider',
-                            borderRadius: 20,
-                            bgcolor: 'background.paper',
-                            fontSize: '0.875rem',
-                            '&.Mui-focused': {
-                                borderColor: 'primary.main',
-                            },
-                        }}
-                    />
-                </Box>
-            </Box>
-
             <Box sx={{ mb: 3 }}>
-                <Typography variant="caption" sx={{ fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'text.disabled', display: 'block', mb: 1 }}>
-                    Categorías
+                <Typography variant="caption" sx={{ fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'on-surface-variant', display: 'block', mb: 1.5, fontSize: '0.75rem' }}>
+                    Categoría
                 </Typography>
-                <List dense>
+                <List dense disablePadding>
                     <ListItemButton
                         selected={selectedCategory === 'all'}
-                        onClick={() => { setSelectedCategory('all'); setSidebarOpen(false) }}
-                        sx={{ borderRadius: 20, mb: 0.5 }}
+                        onClick={() => setSelectedCategory('all')}
+                        sx={{
+                            borderRadius: 2,
+                            mb: 0.5,
+                            px: 1.5,
+                            py: 0.75,
+                            '&.Mui-selected': {
+                                bgcolor: 'primary-container',
+                                color: 'on-primary-container',
+                                '&:hover': { bgcolor: 'primary-container' },
+                            },
+                        }}
                     >
                         <ListItemText primary="Todos" slotProps={{ primary: { fontSize: '0.875rem', fontWeight: 500 } }} />
-                        <Chip label={categoryCounts.all} size="small" variant="outlined" sx={{ fontWeight: 700, fontSize: '0.6875rem' }} />
+                        <Chip label={categoryCounts.all} size="small" sx={{ fontWeight: 700, fontSize: '0.6875rem', height: 22, bgcolor: 'surface-container-high', color: 'on-surface-variant' }} />
                     </ListItemButton>
                     {categories.map(cat => (
                         <ListItemButton
                             key={cat.id}
                             selected={selectedCategory === cat.id.toString()}
-                            onClick={() => { setSelectedCategory(cat.id.toString()); setSidebarOpen(false) }}
-                            sx={{ borderRadius: 20, mb: 0.5 }}
+                            onClick={() => setSelectedCategory(cat.id.toString())}
+                            sx={{
+                                borderRadius: 2,
+                                mb: 0.5,
+                                px: 1.5,
+                                py: 0.75,
+                                '&.Mui-selected': {
+                                    bgcolor: 'primary-container',
+                                    color: 'on-primary-container',
+                                    '&:hover': { bgcolor: 'primary-container' },
+                                },
+                            }}
                         >
                             <ListItemText primary={cat.name} slotProps={{ primary: { fontSize: '0.875rem', fontWeight: 500 } }} />
-                            <Chip label={categoryCounts[cat.id] || 0} size="small" variant="outlined" sx={{ fontWeight: 700, fontSize: '0.6875rem' }} />
+                            <Chip label={categoryCounts[cat.id] || 0} size="small" sx={{ fontWeight: 700, fontSize: '0.6875rem', height: 22, bgcolor: 'surface-container-high', color: 'on-surface-variant' }} />
                         </ListItemButton>
                     ))}
                 </List>
             </Box>
 
             <Box sx={{ mb: 3 }}>
-                <Typography variant="caption" sx={{ fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'text.disabled', display: 'block', mb: 2 }}>
-                    Precio
+                <Typography variant="caption" sx={{ fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'on-surface-variant', display: 'block', mb: 1.5, fontSize: '0.75rem' }}>
+                    Rango de precio
                 </Typography>
                 <Slider
                     value={priceRange}
@@ -623,33 +613,33 @@ function Catalog() {
                     max={priceBounds.max}
                     valueLabelDisplay="auto"
                     valueLabelFormat={(value) => `$${value.toLocaleString()}`}
-                    sx={{ mx: 1 }}
+                    sx={{ mx: 0.5 }}
                 />
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 1 }}>
-                    <Chip label={`$${priceRange[0].toLocaleString()}`} size="small" variant="outlined" sx={{ fontWeight: 700 }} />
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 0.5 }}>
+                    <Chip label={`$${priceRange[0].toLocaleString()}`} size="small" sx={{ fontWeight: 600, fontSize: '0.6875rem', bgcolor: 'surface-container', color: 'on-surface-variant' }} />
                     <Typography variant="caption" color="text.disabled" sx={{ alignSelf: 'center' }}>—</Typography>
-                    <Chip label={`$${priceRange[1].toLocaleString()}`} size="small" variant="outlined" sx={{ fontWeight: 700 }} />
+                    <Chip label={`$${priceRange[1].toLocaleString()}`} size="small" sx={{ fontWeight: 600, fontSize: '0.6875rem', bgcolor: 'surface-container', color: 'on-surface-variant' }} />
                 </Box>
             </Box>
 
-            <Box sx={{ mb: 2 }}>
+            <Box sx={{ mb: 1.5 }}>
                 <FormControlLabel
                     control={<Switch checked={onlyPromo} onChange={() => setOnlyPromo(!onlyPromo)} size="small" />}
-                    label={<Typography variant="body2" sx={{ fontWeight: 500 }}>🏷️ Solo en promoción</Typography>}
-                    sx={{ width: '100%', mx: 0, px: 1.75, py: 1.5, border: 1, borderColor: onlyPromo ? 'primary.main' : 'divider', borderRadius: 2, bgcolor: onlyPromo ? 'primary.light' : 'transparent' }}
+                    label={<Typography variant="body2" sx={{ fontWeight: 500, fontSize: '0.875rem' }}>Solo en promoción</Typography>}
+                    sx={{ width: '100%', mx: 0, px: 1.5, py: 1, border: '1px solid', borderColor: onlyPromo ? 'primary.main' : 'divider', borderRadius: 2, bgcolor: onlyPromo ? 'rgba(0,74,198,0.04)' : 'transparent' }}
                 />
             </Box>
 
             <Box sx={{ mb: 2 }}>
                 <FormControlLabel
                     control={<Switch checked={onlyFavorites} onChange={() => setOnlyFavorites(!onlyFavorites)} size="small" />}
-                    label={<Typography variant="body2" sx={{ fontWeight: 500 }}>{onlyFavorites ? '❤️' : '🤍'} Solo mis favoritos</Typography>}
-                    sx={{ width: '100%', mx: 0, px: 1.75, py: 1.5, border: 1, borderColor: onlyFavorites ? 'primary.main' : 'divider', borderRadius: 2, bgcolor: onlyFavorites ? 'primary.light' : 'transparent' }}
+                    label={<Typography variant="body2" sx={{ fontWeight: 500, fontSize: '0.875rem' }}>Solo mis favoritos</Typography>}
+                    sx={{ width: '100%', mx: 0, px: 1.5, py: 1, border: '1px solid', borderColor: onlyFavorites ? 'primary.main' : 'divider', borderRadius: 2, bgcolor: onlyFavorites ? 'rgba(0,74,198,0.04)' : 'transparent' }}
                 />
             </Box>
 
             {hasActiveFilters && (
-                <Button fullWidth variant="text" color="error" size="small" onClick={clearFilters} sx={{ mt: 1 }}>
+                <Button fullWidth variant="outlined" color="error" size="small" onClick={clearFilters} sx={{ textTransform: 'none', fontWeight: 600, borderRadius: 2 }}>
                     Limpiar filtros
                 </Button>
             )}
@@ -657,398 +647,372 @@ function Catalog() {
     )
 
     return (
-        <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-            {/* Promo Banner */}
-            <Box
-                sx={{
-                    background: (theme) => theme.palette.mode === 'dark'
-                        ? 'linear-gradient(90deg, #1e1b4b 0%, #4f46e5 40%, #7c3aed 60%, #1e1b4b 100%)'
-                        : 'linear-gradient(90deg, #3730a3 0%, #6366f1 40%, #8b5cf6 60%, #3730a3 100%)',
-                    backgroundSize: '200% 100%',
-                    color: 'white',
-                    textAlign: 'center',
-                    py: 2,
-                    px: 3,
-                    fontWeight: 700,
-                    fontSize: '0.9375rem',
-                    minHeight: 56,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    overflow: 'hidden',
-                    position: 'relative',
-                    boxShadow: (theme) => `0 4px 20px ${theme.palette.mode === 'dark' ? 'rgba(99, 102, 241, 0.5)' : 'rgba(99, 102, 241, 0.35)'}`,
-                    animation: 'promo-gradient-shift 4s ease infinite',
-                    '@keyframes promo-gradient-shift': {
-                        '0%, 100%': { backgroundPosition: '0% 50%' },
-                        '50%': { backgroundPosition: '100% 50%' },
-                    },
-                }}
-            >
-                {currentPromo ? (
-                    <Box sx={{
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: 1.5,
-                        animation: 'promo-slide-in 0.5s ease-out',
-                        '@keyframes promo-slide-in': {
-                            from: { opacity: 0, transform: 'translateY(-100%)' },
-                            to: { opacity: 1, transform: 'translateY(0)' }
-                        },
-                        maxWidth: '100%',
-                        flexWrap: 'wrap',
-                        justifyContent: 'center',
-                    }}>
-                        <Chip label="🔥 OFERTA" size="small" sx={{ bgcolor: '#f59e0b', color: 'white', fontWeight: 900, fontSize: '0.75rem' }} />
-                        <Typography sx={{ fontWeight: 800, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: { xs: 120, sm: 240 }, textShadow: '0 1px 3px rgba(0,0,0,0.25)' }}>
-                            {currentPromo.name}
-                        </Typography>
-                        <Typography sx={{ textDecoration: 'line-through', opacity: 0.65, fontSize: '0.8125rem' }}>
-                            ${currentPromo.price.toLocaleString()}
-                        </Typography>
-                        <Typography sx={{ fontWeight: 900, color: '#fde047', textShadow: '0 0 12px rgba(253, 224, 71, 0.6)' }}>
-                            ${currentPromo.promo_price.toLocaleString()}
-                        </Typography>
-                        <Chip
-                            label={`-${Math.round(((currentPromo.price - currentPromo.promo_price) / currentPromo.price) * 100)}%`}
-                            size="small"
-                            sx={{ bgcolor: 'rgba(245, 158, 11, 0.25)', color: '#fde047', fontWeight: 800, border: '1px solid rgba(245, 158, 11, 0.35)' }}
-                        />
-                        {promoProducts.length > 1 && (
-                            <Typography sx={{ fontSize: '0.6875rem', opacity: 0.7 }}>
-                                {promoIndex + 1}/{promoProducts.length}
-                            </Typography>
-                        )}
-                    </Box>
-                ) : (
-                    <Typography sx={{ fontSize: { xs: '0.8125rem', sm: '0.9375rem' } }}>🚀 Envío gratis en pedidos sobre $100.000</Typography>
-                )}
-            </Box>
-
-            {/* Top Bar */}
-            <AppBar position="sticky" color="inherit" elevation={0} sx={{
-                borderBottom: 1,
-                borderColor: 'divider',
-                bgcolor: theme.palette.mode === 'dark' ? 'rgba(15, 15, 40, 0.82)' : 'rgba(255, 255, 255, 0.82)',
-                backdropFilter: 'blur(20px)',
-            }}>
-                <Toolbar sx={{ gap: 1, minHeight: { xs: 56, md: 64 } }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, cursor: 'pointer', flexShrink: 0 }}>
+        <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', bgcolor: 'background.default', pb: { xs: '80px', md: 0 } }}>
+            <Box sx={{ width: '100%' }}>
+                {/* Hero Banner - left gradient overlay */}
+                <Box sx={{ position: 'relative', width: '100%', height: { xs: 256, md: 320 }, overflow: 'hidden' }}>
+                    {currentPromo && currentPromo.image_url ? (
+                        <Box component="img" src={currentPromo.image_url} alt={currentPromo.name} sx={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
+                    ) : (
                         <Box sx={{
-                            width: { xs: 32, sm: 40 },
-                            height: { xs: 32, sm: 40 },
-                            borderRadius: 2,
-                            background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            color: 'white',
-                            boxShadow: '0 4px 12px rgba(99, 102, 241, 0.3)',
-                            transition: 'transform 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
-                            '&:hover': { transform: 'scale(1.08) rotate(-4deg)' },
-                        }}>
-                            {store.logo_url ? (
-                                <Box component="img" src={store.logo_url} alt={`${store.name} logo`} sx={{ width: '100%', height: '100%', objectFit: 'contain', borderRadius: 1 }} />
-                            ) : (
-                                <StorefrontIcon sx={{ fontSize: { xs: 16, sm: 20 } }} />
-                            )}
-                        </Box>
-                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
-                                <Typography variant="h6" sx={{ fontWeight: 800, fontSize: { xs: '1rem', sm: '1.25rem' }, display: { xs: 'none', sm: 'block' } }}>
-                                    {store.name}<span style={{ color: '#6366f1' }}>.</span>
+                            position: 'absolute', inset: 0,
+                            background: (theme) => theme.palette.mode === 'dark'
+                                ? 'linear-gradient(135deg, #1e1b4b 0%, #004ac6 50%, #2563eb 100%)'
+                                : 'linear-gradient(135deg, #003ea8 0%, #004ac6 50%, #2563eb 100%)',
+                        }} />
+                    )}
+                    <Box sx={{
+                        position: 'absolute', inset: 0,
+                        background: (theme) => theme.palette.mode === 'dark'
+                            ? 'linear-gradient(to right, rgba(0,0,0,0.8) 0%, transparent 60%)'
+                            : 'linear-gradient(to right, rgba(0,0,0,0.7) 0%, transparent 50%)',
+                        display: 'flex', flexDirection: 'column', justifyContent: 'center', px: { xs: 3, md: 6 },
+                    }}>
+                        {currentPromo ? (
+                            <Box key={promoIndex} sx={{ animation: 'promo-fade-in 0.5s ease-out', '@keyframes promo-fade-in': { from: { opacity: 0, transform: 'translateY(8px)' }, to: { opacity: 1, transform: 'translateY(0)' } } }}>
+                                <Typography sx={{ color: 'primary-fixed', fontWeight: 800, fontSize: '0.8125rem', letterSpacing: '0.1em', textTransform: 'uppercase', mb: 1 }}>
+                                    OFERTA
                                 </Typography>
-                                {store.business_type === 'restaurant' && (
-                                    <Chip label="🍽️ Restaurante" size="small" sx={{ bgcolor: '#fff3e0', color: '#e65100', fontWeight: 700, fontSize: '0.625rem', height: 20, display: { xs: 'none', sm: 'flex' } }} />
+                                <Typography sx={{ color: 'white', fontWeight: 900, fontSize: { xs: '1.75rem', md: '2.5rem' }, lineHeight: 1.1, mb: 1 }}>
+                                    {currentPromo.name}
+                                </Typography>
+                                <Typography sx={{ color: 'rgba(255,255,255,0.8)', fontSize: { xs: '0.875rem', md: '1rem' }, mb: 3, maxWidth: 320 }}>
+                                    Hasta {Math.round(((currentPromo.price - currentPromo.promo_price) / currentPromo.price) * 100)}% de descuento en productos seleccionados
+                                </Typography>
+                                <Button
+                                    onClick={() => {
+                                        const el = document.getElementById('product-grid')
+                                        el?.scrollIntoView({ behavior: 'smooth' })
+                                    }}
+                                    sx={{
+                                        bgcolor: 'primary-container',
+                                        color: 'on-primary-container',
+                                        fontWeight: 700,
+                                        px: 4,
+                                        py: 1.5,
+                                        borderRadius: 2,
+                                        textTransform: 'none',
+                                        alignSelf: 'flex-start',
+                                        boxShadow: '0 4px 14px rgba(0,0,0,0.3)',
+                                        '&:hover': { bgcolor: 'primary.main' },
+                                    }}
+                                >
+                                    Ver Ofertas
+                                </Button>
+                                {promoProducts.length > 1 && (
+                                    <Typography sx={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.8125rem', mt: 2 }}>
+                                        {promoIndex + 1} / {promoProducts.length}
+                                    </Typography>
                                 )}
                             </Box>
-                            {store.business_type === 'restaurant' && (store.address || store.schedule) && (
-                                <Box sx={{ display: { xs: 'none', sm: 'flex' }, gap: 1.5, alignItems: 'center' }}>
-                                    {store.address && (
-                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.3 }}>
-                                            <LocationOnIcon sx={{ fontSize: 12, color: 'text.disabled' }} />
-                                            <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.6875rem' }}>{store.address}</Typography>
-                                        </Box>
-                                    )}
-                                    {store.schedule && (
-                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.3 }}>
-                                            <ScheduleIcon sx={{ fontSize: 12, color: 'text.disabled' }} />
-                                            <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.6875rem' }}>{store.schedule}</Typography>
-                                        </Box>
-                                    )}
-                                </Box>
+                        ) : (
+                            <Box>
+                                <Typography sx={{ color: 'white', fontWeight: 700, fontSize: { xs: '1.25rem', md: '1.75rem' }, mb: 0.5 }}>
+                                    Envío gratis en pedidos sobre $100.000
+                                </Typography>
+                                <Typography sx={{ color: 'rgba(255,255,255,0.8)', fontSize: { xs: '0.8125rem', md: '0.9375rem' } }}>
+                                    Explora nuestro catálogo y encuentra las mejores ofertas
+                                </Typography>
+                            </Box>
+                        )}
+                    </Box>
+                </Box>
+
+                {/* Store Info */}
+                <Box sx={{ px: { xs: 2, md: 3 }, mt: 2.5, mb: 3 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 0.5 }}>
+                        {store.logo_url && (
+                            <Box component="img" src={store.logo_url} alt={`${store.name} logo`} sx={{ width: 48, height: 48, borderRadius: 1, objectFit: 'contain', border: '1px solid', borderColor: 'divider', bgcolor: 'background.paper', p: 0.5 }} />
+                        )}
+                        <Box>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                <Typography sx={{ fontWeight: 700, fontSize: '1rem', color: 'on-surface' }}>
+                                    {store.name}
+                                </Typography>
+                                {isRestaurant && (
+                                    <Chip label="Restaurante" size="small" sx={{ bgcolor: 'secondary-container', color: 'on-secondary-container', fontWeight: 600, fontSize: '0.625rem', height: 20 }} />
+                                )}
+                            </Box>
+                            {store.address && (
+                                <Typography variant="caption" sx={{ color: 'on-surface-variant', display: 'flex', alignItems: 'center', gap: 0.5, mt: 0.25 }}>
+                                    <LocationOnIcon sx={{ fontSize: 14 }} />
+                                    {store.address}
+                                </Typography>
                             )}
                         </Box>
                     </Box>
+                </Box>
 
-                    {/* Center Search - Desktop only */}
-                    <Box sx={{ flex: 1, display: { xs: 'none', md: 'flex' }, flexDirection: 'column', alignItems: 'center', maxWidth: 600, mx: 'auto' }}>
-                        <Box sx={{ position: 'relative', width: '100%', display: 'flex', alignItems: 'center' }}>
-                            <SearchIcon sx={{ position: 'absolute', left: 13, color: 'text.disabled', pointerEvents: 'none' }} fontSize="small" />
-                            <InputBase
-                                placeholder="Buscar productos..."
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                                sx={{
-                                    pl: 4.5,
-                                    pr: 2,
-                                    py: 0.75,
-                                    width: '100%',
-                                    border: '1.5px solid',
-                                    borderColor: 'divider',
-                                    borderRadius: 20,
+                {/* Search Bar */}
+                <Box sx={{ px: { xs: 2, md: 3 }, mb: 3 }}>
+                    <Box sx={{ position: 'relative' }}>
+                        <SearchIcon sx={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: 'on-surface-variant', pointerEvents: 'none' }} />
+                        <InputBase
+                            placeholder="Buscar productos..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            sx={{
+                                pl: 5,
+                                pr: 2,
+                                py: 1.5,
+                                width: '100%',
+                                border: '1px solid',
+                                borderColor: 'divider',
+                                borderRadius: 2,
+                                bgcolor: 'surface-container-low',
+                                fontSize: '0.875rem',
+                                '&.Mui-focused': {
+                                    borderColor: 'primary.main',
+                                    boxShadow: '0 0 0 3px rgba(0, 74, 198, 0.12)',
                                     bgcolor: 'background.paper',
-                                    fontSize: '0.875rem',
-                                    '&.Mui-focused': {
-                                        borderColor: 'primary.main',
-                                    },
+                                },
+                            }}
+                        />
+                    </Box>
+                </Box>
+
+                {/* Categories - horizontal chips (all viewports) */}
+                <Box sx={{ px: { xs: 2, md: 3 }, mb: 4 }}>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                        <Typography sx={{ fontWeight: 700, fontSize: '1rem', color: 'on-surface' }}>Categorías</Typography>
+                        <Button
+                            size="small"
+                            onClick={() => setSidebarOpen(true)}
+                            sx={{ textTransform: 'none', color: 'primary.main', fontWeight: 600, fontSize: '0.875rem' }}
+                        >
+                            Filtrar
+                        </Button>
+                    </Box>
+                    <Box sx={{ display: 'flex', gap: 1.5, overflowX: 'auto', pb: 1, '&::-webkit-scrollbar': { display: 'none' } }}>
+                        <Chip
+                            label="Todos"
+                            onClick={() => setSelectedCategory('all')}
+                            icon={<CategoryIcon sx={{ fontSize: 18, color: selectedCategory === 'all' ? 'on-primary-container' : 'on-surface-variant' }} />}
+                            sx={{
+                                flexShrink: 0,
+                                fontWeight: 600,
+                                fontSize: '0.8125rem',
+                                px: 1.5,
+                                height: 40,
+                                borderRadius: 'full',
+                                bgcolor: selectedCategory === 'all' ? 'primary-container' : 'surface-container-high',
+                                color: selectedCategory === 'all' ? 'on-primary-container' : 'on-surface-variant',
+                                '&:hover': { bgcolor: selectedCategory === 'all' ? 'primary-container' : 'surface-container-highest' },
+                                '& .MuiChip-icon': { m: 0 },
+                            }}
+                        />
+                        {categories.map(cat => (
+                            <Chip
+                                key={cat.id}
+                                label={cat.name}
+                                onClick={() => setSelectedCategory(cat.id.toString())}
+                                sx={{
+                                    flexShrink: 0,
+                                    fontWeight: 600,
+                                    fontSize: '0.8125rem',
+                                    px: 1.5,
+                                    height: 40,
+                                    borderRadius: 'full',
+                                    bgcolor: selectedCategory === cat.id.toString() ? 'primary-container' : 'surface-container-high',
+                                    color: selectedCategory === cat.id.toString() ? 'on-primary-container' : 'on-surface-variant',
+                                    '&:hover': { bgcolor: selectedCategory === cat.id.toString() ? 'primary-container' : 'surface-container-highest' },
                                 }}
                             />
-                        </Box>
-                    </Box>
-
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, ml: 'auto' }}>
-                        {/* Mobile filter button */}
-                        <IconButton onClick={() => setSidebarOpen(true)} sx={{ display: { md: 'none' } }}>
-                            <FilterListIcon />
-                        </IconButton>
-                        <IconButton onClick={() => setOnlyFavorites(!onlyFavorites)} color={onlyFavorites ? 'error' : 'default'} size="small">
-                            {onlyFavorites ? <FavoriteIcon fontSize="small" /> : <FavoriteBorderIcon fontSize="small" />}
-                        </IconButton>
-                        <IconButton onClick={toggleCart} size="small">
-                            <Badge badgeContent={cartTotalItems} color="error">
-                                <ShoppingCartIcon fontSize="small" />
-                            </Badge>
-                        </IconButton>
-                    </Box>
-                </Toolbar>
-            </AppBar>
-
-            <Box sx={{ display: 'flex', flex: 1 }}>
-                {/* Mobile overlay for sidebar */}
-                {sidebarOpen && (
-                    <Box sx={{ position: 'fixed', inset: 0, bgcolor: 'rgba(0,0,0,0.5)', zIndex: 998, display: { md: 'none' } }} onClick={() => setSidebarOpen(false)} />
-                )}
-
-                {/* Desktop sidebar */}
-                <Drawer
-                    variant="permanent"
-                    sx={{
-                        display: { xs: 'none', md: 'block' },
-                        width: 280,
-                        flexShrink: 0,
-                        '& .MuiDrawer-paper': {
-                            width: 280,
-                            boxSizing: 'border-box',
-                            borderRight: 1,
-                            borderColor: 'divider',
-                            bgcolor: 'background.default',
-                            position: 'static',
-                        },
-                    }}
-                >
-                    {sidebarContent}
-                </Drawer>
-
-                {/* Mobile sidebar drawer */}
-                <Drawer
-                    variant="temporary"
-                    open={sidebarOpen}
-                    onClose={() => setSidebarOpen(false)}
-                    sx={{ display: { xs: 'block', md: 'none' }, '& .MuiDrawer-paper': { width: 280 } }}
-                >
-                    {sidebarContent}
-                </Drawer>
-
-                {/* Content */}
-                <Box sx={{ flex: 1, p: { xs: 2, md: 3.5 }, bgcolor: 'background.default', overflow: 'hidden' }}>
-                    {/* Mobile Category Chips */}
-                    <Box sx={{ display: { xs: 'flex', md: 'none' }, gap: 1, overflowX: 'auto', pb: 1.5, mb: 1.5, '&::-webkit-scrollbar': { display: 'none' } }}>
-                        <Chip label="🏷️ Todos" onClick={() => setSelectedCategory('all')} color={selectedCategory === 'all' ? 'primary' : 'default'} variant={selectedCategory === 'all' ? 'filled' : 'outlined'} size="small" sx={{ borderRadius: 20, flexShrink: 0 }} />
-                        {categories.map(cat => (
-                            <Chip key={cat.id} label={`${cat.name === 'Ropa' ? '👕' : cat.name === 'Calzado' ? '👟' : '📦'} ${cat.name}`} onClick={() => setSelectedCategory(cat.id.toString())} color={selectedCategory === cat.id.toString() ? 'primary' : 'default'} variant={selectedCategory === cat.id.toString() ? 'filled' : 'outlined'} size="small" sx={{ borderRadius: 20, flexShrink: 0 }} />
                         ))}
                     </Box>
+                </Box>
 
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2.5 }}>
-                        <Typography sx={{ fontWeight: 700, fontSize: { xs: '0.875rem', md: '1rem' } }}>{filteredProducts.length} productos</Typography>
-                        <Typography variant="caption" color="text.disabled">Ordenar: <strong>Destacados</strong></Typography>
+                {/* Product Grid Section */}
+                <Box sx={{ px: { xs: 2, md: 3 }, pb: 4 }}>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+                        <Typography sx={{ fontWeight: 700, fontSize: '1.125rem', color: 'on-surface' }}>{filteredProducts.length} productos</Typography>
                     </Box>
 
-                    <Box sx={{
+                    <Box id="product-grid" sx={{
                         display: 'grid',
                         gridTemplateColumns: {
-                            xs: 'repeat(2, 1fr)',
-                            sm: 'repeat(auto-fill, minmax(200px, 1fr))',
-                            md: 'repeat(auto-fill, minmax(240px, 1fr))',
+                            xs: '1fr',
+                            md: 'repeat(2, 1fr)',
+                            lg: 'repeat(3, 1fr)',
                         },
-                        gap: { xs: 1.5, md: 2.75 },
+                        gap: 3,
                     }}>
                         {filteredProducts.map(product => {
                             const discount = product.promo_price ? Math.round(((product.price - product.promo_price) / product.price) * 100) : null
-                            const isRestaurant = store?.business_type === 'restaurant'
                             const isSoldOut = !isRestaurant && product.stock <= 0
                             const hasToppingsConfig = product.toppings_config && parseToppingsConfig(product.toppings_config)
-                            const noStockControl = isRestaurant && product.stock <= 0
 
                             return (
-                                <Card
+                                <Box
                                     key={product.id}
                                     sx={{
                                         position: 'relative',
-                                        opacity: isSoldOut ? 0.6 : 1,
+                                        bgcolor: 'background.paper',
+                                        borderRadius: 2,
+                                        border: '1px solid',
+                                        borderColor: 'outline-variant',
+                                        overflow: 'hidden',
                                         display: 'flex',
                                         flexDirection: 'column',
-                                        transition: 'box-shadow 0.25s cubic-bezier(0.4, 0, 0.2, 1), transform 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
-                                        '&:hover': {
-                                            transform: { xs: 'none', md: 'translateY(-6px)' },
-                                            boxShadow: { xs: 1, md: 6 },
-                                        },
+                                        transition: 'box-shadow 0.3s ease',
+                                        opacity: isSoldOut ? 0.6 : 1,
+                                        '&:hover': { boxShadow: '0 4px 12px rgba(0,0,0,0.08)' },
                                     }}
                                 >
-                                    {isSoldOut ? (
-                                        <Chip label="Agotado" size="small" color="error" sx={{ position: 'absolute', top: 1, left: 1, zIndex: 1, fontWeight: 700 }} />
-                                    ) : product.promo_price && (
-                                        <Chip label="Oferta" size="small" color="primary" sx={{ position: 'absolute', top: 1, left: 1, zIndex: 1, fontWeight: 700 }} />
+                                    {/* Badges */}
+                                    {isSoldOut && (
+                                        <Box sx={{ position: 'absolute', top: 16, left: 16, zIndex: 1, bgcolor: 'error', color: 'on-error', textTransform: 'uppercase', fontWeight: 900, fontSize: '0.625rem', px: 1.25, py: 0.5, borderRadius: 'full', letterSpacing: '0.05em' }}>
+                                            Agotado
+                                        </Box>
+                                    )}
+                                    {!isSoldOut && product.promo_price && (
+                                        <Box sx={{ position: 'absolute', top: 16, left: 16, zIndex: 1, bgcolor: 'tertiary-container', color: 'on-tertiary-container', textTransform: 'uppercase', fontWeight: 900, fontSize: '0.625rem', px: 1.25, py: 0.5, borderRadius: 'full', letterSpacing: '0.05em' }}>
+                                            Oferta
+                                        </Box>
+                                    )}
+                                    {hasToppingsConfig && !isSoldOut && !product.promo_price && (
+                                        <Box sx={{ position: 'absolute', top: 16, left: 16, zIndex: 1, bgcolor: 'tertiary-container', color: 'on-tertiary-container', textTransform: 'uppercase', fontWeight: 900, fontSize: '0.625rem', px: 1.25, py: 0.5, borderRadius: 'full', letterSpacing: '0.05em' }}>
+                                            Personalizable
+                                        </Box>
                                     )}
 
-                                    {hasToppingsConfig && !isSoldOut && (
-                                        <Chip label="🍕 Personalizable" size="small" sx={{ position: 'absolute', top: 1, left: 1, zIndex: 1, fontWeight: 700, bgcolor: '#f3e5f5', color: '#7b1fa2', fontSize: '0.625rem' }} />
-                                    )}
-
+                                    {/* Favorite button */}
                                     <IconButton
                                         onClick={(e) => toggleFavorite(product.id, e)}
                                         sx={{
                                             position: 'absolute',
-                                            top: 1,
-                                            right: 1,
+                                            top: 12,
+                                            right: 12,
                                             zIndex: 3,
-                                            color: favorites.includes(product.id) ? '#ef5350' : 'text.secondary',
-                                            bgcolor: 'background.paper',
-                                            boxShadow: 1,
-                                            '&:hover': { bgcolor: 'background.paper', transform: 'scale(1.15)' },
-                                            width: { xs: 32, md: 36 },
-                                            height: { xs: 32, md: 36 },
+                                            color: favorites.includes(product.id) ? 'error.main' : 'on-surface-variant',
+                                            bgcolor: 'rgba(255,255,255,0.8)',
+                                            backdropFilter: 'blur(8px)',
+                                            width: 36,
+                                            height: 36,
+                                            '&:hover': { bgcolor: 'rgba(255,255,255,0.9)' },
                                         }}
                                         size="small"
                                     >
-                                        {favorites.includes(product.id) ? <FavoriteIcon sx={{ fontSize: { xs: 16, md: 20 } }} /> : <FavoriteBorderIcon sx={{ fontSize: { xs: 16, md: 20 } }} />}
+                                        {favorites.includes(product.id) ? <FavoriteIcon sx={{ fontSize: 20 }} /> : <FavoriteBorderIcon sx={{ fontSize: 20 }} />}
                                     </IconButton>
 
+                                    {/* Image */}
                                     <Box sx={{
-                                        height: { xs: 140, sm: 160, md: 190 },
+                                        height: { xs: 180, md: 224 },
+                                        bgcolor: 'surface-container-low',
                                         display: 'flex',
                                         alignItems: 'center',
                                         justifyContent: 'center',
-                                        bgcolor: 'background.default',
-                                        borderTopLeftRadius: 1,
-                                        borderTopRightRadius: 1,
-                                        position: 'relative',
                                         filter: isSoldOut ? 'grayscale(100%)' : 'none',
+                                        overflow: 'hidden',
                                     }}>
                                         {product.image_url ? (
-                                            <Box component="img" src={product.image_url} alt={product.name} sx={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain', p: 1 }} />
-                                        ) : (
-                                            <Box sx={{ fontSize: { xs: '2rem', md: '2.5rem' } }}>📦</Box>
-                                        )}
-
-                                        {!isSoldOut && (
-                                            <IconButton
-                                                onClick={(e) => { e.stopPropagation(); addToCart(product); }}
+                                            <Box
+                                                component="img"
+                                                src={product.image_url}
+                                                alt={product.name}
+                                                className="product-img"
                                                 sx={{
-                                                    position: 'absolute',
-                                                    bottom: 1,
-                                                    right: 1,
-                                                    bgcolor: 'background.paper',
-                                                    boxShadow: 2,
-                                                    opacity: 0.85,
-                                                    width: { xs: 30, md: 36 },
-                                                    height: { xs: 30, md: 36 },
-                                                    '&:hover': { bgcolor: 'primary.main', color: 'white', opacity: 1, transform: 'scale(1.12)' },
+                                                    width: '100%',
+                                                    height: '100%',
+                                                    objectFit: 'cover',
+                                                    transition: 'transform 0.5s ease',
+                                                    '&:hover': { transform: 'scale(1.05)' },
                                                 }}
-                                                size="small"
-                                            >
-                                                <ShoppingCartIcon sx={{ fontSize: { xs: 14, md: 18 } }} />
-                                            </IconButton>
+                                            />
+                                        ) : (
+                                            <Box sx={{ fontSize: '2.5rem', color: 'text.disabled' }}>📦</Box>
                                         )}
                                     </Box>
 
-                                    <CardContent sx={{ p: { xs: 1.5, md: 2 }, display: 'flex', flexDirection: 'column', flex: 1, '&:last-child': { pb: { xs: 1.5, md: 2 } } }}>
-                                        <Typography variant="caption" color="primary.main" sx={{ fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', mb: 0.5, fontSize: { xs: '0.625rem', md: '0.75rem' } }}>
-                                            {categories.find(c => c.id === product.category_id)?.name}
-                                        </Typography>
-                                        <Typography variant="body2" sx={{
-                                            fontWeight: 600,
-                                            mb: 1,
-                                            display: '-webkit-box',
-                                            WebkitLineClamp: 2,
-                                            WebkitBoxOrient: 'vertical',
-                                            overflow: 'hidden',
-                                            minHeight: { xs: 32, md: 40 },
-                                            lineHeight: 1.35,
-                                            textDecoration: isSoldOut ? 'line-through' : 'none',
-                                            color: isSoldOut ? 'text.disabled' : 'text.primary',
-                                            fontSize: { xs: '0.8125rem', md: '0.875rem' },
-                                        }}>
-                                            {product.name}
-                                        </Typography>
-
-                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5, flexWrap: 'wrap' }}>
-                                            <Typography sx={{
-                                                fontWeight: 800,
-                                                fontSize: { xs: '0.9375rem', md: '1.125rem' },
-                                                background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
-                                                WebkitBackgroundClip: 'text',
-                                                WebkitTextFillColor: 'transparent',
-                                                backgroundClip: 'text',
-                                            }}>
+                                    {/* Content */}
+                                    <Box sx={{ p: 2.5, display: 'flex', flexDirection: 'column', flex: 1 }}>
+                                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1, gap: 1 }}>
+                                            <Typography
+                                                sx={{
+                                                    fontWeight: 700,
+                                                    fontSize: '1rem',
+                                                    lineHeight: 1.3,
+                                                    color: isSoldOut ? 'text.disabled' : 'on-surface',
+                                                    display: '-webkit-box',
+                                                    WebkitLineClamp: 2,
+                                                    WebkitBoxOrient: 'vertical',
+                                                    overflow: 'hidden',
+                                                    textDecoration: isSoldOut ? 'line-through' : 'none',
+                                                }}
+                                            >
+                                                {product.name}
+                                            </Typography>
+                                            <Typography sx={{ fontWeight: 700, fontSize: '1rem', color: 'primary.main', flexShrink: 0 }}>
                                                 ${(product.promo_price || product.price).toLocaleString()}
                                             </Typography>
-                                            {product.promo_price && (
-                                                <>
-                                                    <Typography variant="caption" sx={{ textDecoration: 'line-through', color: 'text.disabled', fontSize: { xs: '0.625rem', md: '0.75rem' } }}>
-                                                        ${product.price.toLocaleString()}
-                                                    </Typography>
-                                                    <Typography variant="caption" sx={{ fontWeight: 700, fontSize: { xs: '0.625rem', md: '0.75rem' }, background: 'linear-gradient(135deg, #f59e0b, #d97706)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-                                                        -{discount}%
-                                                    </Typography>
-                                                </>
-                                            )}
                                         </Box>
 
-                                        {!isRestaurant && (
-                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 1.5, mt: 'auto' }}>
-                                                <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: isSoldOut ? 'error.main' : (product.stock < 5 ? 'warning.main' : 'success.main'), flexShrink: 0 }} />
-                                                <Typography variant="caption" color={isSoldOut ? 'error.main' : 'text.disabled'} sx={{ fontWeight: 600, fontSize: { xs: '0.625rem', md: '0.75rem' } }}>
-                                                    {isSoldOut ? 'Agotado' : `Disponibles: ${product.stock} u.`}
+                                        {product.promo_price && (
+                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, mb: 0.5 }}>
+                                                <Typography variant="caption" sx={{ textDecoration: 'line-through', color: 'on-surface-variant', fontSize: '0.75rem' }}>
+                                                    ${product.price.toLocaleString()}
+                                                </Typography>
+                                                <Typography variant="caption" sx={{ fontWeight: 700, fontSize: '0.6875rem', color: 'tertiary' }}>
+                                                    -{discount}%
                                                 </Typography>
                                             </Box>
                                         )}
 
-                                        {isSoldOut ? (
-                                            <Button variant="contained" disabled fullWidth sx={{ bgcolor: 'action.disabledBackground', fontSize: { xs: '0.75rem', md: '0.875rem' }, py: { xs: 0.75, md: 1 } }}>
-                                                Sin Stock
-                                            </Button>
-                                        ) : (
-                                            <Button variant="contained" fullWidth onClick={(e) => { e.stopPropagation(); addToCart(product); }} sx={{ mt: 'auto', fontSize: { xs: '0.75rem', md: '0.875rem' }, py: { xs: 0.75, md: 1 } }}>
-                                                {isRestaurant ? 'Ordenar' : 'Carrito'}
-                                            </Button>
+                                        {product.description && (
+                                            <Typography variant="caption" sx={{ color: 'on-surface-variant', fontSize: '0.8125rem', lineHeight: 1.5, mb: 1.5, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                                                {product.description}
+                                            </Typography>
                                         )}
-                                    </CardContent>
-                                </Card>
+
+                                        {!isRestaurant && (
+                                            <Typography variant="caption" sx={{ color: isSoldOut ? 'error.main' : 'on-surface-variant', fontWeight: 500, fontSize: '0.75rem', mb: 1.5 }}>
+                                                {isSoldOut ? 'Agotado' : `Stock: ${product.stock} u.`}
+                                            </Typography>
+                                        )}
+
+                                        {/* Add to cart button */}
+                                        <Box sx={{ mt: 'auto' }}>
+                                            {isSoldOut ? (
+                                                <Button variant="contained" disabled fullWidth sx={{ textTransform: 'none', fontWeight: 700, borderRadius: 2, py: 1.5, fontSize: '0.875rem' }}>
+                                                    Sin Stock
+                                                </Button>
+                                            ) : (
+                                                <Button
+                                                    fullWidth
+                                                    onClick={(e) => { e.stopPropagation(); addToCart(product); }}
+                                                    startIcon={<ShoppingCartIcon sx={{ fontSize: '20px !important' }} />}
+                                                    sx={{
+                                                        textTransform: 'none',
+                                                        fontWeight: 700,
+                                                        borderRadius: 2,
+                                                        py: 1.5,
+                                                        fontSize: '0.875rem',
+                                                        bgcolor: 'primary-container',
+                                                        color: 'on-primary-container',
+                                                        '&:hover': { bgcolor: 'primary.main', color: 'on-primary' },
+                                                        transition: 'all 0.2s ease',
+                                                    }}
+                                                >
+                                                    {isRestaurant ? 'Ordenar' : 'Añadir al carrito'}
+                                                </Button>
+                                            )}
+                                        </Box>
+                                    </Box>
+                                </Box>
                             )
                         })}
                     </Box>
 
                     {filteredProducts.length === 0 && (
-                        <Box sx={{ textAlign: 'center', py: 7.5, px: 2.5, bgcolor: 'background.default', borderRadius: 2, border: '1px dashed', borderColor: 'divider', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1.5 }}>
-                            <Box sx={{ fontSize: '3.375rem' }}>🔍</Box>
-                            <Typography variant="h6" sx={{ fontWeight: 700 }}>No se encontraron productos</Typography>
-                            <Typography variant="body2" color="text.secondary" sx={{ maxWidth: 340 }}>
+                        <Box sx={{ textAlign: 'center', py: 7, px: 2.5, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1.5 }}>
+                            <Box sx={{ fontSize: '3rem', color: 'text.disabled' }}>🔍</Box>
+                            <Typography variant="h6" sx={{ fontWeight: 700, color: 'on-surface' }}>No se encontraron productos</Typography>
+                            <Typography variant="body2" color="on-surface-variant" sx={{ maxWidth: 340 }}>
                                 Prueba cambiando de categoría, buscando otros términos o desactivando los filtros activos.
                             </Typography>
                             {hasActiveFilters && (
-                                <Button variant="outlined" onClick={clearFilters} sx={{ mt: 1, borderRadius: 20 }}>
+                                <Button variant="outlined" onClick={clearFilters} sx={{ mt: 1, borderRadius: 2, textTransform: 'none', fontWeight: 600 }}>
                                     Restablecer Búsqueda
                                 </Button>
                             )}
@@ -1058,34 +1022,114 @@ function Catalog() {
             </Box>
 
             {/* Footer */}
-            <Box sx={{ py: 2, px: { xs: 2, md: 3.5 }, borderTop: 1, borderColor: 'divider', textAlign: 'center', bgcolor: 'background.paper' }}>
-                <Typography variant="caption" color="text.disabled">
+            <Box sx={{ py: 3, px: { xs: 2, md: 3.5 }, borderTop: '1px solid', borderColor: 'divider', bgcolor: 'surface-container-low', display: 'flex', flexDirection: { xs: 'column', md: 'row' }, justifyContent: 'space-between', alignItems: 'center', gap: 1.5, mt: 'auto' }}>
+                <Typography variant="body2" sx={{ fontWeight: 600, color: 'on-surface', fontSize: '0.875rem' }}>
                     &copy; {new Date().getFullYear()} {store.name}. Todos los derechos reservados.
                 </Typography>
-                <Typography variant="caption" sx={{ display: 'block', fontWeight: 600, background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+                <Typography variant="caption" sx={{ color: 'primary.main', fontWeight: 600 }}>
                     Powered by OSDOSOFT
                 </Typography>
             </Box>
 
-            {/* Floating Cart Button */}
+            {/* Mobile Bottom Nav */}
+            <Box
+                sx={{
+                    display: { xs: 'flex', md: 'none' },
+                    position: 'fixed',
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
+                    zIndex: 50,
+                    bgcolor: 'background.paper',
+                    borderTop: '1px solid',
+                    borderColor: 'divider',
+                    justifyContent: 'space-around',
+                    alignItems: 'center',
+                    px: 1,
+                    pt: 0.75,
+                    pb: 1,
+                    boxShadow: '0 -2px 8px rgba(0,0,0,0.06)',
+                }}
+            >
+                {[
+                    { label: 'Inicio', icon: <HomeIcon />, active: false },
+                    { label: 'Catálogo', icon: <CategoryIcon />, active: true },
+                    { label: 'Pedidos', icon: <ReceiptLongIcon />, active: false },
+                    { label: 'Cuenta', icon: <PersonIcon />, active: false },
+                ].map(item => (
+                    <Box
+                        key={item.label}
+                        sx={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            gap: 0.25,
+                            px: 2,
+                            py: 0.5,
+                            borderRadius: 2,
+                            cursor: 'pointer',
+                            bgcolor: item.active ? 'primary-container' : 'transparent',
+                            color: item.active ? 'on-primary-container' : 'on-surface-variant',
+                            transition: 'all 0.2s ease',
+                        }}
+                    >
+                        {item.icon}
+                        <Typography sx={{ fontSize: '0.6875rem', fontWeight: item.active ? 700 : 500 }}>{item.label}</Typography>
+                    </Box>
+                ))}
+            </Box>
+
+            {/* Mobile FAB Cart */}
             {cart.length > 0 && (
-                <Fab
-                    color="success"
+                <Box
                     onClick={toggleCart}
                     sx={{
+                        display: { xs: 'flex', md: 'none' },
                         position: 'fixed',
-                        bottom: { xs: 16, md: 24 },
-                        right: { xs: 16, md: 24 },
-                        zIndex: 999,
-                        width: { xs: 50, md: 60 },
-                        height: { xs: 50, md: 60 },
-                        boxShadow: 3,
-                        animation: 'cart-bounce 2.5s infinite ease-in-out',
-                        '@keyframes cart-bounce': {
-                            '0%, 100%': { transform: 'translateY(0)' },
-                            '50%': { transform: 'translateY(-8px)' },
-                        },
-                        '&:hover': { animation: 'none', transform: 'scale(1.1) translateY(-5px)' },
+                        bottom: 88,
+                        right: 24,
+                        zIndex: 50,
+                        width: 64,
+                        height: 64,
+                        borderRadius: 'full',
+                        bgcolor: 'tertiary-container',
+                        color: 'on-tertiary-container',
+                        boxShadow: '0 4px 14px rgba(0,0,0,0.25)',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        cursor: 'pointer',
+                        border: '4px solid',
+                        borderColor: 'background.default',
+                        transition: 'all 0.2s ease',
+                        '&:active': { transform: 'scale(0.95)' },
+                    }}
+                >
+                    <Badge
+                        badgeContent={cartTotalItems}
+                        color="error"
+                        sx={{ position: 'absolute', top: -4, right: -4, '& .MuiBadge-badge': { fontSize: '0.75rem', fontWeight: 700, minWidth: 20, height: 20 } }}
+                    >
+                        <ShoppingCartIcon sx={{ fontSize: 28 }} />
+                    </Badge>
+                </Box>
+            )}
+
+            {/* Desktop FAB Cart */}
+            {cart.length > 0 && (
+                <Fab
+                    onClick={toggleCart}
+                    sx={{
+                        display: { xs: 'none', md: 'flex' },
+                        position: 'fixed',
+                        bottom: 24,
+                        right: 24,
+                        zIndex: 50,
+                        width: 60,
+                        height: 60,
+                        bgcolor: 'primary-container',
+                        color: 'on-primary-container',
+                        boxShadow: '0 4px 14px rgba(0,0,0,0.2)',
+                        '&:hover': { bgcolor: 'primary.main', color: 'on-primary' },
                     }}
                 >
                     <Badge badgeContent={cartTotalItems} color="error">
@@ -1094,12 +1138,25 @@ function Catalog() {
                 </Fab>
             )}
 
+            {/* Filter Drawer (mobile + desktop) */}
+            {sidebarOpen && (
+                <Box sx={{ position: 'fixed', inset: 0, bgcolor: 'rgba(0,0,0,0.5)', zIndex: 998 }} onClick={() => setSidebarOpen(false)} />
+            )}
+            <Drawer
+                anchor="right"
+                open={sidebarOpen}
+                onClose={() => setSidebarOpen(false)}
+                slotProps={{ paper: { sx: { width: 300, bgcolor: 'background.paper' } } }}
+            >
+                {filterDrawerContent}
+            </Drawer>
+
             {/* Cart Drawer */}
             <Drawer
                 anchor="right"
                 open={cartOpen}
                 onClose={toggleCart}
-                PaperProps={{ sx: { width: '100%', maxWidth: 420 } }}
+                slotProps={{ paper: { sx: { width: '100%', maxWidth: 420 } } }}
             >
                 <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
                     <Box sx={{ p: { xs: 2, md: 2.5 }, borderBottom: 1, borderColor: 'divider', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -1115,7 +1172,7 @@ function Catalog() {
                             <Box sx={{ textAlign: 'center', py: 5, color: 'text.disabled' }}>
                                 <Box sx={{ fontSize: '3rem', mb: 2 }}>🛒</Box>
                                 <Typography>Tu carrito está vacío</Typography>
-                                <Button variant="contained" onClick={toggleCart} sx={{ mt: 1.5 }}>Seguir explorando</Button>
+                                <Button variant="contained" onClick={toggleCart} sx={{ mt: 1.5, bgcolor: 'primary-container', color: 'on-primary-container', '&:hover': { bgcolor: 'primary.main' } }}>Seguir explorando</Button>
                             </Box>
                         ) : (
                             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
@@ -1138,7 +1195,7 @@ function Catalog() {
 
                                     return (
                                         <Box key={`${item.id}-${item.selected_size}-${item.selected_toppings}-${idx}`} sx={{ display: 'flex', gap: 1.5, pb: 2, borderBottom: 1, borderColor: 'divider' }}>
-                                            <Box sx={{ width: 60, height: 60, borderRadius: 1, overflow: 'hidden', bgcolor: 'background.default', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                                            <Box sx={{ width: 60, height: 60, borderRadius: 1.5, overflow: 'hidden', bgcolor: 'surface-container-low', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                                                 {item.image_url ? (
                                                     <Box component="img" src={item.image_url} alt={item.name} sx={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
                                                 ) : (
@@ -1168,7 +1225,7 @@ function Catalog() {
                                                     <Typography variant="body2" sx={{ fontWeight: 700, color: 'primary.dark' }}>
                                                         ${((basePrice + (item.extra_price || 0)) * item.quantity).toLocaleString()}
                                                     </Typography>
-                                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, border: 1, borderColor: 'divider', borderRadius: 20, px: 1, bgcolor: 'background.default' }}>
+                                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, border: 1, borderColor: 'divider', borderRadius: 20, px: 1, bgcolor: 'surface-container-low' }}>
                                                         <IconButton size="small" onClick={() => updateCartItemQty(item.id, item.selected_size, item.selected_toppings, -1)}><RemoveIcon fontSize="small" /></IconButton>
                                                         <Typography sx={{ fontWeight: 700, minWidth: 16, textAlign: 'center', fontSize: '0.8125rem' }}>{item.quantity}</Typography>
                                                         <IconButton size="small" onClick={() => updateCartItemQty(item.id, item.selected_size, item.selected_toppings, 1)} disabled={item.quantity >= item.stock}><AddIcon fontSize="small" /></IconButton>
@@ -1186,7 +1243,7 @@ function Catalog() {
                     </Box>
 
                     {cart.length > 0 && (
-                        <Box sx={{ p: { xs: 2, md: 2.5 }, borderTop: 1, borderColor: 'divider', bgcolor: 'background.default' }}>
+                        <Box sx={{ p: { xs: 2, md: 2.5 }, borderTop: 1, borderColor: 'divider', bgcolor: 'surface-container-low' }}>
                             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, mb: 2 }}>
                                 <TextField
                                     size="small"
@@ -1257,7 +1314,7 @@ function Catalog() {
                 onClose={() => setSizeModalProduct(null)}
                 maxWidth="xs"
                 fullWidth
-                PaperProps={{ sx: { borderRadius: 3 } }}
+                slotProps={{ paper: { sx: { borderRadius: 3 } } }}
             >
                 <DialogTitle sx={{ fontWeight: 700 }}>
                     Seleccionar Talla
@@ -1308,7 +1365,7 @@ function Catalog() {
                 onClose={() => { setToppingModalProduct(null); setToppingConfig(null); setToppingSelections({}); setToppingExtraPrice(0); }}
                 maxWidth="sm"
                 fullWidth
-                PaperProps={{ sx: { borderRadius: 3 } }}
+                slotProps={{ paper: { sx: { borderRadius: 3 } } }}
             >
                 <DialogTitle sx={{ fontWeight: 700 }}>
                     🍕 Personaliza tu {toppingModalProduct?.name}
@@ -1317,7 +1374,6 @@ function Catalog() {
                     {toppingConfig && toppingConfig.map((group) => {
                         const selected = toppingSelections[group.id] || []
                         const isAtMax = group.max > 0 && selected.length >= group.max
-                        const isAtMin = group.required && (group.min || 1) > 0 && selected.length > 0
 
                         return (
                             <Box key={group.id} sx={{ mb: 3 }}>
@@ -1366,7 +1422,7 @@ function Catalog() {
                     })}
 
                     {toppingExtraPrice > 0 && (
-                        <Box sx={{ p: 2, bgcolor: '#fff7ed', borderRadius: 2, border: '1px solid #fed7aa', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <Box sx={{ p: 2, bgcolor: 'rgba(245,158,11,0.08)', borderRadius: 2, border: '1px solid rgba(245,158,11,0.3)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                             <Typography variant="body2" sx={{ fontWeight: 600 }}>💵 Costo adicional por toppings:</Typography>
                             <Typography variant="body2" sx={{ fontWeight: 800, color: '#f59e0b' }}>
                                 +${toppingExtraPrice.toLocaleString()}

@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import { Navigate } from 'react-router-dom'
 import AdminLayout from '../components/AdminLayout'
 import { useToast } from '../components/Toast'
 import Box from '@mui/material/Box'
@@ -45,7 +46,7 @@ const keyframes = `
   }
 `
 
-function Invoices({ user }) {
+function Invoices({ user, onLogout }) {
     const [invoices, setInvoices] = useState([])
     const [loading, setLoading] = useState(true)
     const [searchTerm, setSearchTerm] = useState('')
@@ -142,8 +143,10 @@ function Invoices({ user }) {
         win.document.close()
     }
 
+    if (user?.role === 'STAFF') return <Navigate to="/admin/pos" />
+
     return (
-        <AdminLayout title="Historial de Facturas" user={user}>
+        <AdminLayout title="Historial de Facturas" user={user} onLogout={onLogout}>
             <style>{keyframes}</style>
 
             {/* Page Header */}
@@ -365,19 +368,19 @@ function Invoices({ user }) {
                 onClose={() => setShowReceipt(false)}
                 maxWidth="sm"
                 fullWidth
-                PaperProps={{
-                    sx: {
-                        background: isDark ? 'rgba(10, 10, 28, 0.95)' : 'rgba(255, 255, 255, 0.95)',
-                        backdropFilter: 'blur(40px) saturate(200%)',
-                        border: isDark ? '1px solid rgba(180, 197, 255, 0.15)' : '1px solid rgba(0, 74, 198, 0.12)',
-                        borderRadius: '20px',
-                        boxShadow: isDark
-                            ? '0 24px 80px rgba(0,0,0,0.5), 0 0 40px rgba(0,74,198,0.08)'
-                            : '0 24px 80px rgba(0,0,0,0.12), 0 0 40px rgba(0,74,198,0.05)',
-                        overflow: 'hidden',
-                    },
-                }}
                 slotProps={{
+                    paper: {
+                        sx: {
+                            background: isDark ? 'rgba(10, 10, 28, 0.95)' : 'rgba(255, 255, 255, 0.95)',
+                            backdropFilter: 'blur(40px) saturate(200%)',
+                            border: isDark ? '1px solid rgba(180, 197, 255, 0.15)' : '1px solid rgba(0, 74, 198, 0.12)',
+                            borderRadius: '20px',
+                            boxShadow: isDark
+                                ? '0 24px 80px rgba(0,0,0,0.5), 0 0 40px rgba(0,74,198,0.08)'
+                                : '0 24px 80px rgba(0,0,0,0.12), 0 0 40px rgba(0,74,198,0.05)',
+                            overflow: 'hidden',
+                        },
+                    },
                     backdrop: {
                         sx: { backdropFilter: 'blur(4px)', background: 'rgba(0,0,0,0.3)' }
                     }

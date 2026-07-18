@@ -59,11 +59,14 @@ def get_invoice_details(invoice_id):
 @invoice_bp.route('/order/<int:order_id>', methods=['POST'])
 @jwt_required()
 def generate_invoice_for_order(order_id):
-    """Manually generate an invoice for an existing order"""
+    """Manually generate an invoice for an existing order (MANAGER only)"""
     current_user_id = get_jwt_identity()
     current_user = User.query.get(current_user_id)
     if not current_user:
         return jsonify({'error': 'Usuario no encontrado'}), 404
+    
+    if current_user.role == 'STAFF':
+        return jsonify({'error': 'No autorizado: los empleados no pueden generar facturas'}), 403
         
     store_id = current_user.store_id
     if not store_id:

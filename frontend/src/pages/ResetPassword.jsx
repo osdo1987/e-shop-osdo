@@ -178,7 +178,7 @@ function ResetPassword() {
                     <TextField
                         fullWidth label="Nueva Contraseña" type="password"
                         value={password} onChange={(e) => setPassword(e.target.value)}
-                        placeholder="••••••••" required inputProps={{ minLength: 6 }}
+                        placeholder="••••••••" required slotProps={{ htmlInput: { minLength: 6 } }}
                         sx={{
                             mb: 2.5,
                             '& .MuiOutlinedInput-root': {
@@ -194,7 +194,7 @@ function ResetPassword() {
                     <TextField
                         fullWidth label="Confirmar Nueva Contraseña" type="password"
                         value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)}
-                        placeholder="••••••••" required inputProps={{ minLength: 6 }}
+                        placeholder="••••••••" required slotProps={{ htmlInput: { minLength: 6 } }}
                         sx={{
                             mb: 3.5,
                             '& .MuiOutlinedInput-root': {

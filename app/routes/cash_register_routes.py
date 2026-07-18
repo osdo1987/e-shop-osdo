@@ -30,11 +30,14 @@ def get_active_session():
 @cash_register_bp.route('/session/open', methods=['POST'])
 @jwt_required()
 def open_session():
-    """Open a new cash register session"""
+    """Open a new cash register session (MANAGER only)"""
     current_user_id = get_jwt_identity()
     current_user = User.query.get(current_user_id)
     if not current_user:
         return jsonify({'error': 'Usuario no encontrado'}), 404
+    
+    if current_user.role == 'STAFF':
+        return jsonify({'error': 'No autorizado: los empleados no pueden abrir caja'}), 403
         
     store_id = current_user.store_id
     if not store_id:
@@ -70,11 +73,14 @@ def open_session():
 @cash_register_bp.route('/session/close', methods=['POST'])
 @jwt_required()
 def close_session():
-    """Close/reconcile the active cash register session"""
+    """Close/reconcile the active cash register session (MANAGER only)"""
     current_user_id = get_jwt_identity()
     current_user = User.query.get(current_user_id)
     if not current_user:
         return jsonify({'error': 'Usuario no encontrado'}), 404
+    
+    if current_user.role == 'STAFF':
+        return jsonify({'error': 'No autorizado: los empleados no pueden cerrar caja'}), 403
         
     store_id = current_user.store_id
     if not store_id:

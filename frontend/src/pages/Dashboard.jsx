@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useCallback } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, Navigate } from 'react-router-dom'
 import AdminLayout from '../components/AdminLayout'
 import ConfirmModal from '../components/ConfirmModal'
 import Pagination from '../components/Pagination'
@@ -195,6 +195,8 @@ function Dashboard({ user, onLogout }) {
         accentBg: isDark ? 'rgba(180,197,255,0.10)' : 'rgba(0,74,198,0.06)',
         surfaceHover: isDark ? 'rgba(180,197,255,0.04)' : 'rgba(0,0,0,0.02)',
     }
+
+    if (user?.role === 'STAFF') return <Navigate to="/admin/pos" />
 
     return (
         <>

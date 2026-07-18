@@ -3,6 +3,7 @@ from app.services.category_service import CategoryService
 from app.schemas.category_schema import CategorySchema
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from app.models.user import User
+from app.models.category import Category
 
 category_bp = Blueprint('categories', __name__)
 category_schema = CategorySchema()
@@ -95,9 +96,11 @@ def create_category():
     if not current_user:
         return jsonify({'error': 'Usuario no encontrado'}), 404
     
+    if current_user.role == 'STAFF':
+        return jsonify({'error': 'No autorizado: los empleados no pueden crear categorías'}), 403
+    
     data = request.get_json()
     
-    # Verify user has access to this store
     if current_user.store_id != data.get('store_id') and current_user.role != 'SUPERADMIN':
         return jsonify({'error': 'No autorizado'}), 403
     
@@ -140,11 +143,18 @@ def update_category(category_id):
     if not current_user:
         return jsonify({'error': 'Usuario no encontrado'}), 404
     
+    if current_user.role == 'STAFF':
+        return jsonify({'error': 'No autorizado: los empleados no pueden modificar categorías'}), 403
+    
+    category_obj = Category.query.get(category_id)
+    if not category_obj:
+        return jsonify({'error': 'Categoría no encontrada'}), 404
+    
+    if current_user.role != 'SUPERADMIN' and current_user.store_id != category_obj.store_id:
+        return jsonify({'error': 'No autorizado'}), 403
+    
     data = request.get_json()
     category = CategoryService.update_category(category_id, data)
-    
-    if not category:
-        return jsonify({'error': 'Categoría no encontrada'}), 404
     
     return jsonify(category), 200
 
@@ -172,6 +182,16 @@ def delete_category(category_id):
     
     if not current_user:
         return jsonify({'error': 'Usuario no encontrado'}), 404
+    
+    if current_user.role == 'STAFF':
+        return jsonify({'error': 'No autorizado: los empleados no pueden eliminar categorías'}), 403
+    
+    category_obj = Category.query.get(category_id)
+    if not category_obj:
+        return jsonify({'error': 'Categoría no encontrada'}), 404
+    
+    if current_user.role != 'SUPERADMIN' and current_user.store_id != category_obj.store_id:
+        return jsonify({'error': 'No autorizado'}), 403
     
     success = CategoryService.delete_category(category_id)
     if not success:

@@ -1,6 +1,7 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { ToastProvider } from './components/Toast'
+import { setAuthErrorCallback } from './fetchInterceptor'
 import Login from './pages/Login'
 import ForgotPassword from './pages/ForgotPassword'
 import ResetPassword from './pages/ResetPassword'
@@ -20,15 +21,63 @@ import POS from './pages/POS'
 import CashRegister from './pages/CashRegister'
 import Invoices from './pages/Invoices'
 
+function parseJwtExp(token) {
+    try {
+        const payload = JSON.parse(atob(token.split('.')[1]))
+        return payload.exp ? payload.exp * 1000 : null
+    } catch {
+        return null
+    }
+}
+
 function App({ darkMode, setDarkMode }) {
     const [user, setUser] = useState(null)
+    const [tokenReady, setTokenReady] = useState(false)
+
+    const handleLogout = useCallback(() => {
+        localStorage.removeItem('user')
+        localStorage.removeItem('token')
+        setUser(null)
+    }, [])
+
+    const forceLogout = useCallback(() => {
+        localStorage.removeItem('user')
+        localStorage.removeItem('token')
+        setUser(null)
+        window.location.href = '/login'
+    }, [])
 
     useEffect(() => {
         const storedUser = localStorage.getItem('user')
-        if (storedUser) {
-            setUser(JSON.parse(storedUser))
+        const storedToken = localStorage.getItem('token')
+        if (storedUser && storedToken) {
+            const exp = parseJwtExp(storedToken)
+            if (exp && Date.now() >= exp) {
+                localStorage.removeItem('user')
+                localStorage.removeItem('token')
+            } else {
+                setUser(JSON.parse(storedUser))
+            }
         }
+        setTokenReady(true)
     }, [])
+
+    useEffect(() => {
+        setAuthErrorCallback(forceLogout)
+    }, [forceLogout])
+
+    useEffect(() => {
+        if (!user) return
+        const interval = setInterval(() => {
+            const token = localStorage.getItem('token')
+            if (!token) { handleLogout(); return }
+            const exp = parseJwtExp(token)
+            if (exp && Date.now() >= exp) {
+                handleLogout()
+            }
+        }, 60000)
+        return () => clearInterval(interval)
+    }, [user, handleLogout])
 
     const handleLogin = (userData, token) => {
         localStorage.setItem('user', JSON.stringify(userData))
@@ -36,11 +85,9 @@ function App({ darkMode, setDarkMode }) {
         setUser(userData)
     }
 
-    const handleLogout = () => {
-        localStorage.removeItem('user')
-        localStorage.removeItem('token')
-        setUser(null)
-    }
+    if (!tokenReady) return null
+
+    const isManagerOrAbove = user && (user.role === 'SUPERADMIN' || user.role === 'MANAGER')
 
     return (
         <ToastProvider>
@@ -55,34 +102,34 @@ function App({ darkMode, setDarkMode }) {
                     user ? <ChangePassword user={user} onLogout={handleLogout} /> : <Navigate to="/login" />
                 } />
                 <Route path="/admin/dashboard" element={
-                    user ? <StatsDashboard user={user} /> : <Navigate to="/login" />
+                    isManagerOrAbove ? <StatsDashboard user={user} onLogout={handleLogout} /> : <Navigate to="/admin/pos" />
                 } />
                 <Route path="/admin" element={
-                    user ? <Dashboard user={user} onLogout={handleLogout} /> : <Navigate to="/login" />
+                    isManagerOrAbove ? <Dashboard user={user} onLogout={handleLogout} /> : <Navigate to="/admin/pos" />
                 } />
                 <Route path="/admin/products/new" element={
-                    user ? <ProductForm user={user} /> : <Navigate to="/login" />
+                    isManagerOrAbove ? <ProductForm user={user} onLogout={handleLogout} /> : <Navigate to="/admin/pos" />
                 } />
                 <Route path="/admin/products/edit/:id" element={
-                    user ? <ProductForm user={user} /> : <Navigate to="/login" />
+                    isManagerOrAbove ? <ProductForm user={user} onLogout={handleLogout} /> : <Navigate to="/admin/pos" />
                 } />
                 <Route path="/admin/categories" element={
-                    user ? <Categories user={user} /> : <Navigate to="/login" />
+                    isManagerOrAbove ? <Categories user={user} onLogout={handleLogout} /> : <Navigate to="/admin/pos" />
                 } />
                 <Route path="/admin/orders" element={
                     user ? <Orders user={user} onLogout={handleLogout} /> : <Navigate to="/login" />
                 } />
                 <Route path="/admin/pos" element={
-                    user ? <POS user={user} /> : <Navigate to="/login" />
+                    user ? <POS user={user} onLogout={handleLogout} /> : <Navigate to="/login" />
                 } />
                 <Route path="/admin/cash-register" element={
-                    user ? <CashRegister user={user} /> : <Navigate to="/login" />
+                    isManagerOrAbove ? <CashRegister user={user} onLogout={handleLogout} /> : <Navigate to="/admin/pos" />
                 } />
                 <Route path="/admin/invoices" element={
-                    user ? <Invoices user={user} /> : <Navigate to="/login" />
+                    isManagerOrAbove ? <Invoices user={user} onLogout={handleLogout} /> : <Navigate to="/admin/pos" />
                 } />
                 <Route path="/admin/settings" element={
-                    user ? <Settings user={user} onLogout={handleLogout} darkMode={darkMode} setDarkMode={setDarkMode} /> : <Navigate to="/login" />
+                    isManagerOrAbove ? <Settings user={user} onLogout={handleLogout} darkMode={darkMode} setDarkMode={setDarkMode} /> : <Navigate to="/admin/pos" />
                 } />
                 <Route path="/admin/super" element={
                     user && user.role === 'SUPERADMIN' ? <SuperAdmin user={user} onLogout={handleLogout} /> : <Navigate to="/login" />

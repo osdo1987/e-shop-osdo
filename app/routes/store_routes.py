@@ -4,7 +4,7 @@ from app.services.category_service import CategoryService
 from app.services.product_service import ProductService
 from app.services.order_service import OrderService
 from app.schemas.store_schema import StoreSchema
-from flask_jwt_extended import jwt_required, get_jwt_identity, get_jwt
+from flask_jwt_extended import jwt_required, get_jwt_identity
 from app.models.user import User
 from app.models.order import Order
 from app.extensions import db
@@ -65,16 +65,20 @@ def create_store():
 @store_bp.route('/<int:store_id>', methods=['PUT'])
 @jwt_required()
 def update_store(store_id):
-    claims = get_jwt()
-    user_role = claims.get('role', '')
-    user_store_id = claims.get('storeId')
-    if user_role != 'SUPERADMIN':
-        if user_role != 'SELLER':
+    current_user_id = get_jwt_identity()
+    current_user = User.query.get(current_user_id)
+    if not current_user:
+        return jsonify({'error': 'Usuario no encontrado'}), 404
+    if current_user.role != 'SUPERADMIN':
+        if current_user.role not in ('MANAGER', 'STAFF'):
             return jsonify({'error': 'No autorizado: rol inválido'}), 403
-        if user_store_id is None or user_store_id != store_id:
+        if current_user.store_id is None or current_user.store_id != store_id:
             return jsonify({'error': 'No autorizado: no tienes permiso para esta tienda'}), 403
         data = request.get_json()
-        allowed_data = {'whatsapp': data.get('whatsapp'), 'logo_url': data.get('logo_url')}
+        if current_user.role == 'STAFF':
+            allowed_data = {'whatsapp': data.get('whatsapp'), 'logo_url': data.get('logo_url')}
+        else:
+            allowed_data = data
         store, error = StoreService.update_store(store_id, allowed_data)
     else:
         data = request.get_json()
@@ -88,7 +92,7 @@ def update_store(store_id):
 def get_store_metrics():
     current_user_id = get_jwt_identity()
     current_user = User.query.get(current_user_id)
-    if not current_user or current_user.role != 'SUPERADMIN':
+    if not current_user or current_user.role not in ('SUPERADMIN', 'MANAGER'):
         return jsonify({'error': 'No autorizado'}), 403
 
     filter_month = request.args.get('month', type=int)
@@ -109,7 +113,12 @@ def get_store_metrics():
         period_start = month_start
         period_end = now
 
-    stores = StoreService.get_all_stores()
+    if current_user.role == 'MANAGER':
+        from app.models.store import Store as StoreModel
+        store_obj = StoreModel.query.get(current_user.store_id)
+        stores = [StoreService.get_store_by_id(current_user.store_id)] if store_obj else []
+    else:
+        stores = StoreService.get_all_stores()
     result = []
 
     for store_data in stores:
@@ -154,7 +163,7 @@ def get_store_metrics():
         ).scalar() or 0
 
         last_order = Order.query.filter_by(store_id=store_id).order_by(Order.created_at.desc()).first()
-        seller = User.query.filter_by(store_id=store_id, role='SELLER').first()
+        seller = User.query.filter_by(store_id=store_id, role='MANAGER').first()
 
         result.append({
             **store_data,

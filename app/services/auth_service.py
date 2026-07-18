@@ -52,7 +52,7 @@ class AuthService:
     @staticmethod
     def create_seller(store_data, user_data):
         """
-        Create a new store and seller (SUPERADMIN only)
+        Create a new store and manager (SUPERADMIN only)
         """
         # Check if email already exists
         existing_user = User.query.filter_by(email=user_data['email']).first()
@@ -81,7 +81,7 @@ class AuthService:
             user = User(
                 email=user_data['email'],
                 password_hash='',  # Will be set by set_password
-                role='SELLER',
+                role='MANAGER',
                 store_id=store.id
             )
             user.set_password(user_data['password'])
@@ -89,6 +89,34 @@ class AuthService:
             db.session.commit()
             
             return {'success': True, 'store': store.id, 'user': user.id}, 201
+        except Exception as e:
+            db.session.rollback()
+            return {'error': str(e)}, 500
+    
+    @staticmethod
+    def create_staff(manager_user, user_data):
+        """
+        Create a STAFF user for the manager's store
+        """
+        existing_user = User.query.filter_by(email=user_data['email']).first()
+        if existing_user:
+            return {'error': 'El correo ya está en uso'}, 400
+        
+        if not manager_user.store_id:
+            return {'error': 'No se encontró la tienda asociada'}, 400
+        
+        try:
+            user = User(
+                email=user_data['email'],
+                password_hash='',
+                role='STAFF',
+                store_id=manager_user.store_id
+            )
+            user.set_password(user_data['password'])
+            db.session.add(user)
+            db.session.commit()
+            
+            return {'success': True, 'user': user.id}, 201
         except Exception as e:
             db.session.rollback()
             return {'error': str(e)}, 500

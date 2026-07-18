@@ -3,6 +3,7 @@ from app.services.product_service import ProductService
 from app.schemas.product_schema import ProductSchema
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from app.models.user import User
+from app.models.product import Product
 from app.extensions import socketio
 
 product_bp = Blueprint('products', __name__)
@@ -113,13 +114,14 @@ def create_product():
     if not current_user:
         return jsonify({'error': 'Usuario no encontrado'}), 404
     
+    if current_user.role == 'STAFF':
+        return jsonify({'error': 'No autorizado: los empleados no pueden crear productos'}), 403
+    
     data = request.get_json()
     
-    # Verify user has access to this store
     if current_user.store_id != data.get('store_id') and current_user.role != 'SUPERADMIN':
         return jsonify({'error': 'No autorizado'}), 403
     
-    # Validate required fields
     if not data.get('name') or not data.get('price') or not data.get('category_id'):
         return jsonify({'error': 'Faltan campos obligatorios (name, price, category_id)'}), 400
     
@@ -172,11 +174,18 @@ def update_product(product_id):
     if not current_user:
         return jsonify({'error': 'Usuario no encontrado'}), 404
     
+    if current_user.role == 'STAFF':
+        return jsonify({'error': 'No autorizado: los empleados no pueden modificar productos'}), 403
+    
+    product_obj = Product.query.get(product_id)
+    if not product_obj:
+        return jsonify({'error': 'Producto no encontrado'}), 404
+    
+    if current_user.role != 'SUPERADMIN' and current_user.store_id != product_obj.store_id:
+        return jsonify({'error': 'No autorizado'}), 403
+    
     data = request.get_json()
     product = ProductService.update_product(product_id, data)
-    
-    if not product:
-        return jsonify({'error': 'Producto no encontrado'}), 404
     
     socketio.emit('product_updated', product, namespace='/')
     return jsonify(product), 200
@@ -205,6 +214,16 @@ def delete_product(product_id):
     
     if not current_user:
         return jsonify({'error': 'Usuario no encontrado'}), 404
+    
+    if current_user.role == 'STAFF':
+        return jsonify({'error': 'No autorizado: los empleados no pueden eliminar productos'}), 403
+    
+    product_obj = Product.query.get(product_id)
+    if not product_obj:
+        return jsonify({'error': 'Producto no encontrado'}), 404
+    
+    if current_user.role != 'SUPERADMIN' and current_user.store_id != product_obj.store_id:
+        return jsonify({'error': 'No autorizado'}), 403
     
     success = ProductService.delete_product(product_id)
     if not success:

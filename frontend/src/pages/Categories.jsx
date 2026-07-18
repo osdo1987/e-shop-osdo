@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { Navigate } from 'react-router-dom'
 import AdminLayout from '../components/AdminLayout'
 import ConfirmModal from '../components/ConfirmModal'
 import { useToast } from '../components/Toast'
@@ -24,7 +25,7 @@ const categoryColors = [
     { bg: 'rgba(20,184,166,0.10)', color: '#14b8a6', gradient: 'linear-gradient(135deg, rgba(20,184,166,0.15), rgba(20,184,166,0.05))' },
 ]
 
-function Categories({ user }) {
+function Categories({ user, onLogout }) {
     const theme = useTheme()
     const isDark = theme.palette.mode === 'dark'
     const [categories, setCategories] = useState([])
@@ -102,9 +103,11 @@ function Categories({ user }) {
         }
     }
 
+    if (user?.role === 'STAFF') return <Navigate to="/admin/pos" />
+
     return (
         <>
-            <AdminLayout title="Categorías" user={user}>
+            <AdminLayout title="Categorías" user={user} onLogout={onLogout}>
                 {/* Header stats — compact inline */}
                 <Box sx={{
                     display: 'flex', gap: 0.75, mb: 2, flexWrap: 'wrap',

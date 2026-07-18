@@ -27,8 +27,9 @@ import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet'
 import ReceiptLongIcon from '@mui/icons-material/ReceiptLong'
 
 function AdminLayout({ title, children, user, onLogout, superadmin = false, showBack = false }) {
+    const isStaff = user?.role === 'STAFF'
     const displayName = superadmin ? 'Super Admin' : (user?.storeName || 'Mi Tienda')
-    const headerLabel = superadmin ? 'Super Admin' : (user?.storeName ? `Vendedor - ${user.storeName}` : 'Vendedor')
+    const headerLabel = superadmin ? 'Super Admin' : isStaff ? `Empleado - ${user?.storeName || ''}` : (user?.storeName ? `Gerente - ${user.storeName}` : 'Gerente')
     const location = useLocation()
     const theme = useTheme()
     const isDark = theme.palette.mode === 'dark'
@@ -43,18 +44,22 @@ function AdminLayout({ title, children, user, onLogout, superadmin = false, show
                 : 'Mi Tienda - Panel'
     }, [user, superadmin])
 
-    const navItems = useMemo(() => superadmin
-        ? [{ path: '/admin/super', label: 'Tiendas', icon: <StoreIcon /> }]
-        : [
-            { path: '/admin/dashboard', label: 'Dashboard', icon: <DashboardIcon /> },
-            { path: '/admin', label: 'Productos', icon: <Inventory2Icon /> },
-            { path: '/admin/categories', label: 'Categorías', icon: <CategoryIcon /> },
+    const navItems = useMemo(() => {
+        if (superadmin) return [{ path: '/admin/super', label: 'Tiendas', icon: <StoreIcon /> }]
+
+        const allItems = [
+            { path: '/admin/dashboard', label: 'Dashboard', icon: <DashboardIcon />, managerOnly: true },
+            { path: '/admin', label: 'Productos', icon: <Inventory2Icon />, managerOnly: true },
+            { path: '/admin/categories', label: 'Categorías', icon: <CategoryIcon />, managerOnly: true },
             { path: '/admin/pos', label: 'POS / Venta Local', icon: <PointOfSaleIcon /> },
-            { path: '/admin/cash-register', label: 'Control de Caja', icon: <AccountBalanceWalletIcon /> },
-            { path: '/admin/invoices', label: 'Facturas', icon: <ReceiptLongIcon /> },
+            { path: '/admin/cash-register', label: 'Control de Caja', icon: <AccountBalanceWalletIcon />, managerOnly: true },
+            { path: '/admin/invoices', label: 'Facturas', icon: <ReceiptLongIcon />, managerOnly: true },
             { path: '/admin/orders', label: 'Pedidos Web', icon: <ShoppingCartIcon /> },
-            { path: '/admin/settings', label: 'Configuración', icon: <SettingsIcon /> }
-        ], [superadmin])
+            { path: '/admin/settings', label: 'Configuración', icon: <SettingsIcon />, managerOnly: true }
+        ]
+
+        return allItems.filter(item => !item.managerOnly || !isStaff)
+    }, [superadmin, isStaff])
 
     const drawerWidth = 280
 

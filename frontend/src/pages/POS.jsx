@@ -155,7 +155,7 @@ function POSProductCard({ product, cart, isDark, onAdd }) {
     )
 }
 
-function POS({ user }) {
+function POS({ user, onLogout }) {
     const theme = useTheme()
     const isDark = theme.palette.mode === 'dark'
     const isMobile = useMediaQuery(theme.breakpoints.down('md'))
@@ -578,7 +578,7 @@ function POS({ user }) {
     )
 
     return (
-        <AdminLayout title="POS / Venta Local" user={user}>
+        <AdminLayout title="POS / Venta Local" user={user} onLogout={onLogout}>
             {cartItemCount > 0 && (
                 <Box onClick={() => setCartDrawerOpen(true)} sx={{
                     position: 'sticky', top: { xs: 56, md: 64 }, zIndex: 1100,

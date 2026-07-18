@@ -133,13 +133,13 @@ function ChangePassword({ user, onLogout }) {
                             <TextField
                                 fullWidth label="Nueva Contraseña" type="password"
                                 value={newPassword} onChange={(e) => setNewPassword(e.target.value)}
-                                placeholder="••••••••" required inputProps={{ minLength: 6 }}
+                                placeholder="••••••••" required slotProps={{ htmlInput: { minLength: 6 } }}
                                 sx={{ mb: 2.5, ...inputSx }}
                             />
                             <TextField
                                 fullWidth label="Confirmar Nueva Contraseña" type="password"
                                 value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)}
-                                placeholder="••••••••" required inputProps={{ minLength: 6 }}
+                                placeholder="••••••••" required slotProps={{ htmlInput: { minLength: 6 } }}
                                 sx={{ mb: 3.5, ...inputSx }}
                             />
                             <Button

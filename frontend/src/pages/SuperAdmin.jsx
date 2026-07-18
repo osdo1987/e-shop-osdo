@@ -123,6 +123,12 @@ function SuperAdmin({ user, onLogout }) {
     const [expandedStoreId, setExpandedStoreId] = useState(null)
     const [filterMonth, setFilterMonth] = useState(new Date().getMonth() + 1)
     const [filterYear, setFilterYear] = useState(new Date().getFullYear())
+    const [staffDialogOpen, setStaffDialogOpen] = useState(false)
+    const [staffStore, setStaffStore] = useState(null)
+    const [staffList, setStaffList] = useState([])
+    const [staffLoading, setStaffLoading] = useState(false)
+    const [newStaffEmail, setNewStaffEmail] = useState('')
+    const [newStaffPassword, setNewStaffPassword] = useState('')
     const [newStore, setNewStore] = useState({
         storeName: '',
         slug: '',
@@ -196,22 +202,22 @@ function SuperAdmin({ user, onLogout }) {
             })
             const data = await res.json()
             if (res.ok) {
-                toast.success('Negocio y vendedor creados exitosamente')
+                toast.success('Negocio y gerente creados exitosamente')
                 setShowCreateModal(false)
                 setNewStore({ storeName: '', slug: '', whatsapp: '', logo_url: '', business_type: 'store', address: '', schedule: '', email: '', password: '' })
                 fetchStores()
             } else {
-                setModalError(data.error || 'Error al crear la tienda')
+                toast.error(data.error || 'Error al crear la tienda')
             }
         } catch (error) {
-            setModalError('Error de conexión')
+            toast.error('Error de conexión')
         } finally {
             setLoading(false)
         }
     }
 
     const openEditModal = (store) => {
-        const sellerEmail = store.users?.find(u => u.role === 'SELLER')?.email || ''
+        const sellerEmail = store.users?.find(u => u.role === 'MANAGER')?.email || ''
         setEditingStore(store)
         setEditForm({
             name: store.name,
@@ -243,20 +249,20 @@ function SuperAdmin({ user, onLogout }) {
                 })
             })
             const storeData = await storeRes.json()
-            if (!storeRes.ok) { setModalError(storeData.error || 'Error al actualizar la tienda'); setLoading(false); return }
-            const seller = editingStore.users?.find(u => u.role === 'SELLER')
+            if (!storeRes.ok) { toast.error(storeData.error || 'Error al actualizar la tienda'); setLoading(false); return }
+            const seller = editingStore.users?.find(u => u.role === 'MANAGER')
             if (seller && editForm.email !== seller.email) {
                 const emailRes = await fetch(`/api/auth/users/${seller.id}/email`, {
                     method: 'PUT', headers,
                     body: JSON.stringify({ email: editForm.email })
                 })
                 const emailData = await emailRes.json()
-                if (!emailRes.ok) { setModalError(emailData.error || 'Error al actualizar el correo'); setLoading(false); return }
+                if (!emailRes.ok) { toast.error(emailData.error || 'Error al actualizar el correo'); setLoading(false); return }
             }
             toast.success('Tienda actualizada exitosamente')
             setShowEditModal(false); setEditingStore(null)
             fetchStores()
-        } catch (error) { setModalError('Error de conexión') }
+        } catch (error) { toast.error('Error de conexión') }
         finally { setLoading(false) }
     }
 
@@ -276,6 +282,59 @@ function SuperAdmin({ user, onLogout }) {
                 toast.error(data.error || 'Error al eliminar la tienda')
             }
         } catch (error) { toast.error('Error de conexión') }
+    }
+
+    const openStaffDialog = async (store) => {
+        setStaffStore(store)
+        setStaffDialogOpen(true)
+        setStaffLoading(true)
+        setNewStaffEmail('')
+        setNewStaffPassword('')
+        try {
+            const token = localStorage.getItem('token')
+            const res = await fetch(`/api/auth/staff?store_id=${store.id}`, { headers: { 'Authorization': `Bearer ${token}` } })
+            if (res.ok) setStaffList(await res.json())
+            else setStaffList([])
+        } catch { setStaffList([]) }
+        finally { setStaffLoading(false) }
+    }
+
+    const handleCreateStaff = async (e) => {
+        e.preventDefault()
+        if (!newStaffEmail || !newStaffPassword) { toast.error('Email y contraseña son obligatorios'); return }
+        try {
+            const token = localStorage.getItem('token')
+            const res = await fetch('/api/auth/register-staff', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify({ email: newStaffEmail, password: newStaffPassword, store_id: staffStore.id })
+            })
+            const data = await res.json()
+            if (res.ok) {
+                toast.success('Empleado creado exitosamente')
+                setNewStaffEmail(''); setNewStaffPassword('')
+                openStaffDialog(staffStore)
+            } else {
+                toast.error(data.error || 'Error al crear empleado')
+            }
+        } catch { toast.error('Error de conexión') }
+    }
+
+    const handleDeleteStaff = async (staffId) => {
+        try {
+            const token = localStorage.getItem('token')
+            const res = await fetch(`/api/auth/staff/${staffId}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${token}` }
+            })
+            const data = await res.json()
+            if (res.ok) {
+                toast.success('Empleado eliminado')
+                openStaffDialog(staffStore)
+            } else {
+                toast.error(data.error || 'Error al eliminar empleado')
+            }
+        } catch { toast.error('Error de conexión') }
     }
 
     const filteredStores = stores.filter(store =>
@@ -404,12 +463,12 @@ function SuperAdmin({ user, onLogout }) {
             </Box>
             {includePassword && (
                 <>
-                    <TextField label="Email del Vendedor" type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} required fullWidth sx={inputSx(isDark)} />
-                    <TextField label="Contraseña" type="password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} required inputProps={{ minLength: 6 }} fullWidth sx={inputSx(isDark)} />
+                    <TextField label="Email del Gerente" type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} required fullWidth sx={inputSx(isDark)} />
+                    <TextField label="Contraseña" type="password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} required slotProps={{ htmlInput: { minLength: 6 } }} fullWidth sx={inputSx(isDark)} />
                 </>
             )}
             {!includePassword && (
-                <TextField label="Email del Vendedor" type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} fullWidth helperText="Actualizará el correo del vendedor asociado" sx={inputSx(isDark)} />
+                <TextField label="Email del Gerente" type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} fullWidth helperText="Actualizará el correo del gerente asociado" sx={inputSx(isDark)} />
             )}
         </Box>
     )
@@ -508,6 +567,7 @@ function SuperAdmin({ user, onLogout }) {
                                         value={searchTerm}
                                         onChange={(e) => setSearchTerm(e.target.value)}
                                         size="small"
+                                        fullWidth
                                         sx={{ flex: 2, minWidth: 200, ...inputSx(isDark) }}
                                         InputProps={{
                                             startAdornment: (
@@ -588,7 +648,7 @@ function SuperAdmin({ user, onLogout }) {
                                                         <TableCell sx={tableHeaderCellSx}>Tipo</TableCell>
                                                         <TableCell sx={tableHeaderCellSx}>Slug/URL</TableCell>
                                                         <TableCell sx={tableHeaderCellSx}>WhatsApp</TableCell>
-                                                        <TableCell sx={tableHeaderCellSx}>Vendedor</TableCell>
+                                                        <TableCell sx={tableHeaderCellSx}>Gerente</TableCell>
                                                         <TableCell sx={tableHeaderCellSx}>Acciones</TableCell>
                                                     </TableRow>
                                                 </TableHead>
@@ -662,14 +722,31 @@ function SuperAdmin({ user, onLogout }) {
                                                                 )}
                                                             </TableCell>
                                                             <TableCell sx={{ py: 2.5 }}>
-                                                                {store.users?.find(u => u.role === 'SELLER')?.email ? (
-                                                                    <Typography sx={{ fontWeight: 500, fontSize: '0.875rem' }}>{store.users.find(u => u.role === 'SELLER').email}</Typography>
+                                                                {store.users?.find(u => u.role === 'MANAGER')?.email ? (
+                                                                    <Typography sx={{ fontWeight: 500, fontSize: '0.875rem' }}>{store.users.find(u => u.role === 'MANAGER').email}</Typography>
                                                                 ) : (
-                                                                    <Chip label="Sin vendedor" size="small" variant="outlined" sx={{ fontWeight: 600, fontSize: '0.6875rem', color: 'text.disabled', borderRadius: '8px' }} />
+                                                                    <Chip label="Sin gerente" size="small" variant="outlined" sx={{ fontWeight: 600, fontSize: '0.6875rem', color: 'text.disabled', borderRadius: '8px' }} />
                                                                 )}
                                                             </TableCell>
                                                             <TableCell sx={{ py: 2.5 }}>
                                                                 <Box sx={{ display: 'flex', gap: 0.75 }}>
+                                                                    <Button
+                                                                        variant="text"
+                                                                        size="small"
+                                                                        onClick={() => openStaffDialog(store)}
+                                                                        sx={{
+                                                                            fontWeight: 600,
+                                                                            fontSize: '0.75rem',
+                                                                            minWidth: 60,
+                                                                            color: 'info.main',
+                                                                            borderRadius: '10px',
+                                                                            textTransform: 'none',
+                                                                            transition: 'all 0.2s ease',
+                                                                            '&:hover': { color: 'primary.main', background: isDark ? 'rgba(0,74,198,0.1)' : 'rgba(0,74,198,0.06)' },
+                                                                        }}
+                                                                    >
+                                                                        Empleados
+                                                                    </Button>
                                                                     <Button
                                                                         variant="text"
                                                                         size="small"
@@ -770,6 +847,7 @@ function SuperAdmin({ user, onLogout }) {
                                                             <a href={`/${store.slug}`} target="_blank" rel="noopener noreferrer" style={{ flex: 1 }}>
                                                                 <Button variant="text" size="small" fullWidth sx={{ fontWeight: 600, fontSize: '0.75rem', textTransform: 'none', borderRadius: '10px' }}>Ver</Button>
                                                             </a>
+                                                            <Button variant="outlined" size="small" sx={{ flex: 1, fontWeight: 600, fontSize: '0.75rem', textTransform: 'none', borderRadius: '10px' }} onClick={() => openStaffDialog(store)}>Empleados</Button>
                                                             <Button variant="outlined" size="small" sx={{ flex: 1, fontWeight: 600, fontSize: '0.75rem', textTransform: 'none', borderRadius: '10px' }} onClick={() => openEditModal(store)}>Editar</Button>
                                                             <Button variant="contained" color="error" size="small" sx={{ flex: 1, fontWeight: 600, fontSize: '0.75rem', textTransform: 'none', boxShadow: 'none', borderRadius: '10px' }} onClick={() => setDeleteTarget(store)}>Eliminar</Button>
                                                         </Box>
@@ -805,7 +883,7 @@ function SuperAdmin({ user, onLogout }) {
                                         value={filterYear}
                                         onChange={(e) => setFilterYear(parseInt(e.target.value) || new Date().getFullYear())}
                                         sx={{ minWidth: 100, ...inputSx(isDark) }}
-                                        inputProps={{ min: 2024, max: 2030 }}
+                                        slotProps={{ htmlInput: { min: 2024, max: 2030 } }}
                                     />
                                     <Button
                                         variant="contained"
@@ -1028,8 +1106,8 @@ function SuperAdmin({ user, onLogout }) {
                                                         <Box sx={{ gridColumn: { md: '1 / -1' } }}>
                                                             <Divider sx={{ mb: 2 }} />
                                                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
-                                                                <Typography variant="caption" color="text.disabled" sx={{ fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>👤 Vendedor</Typography>
-                                                                <Typography variant="body2" sx={{ fontWeight: 600 }}>{m.users?.find(u => u.role === 'SELLER')?.email || 'Sin asignar'}</Typography>
+                                                                 <Typography variant="caption" color="text.disabled" sx={{ fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>👤 Gerente</Typography>
+                                                                <Typography variant="body2" sx={{ fontWeight: 600 }}>{m.users?.find(u => u.role === 'MANAGER')?.email || 'Sin asignar'}</Typography>
                                                                 <Box sx={{ ml: 'auto', display: 'flex', alignItems: 'center', gap: 1 }}>
                                                                     <Typography variant="caption" color="text.disabled">Último acceso:</Typography>
                                                                     <Chip
@@ -1073,15 +1151,17 @@ function SuperAdmin({ user, onLogout }) {
                 onClose={() => { setShowCreateModal(false); setModalError('') }}
                 maxWidth="sm"
                 fullWidth
-                PaperProps={{
-                    sx: {
-                        borderRadius: '20px',
-                        background: isDark ? 'rgba(10, 10, 28, 0.95)' : 'rgba(255, 255, 255, 0.95)',
-                        backdropFilter: 'blur(40px) saturate(200%)',
-                        border: isDark ? '1px solid rgba(180, 197, 255, 0.15)' : '1px solid rgba(0, 74, 198, 0.12)',
-                        boxShadow: isDark
-                            ? '0 24px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(180,197,255,0.08)'
-                            : '0 24px 80px rgba(0,74,198,0.12), 0 0 0 1px rgba(0,74,198,0.05)',
+                slotProps={{
+                    paper: {
+                        sx: {
+                            borderRadius: '20px',
+                            background: isDark ? 'rgba(10, 10, 28, 0.95)' : 'rgba(255, 255, 255, 0.95)',
+                            backdropFilter: 'blur(40px) saturate(200%)',
+                            border: isDark ? '1px solid rgba(180, 197, 255, 0.15)' : '1px solid rgba(0, 74, 198, 0.12)',
+                            boxShadow: isDark
+                                ? '0 24px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(180,197,255,0.08)'
+                                : '0 24px 80px rgba(0,74,198,0.12), 0 0 0 1px rgba(0,74,198,0.05)',
+                        },
                     },
                 }}
             >
@@ -1151,15 +1231,17 @@ function SuperAdmin({ user, onLogout }) {
                 onClose={() => { setShowEditModal(false); setEditingStore(null); setModalError('') }}
                 maxWidth="sm"
                 fullWidth
-                PaperProps={{
-                    sx: {
-                        borderRadius: '20px',
-                        background: isDark ? 'rgba(10, 10, 28, 0.95)' : 'rgba(255, 255, 255, 0.95)',
-                        backdropFilter: 'blur(40px) saturate(200%)',
-                        border: isDark ? '1px solid rgba(180, 197, 255, 0.15)' : '1px solid rgba(0, 74, 198, 0.12)',
-                        boxShadow: isDark
-                            ? '0 24px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(180,197,255,0.08)'
-                            : '0 24px 80px rgba(0,74,198,0.12), 0 0 0 1px rgba(0,74,198,0.05)',
+                slotProps={{
+                    paper: {
+                        sx: {
+                            borderRadius: '20px',
+                            background: isDark ? 'rgba(10, 10, 28, 0.95)' : 'rgba(255, 255, 255, 0.95)',
+                            backdropFilter: 'blur(40px) saturate(200%)',
+                            border: isDark ? '1px solid rgba(180, 197, 255, 0.15)' : '1px solid rgba(0, 74, 198, 0.12)',
+                            boxShadow: isDark
+                                ? '0 24px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(180,197,255,0.08)'
+                                : '0 24px 80px rgba(0,74,198,0.12), 0 0 0 1px rgba(0,74,198,0.05)',
+                        },
                     },
                 }}
             >
@@ -1224,10 +1306,109 @@ function SuperAdmin({ user, onLogout }) {
                 </DialogActions>
             </Dialog>
 
+            <Dialog
+                open={staffDialogOpen}
+                onClose={() => setStaffDialogOpen(false)}
+                maxWidth="sm"
+                fullWidth
+                slotProps={{
+                    paper: {
+                        sx: {
+                            borderRadius: '20px',
+                            border: isDark ? '1px solid rgba(180,197,255,0.1)' : '1px solid rgba(0,74,198,0.08)',
+                            background: isDark ? 'rgba(20,20,42,0.98)' : '#ffffff',
+                        }
+                    },
+                }}
+            >
+                <DialogTitle sx={{ fontWeight: 700, fontSize: '1.125rem', borderBottom: `1px solid ${isDark ? 'rgba(180,197,255,0.08)' : 'rgba(0,74,198,0.06)'}` }}>
+                    Empleados — {staffStore?.name}
+                </DialogTitle>
+                <DialogContent sx={{ pt: '16px !important' }}>
+                    <Box component="form" onSubmit={handleCreateStaff} sx={{ display: 'flex', gap: 1.5, mb: 3, mt: 1 }}>
+                        <TextField
+                            label="Email del empleado"
+                            type="email"
+                            value={newStaffEmail}
+                            onChange={(e) => setNewStaffEmail(e.target.value)}
+                            size="small"
+                            fullWidth
+                            required
+                            sx={inputSx(isDark)}
+                        />
+                        <TextField
+                            label="Contraseña"
+                            type="password"
+                            value={newStaffPassword}
+                            onChange={(e) => setNewStaffPassword(e.target.value)}
+                            size="small"
+                            fullWidth
+                            required
+                            sx={inputSx(isDark)}
+                        />
+                        <Button
+                            type="submit"
+                            variant="contained"
+                            size="small"
+                            sx={{ minWidth: 100, borderRadius: '10px', textTransform: 'none', fontWeight: 700, whiteSpace: 'nowrap' }}
+                        >
+                            Crear
+                        </Button>
+                    </Box>
+
+                    {staffLoading ? (
+                        <Typography color="text.secondary" sx={{ textAlign: 'center', py: 3 }}>Cargando...</Typography>
+                    ) : staffList.length === 0 ? (
+                        <Typography color="text.secondary" sx={{ textAlign: 'center', py: 3 }}>No hay empleados registrados</Typography>
+                    ) : (
+                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                            {staffList.map((staff) => (
+                                <Box
+                                    key={staff.id}
+                                    sx={{
+                                        display: 'flex',
+                                        justifyContent: 'space-between',
+                                        alignItems: 'center',
+                                        p: 1.5,
+                                        borderRadius: '10px',
+                                        border: `1px solid ${isDark ? 'rgba(180,197,255,0.08)' : 'rgba(0,74,198,0.06)'}`,
+                                        background: isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,74,198,0.02)',
+                                    }}
+                                >
+                                    <Box>
+                                        <Typography sx={{ fontWeight: 600, fontSize: '0.875rem' }}>{staff.email}</Typography>
+                                        <Typography variant="caption" color="text.secondary">Empleado</Typography>
+                                    </Box>
+                                    <Button
+                                        variant="text"
+                                        size="small"
+                                        color="error"
+                                        startIcon={<DeleteIcon sx={{ fontSize: '1rem !important' }} />}
+                                        onClick={() => handleDeleteStaff(staff.id)}
+                                        sx={{ textTransform: 'none', fontWeight: 600, fontSize: '0.75rem' }}
+                                    >
+                                        Eliminar
+                                    </Button>
+                                </Box>
+                            ))}
+                        </Box>
+                    )}
+                </DialogContent>
+                <DialogActions sx={{ p: 2, borderTop: `1px solid ${isDark ? 'rgba(180,197,255,0.08)' : 'rgba(0,74,198,0.06)'}` }}>
+                    <Button
+                        onClick={() => setStaffDialogOpen(false)}
+                        variant="outlined"
+                        sx={{ borderRadius: '10px', textTransform: 'none', fontWeight: 700 }}
+                    >
+                        Cerrar
+                    </Button>
+                </DialogActions>
+            </Dialog>
+
             <ConfirmModal
                 isOpen={!!deleteTarget}
                 title="Eliminar Negocio"
-                message={`¿Estás seguro de eliminar el negocio "${deleteTarget?.name}"? Esta acción eliminará todos los productos, categorías y el vendedor asociado.`}
+                message={`¿Estás seguro de eliminar el negocio "${deleteTarget?.name}"? Esta acción eliminará todos los productos, categorías y el gerente asociado.`}
                 confirmText="Eliminar Negocio"
                 cancelText="Cancelar"
                 danger

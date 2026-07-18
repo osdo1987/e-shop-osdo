@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, Navigate } from 'react-router-dom'
 import AdminLayout from '../components/AdminLayout'
 import { useToast } from '../components/Toast'
 import Box from '@mui/material/Box'
@@ -17,18 +17,27 @@ import PaletteIcon from '@mui/icons-material/Palette'
 import SecurityIcon from '@mui/icons-material/Security'
 import InfoIcon from '@mui/icons-material/Info'
 import LinkIcon from '@mui/icons-material/Link'
+import PeopleIcon from '@mui/icons-material/People'
+import PersonAddIcon from '@mui/icons-material/PersonAdd'
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutlined'
 
 function Settings({ user, onLogout, darkMode, setDarkMode }) {
     const [store, setStore] = useState(null)
     const [whatsapp, setWhatsapp] = useState('')
     const [logoUrl, setLogoUrl] = useState('')
     const [saving, setSaving] = useState(false)
+    const [staffList, setStaffList] = useState([])
+    const [staffLoading, setStaffLoading] = useState(false)
+    const [newStaffEmail, setNewStaffEmail] = useState('')
+    const [newStaffPassword, setNewStaffPassword] = useState('')
+    const [creatingStaff, setCreatingStaff] = useState(false)
     const toast = useToast()
     const theme = useTheme()
     const isDark = theme.palette.mode === 'dark'
 
     useEffect(() => {
         fetchStoreData()
+        fetchStaff()
     }, [])
 
     const fetchStoreData = async () => {
@@ -82,6 +91,57 @@ function Settings({ user, onLogout, darkMode, setDarkMode }) {
         }
     }
 
+    const fetchStaff = async () => {
+        setStaffLoading(true)
+        try {
+            const token = localStorage.getItem('token')
+            const res = await fetch('/api/auth/staff', { headers: { 'Authorization': `Bearer ${token}` } })
+            if (res.ok) setStaffList(await res.json())
+            else setStaffList([])
+        } catch { setStaffList([]) }
+        finally { setStaffLoading(false) }
+    }
+
+    const handleCreateStaff = async (e) => {
+        e.preventDefault()
+        if (!newStaffEmail || !newStaffPassword) { toast.error('Email y contraseña son obligatorios'); return }
+        setCreatingStaff(true)
+        try {
+            const token = localStorage.getItem('token')
+            const res = await fetch('/api/auth/register-staff', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify({ email: newStaffEmail, password: newStaffPassword })
+            })
+            const data = await res.json()
+            if (res.ok) {
+                toast.success('Empleado creado exitosamente')
+                setNewStaffEmail(''); setNewStaffPassword('')
+                fetchStaff()
+            } else {
+                toast.error(data.error || 'Error al crear empleado')
+            }
+        } catch { toast.error('Error de conexión') }
+        finally { setCreatingStaff(false) }
+    }
+
+    const handleDeleteStaff = async (staffId) => {
+        try {
+            const token = localStorage.getItem('token')
+            const res = await fetch(`/api/auth/staff/${staffId}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${token}` }
+            })
+            const data = await res.json()
+            if (res.ok) {
+                toast.success('Empleado eliminado')
+                fetchStaff()
+            } else {
+                toast.error(data.error || 'Error al eliminar empleado')
+            }
+        } catch { toast.error('Error de conexión') }
+    }
+
     const sectionCardStyle = (accentColor) => ({
         mb: 3,
         position: 'relative',
@@ -107,6 +167,8 @@ function Settings({ user, onLogout, darkMode, setDarkMode }) {
             },
         },
     }
+
+    if (user?.role === 'STAFF') return <Navigate to="/admin/pos" />
 
     return (
         <AdminLayout title="Configuración" user={user} onLogout={onLogout}>
@@ -302,6 +364,130 @@ function Settings({ user, onLogout, darkMode, setDarkMode }) {
                 </CardContent>
             </Card>
 
+            {/* Empleados */}
+            <Card sx={sectionCardStyle('linear-gradient(90deg, #8b5cf6, #7c3aed, #a78bfa)')}>
+                <CardContent sx={{ p: { xs: 3, sm: 4 }, '&:last-child': { pb: { xs: 3, sm: 4 } } }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 3 }}>
+                        <Box sx={{
+                            width: 36, height: 36, borderRadius: '10px',
+                            background: isDark ? 'rgba(139,92,246,0.15)' : 'rgba(139,92,246,0.10)',
+                            border: isDark ? '1px solid rgba(139,92,246,0.2)' : '1px solid rgba(139,92,246,0.15)',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        }}>
+                            <PeopleIcon sx={{ fontSize: 18, color: '#8b5cf6' }} />
+                        </Box>
+                        <Box>
+                            <Typography variant="h6" sx={{ fontWeight: 700, fontSize: '1rem' }}>
+                                Gestionar Empleados
+                            </Typography>
+                            <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.8125rem' }}>
+                                Crea y administra cuentas de empleados (solo pueden usar POS y ver pedidos)
+                            </Typography>
+                        </Box>
+                    </Box>
+
+                    <Box component="form" onSubmit={handleCreateStaff} sx={{ display: 'flex', gap: 1.5, mb: 3, flexWrap: 'wrap' }}>
+                        <TextField
+                            label="Email del empleado"
+                            type="email"
+                            value={newStaffEmail}
+                            onChange={(e) => setNewStaffEmail(e.target.value)}
+                            size="small"
+                            required
+                            placeholder="empleado@tienda.com"
+                            sx={{ flex: 1, minWidth: 200, ...inputSx }}
+                        />
+                        <TextField
+                            label="Contraseña"
+                            type="password"
+                            value={newStaffPassword}
+                            onChange={(e) => setNewStaffPassword(e.target.value)}
+                            size="small"
+                            required
+                            placeholder="Mínimo 6 caracteres"
+                            sx={{ flex: 1, minWidth: 200, ...inputSx }}
+                        />
+                        <Button
+                            type="submit"
+                            variant="contained"
+                            disabled={creatingStaff}
+                            startIcon={<PersonAddIcon />}
+                            sx={{
+                                whiteSpace: 'nowrap', borderRadius: '12px',
+                                px: 3, fontWeight: 700,
+                                background: 'linear-gradient(135deg, #8b5cf6, #7c3aed)',
+                                '&:hover': { background: 'linear-gradient(135deg, #7c3aed, #6d28d9)' },
+                            }}
+                        >
+                            {creatingStaff ? 'Creando...' : 'Crear Empleado'}
+                        </Button>
+                    </Box>
+
+                    {staffLoading ? (
+                        <Typography color="text.secondary" sx={{ textAlign: 'center', py: 3 }}>Cargando empleados...</Typography>
+                    ) : staffList.length === 0 ? (
+                        <Box sx={{
+                            p: 3, textAlign: 'center', borderRadius: '12px',
+                            background: isDark ? 'rgba(139,92,246,0.04)' : 'rgba(139,92,246,0.03)',
+                            border: isDark ? '1px solid rgba(139,92,246,0.1)' : '1px solid rgba(139,92,246,0.08)',
+                        }}>
+                            <PeopleIcon sx={{ fontSize: 40, color: 'text.disabled', mb: 1 }} />
+                            <Typography color="text.secondary" sx={{ fontWeight: 500 }}>
+                                No hay empleados registrados
+                            </Typography>
+                            <Typography variant="caption" color="text.disabled">
+                                Crea una cuenta para que tu empleado pueda usar el sistema
+                            </Typography>
+                        </Box>
+                    ) : (
+                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                            {staffList.map((staff) => (
+                                <Box
+                                    key={staff.id}
+                                    sx={{
+                                        display: 'flex',
+                                        justifyContent: 'space-between',
+                                        alignItems: 'center',
+                                        p: 1.5,
+                                        borderRadius: '12px',
+                                        border: isDark ? '1px solid rgba(139,92,246,0.1)' : '1px solid rgba(139,92,246,0.08)',
+                                        background: isDark ? 'rgba(255,255,255,0.02)' : 'rgba(139,92,246,0.02)',
+                                        transition: 'all 0.2s ease',
+                                        '&:hover': {
+                                            background: isDark ? 'rgba(139,92,246,0.06)' : 'rgba(139,92,246,0.04)',
+                                        },
+                                    }}
+                                >
+                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                                        <Box sx={{
+                                            width: 32, height: 32, borderRadius: '50%',
+                                            background: isDark ? 'rgba(139,92,246,0.15)' : 'rgba(139,92,246,0.10)',
+                                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                        }}>
+                                            <PersonAddIcon sx={{ fontSize: 16, color: '#8b5cf6' }} />
+                                        </Box>
+                                        <Box>
+                                            <Typography sx={{ fontWeight: 600, fontSize: '0.875rem' }}>{staff.email}</Typography>
+                                            <Typography variant="caption" color="text.secondary">Empleado</Typography>
+                                        </Box>
+                                    </Box>
+                                    <Button
+                                        variant="text"
+                                        size="small"
+                                        color="error"
+                                        startIcon={<DeleteOutlineIcon sx={{ fontSize: '1rem !important' }} />}
+                                        onClick={() => handleDeleteStaff(staff.id)}
+                                        sx={{ textTransform: 'none', fontWeight: 600, fontSize: '0.75rem' }}
+                                    >
+                                        Eliminar
+                                    </Button>
+                                </Box>
+                            ))}
+                        </Box>
+                    )}
+                </CardContent>
+            </Card>
+
             {/* Account Info */}
             <Card sx={{ animation: 'fade-in-up 0.5s ease both', animationDelay: '0.3s', position: 'relative', overflow: 'visible', '&::before': { content: '""', position: 'absolute', top: 0, left: 0, right: 0, height: '3px', background: 'linear-gradient(90deg, #06b6d4, #0891b2, #22d3ee)', borderRadius: '16px 16px 0 0' } }}>
                 <CardContent sx={{ p: { xs: 3, sm: 4 }, '&:last-child': { pb: { xs: 3, sm: 4 } } }}>
@@ -323,7 +509,7 @@ function Settings({ user, onLogout, darkMode, setDarkMode }) {
                     }}>
                         {[
                             { label: 'Email', value: user?.email },
-                            { label: 'Rol', value: user?.role === 'SUPERADMIN' ? 'Super Administrador' : 'Vendedor' },
+                            { label: 'Rol', value: user?.role === 'SUPERADMIN' ? 'Super Administrador' : user?.role === 'MANAGER' ? 'Gerente' : user?.role === 'STAFF' ? 'Empleado' : user?.role },
                             { label: 'ID de Tienda', value: user?.storeId || 'N/A' },
                             store && { label: 'Nombre de Tienda', value: store.name },
                             store && { label: 'Slug', value: `/${store.slug}` },
