@@ -8,10 +8,12 @@ class Store(db.Model):
     slug = db.Column(db.String(100), unique=True, nullable=False)
     name = db.Column(db.String(200), nullable=False)
     whatsapp = db.Column(db.String(20), nullable=True)
-    logo_url = db.Column(db.Text, nullable=True)
+    logo_id = db.Column(db.Integer, db.ForeignKey('images.id'), nullable=True)
     business_type = db.Column(db.String(20), nullable=False, default='store')  # 'store' o 'restaurant'
     address = db.Column(db.Text, nullable=True)
     schedule = db.Column(db.String(200), nullable=True)
+    
+    logo = db.relationship('Image', lazy='joined')
     
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)

@@ -10,6 +10,7 @@ class Product(db.Model):
     price = db.Column(db.Float, nullable=False)
     promo_price = db.Column(db.Float, nullable=True)
     purchase_price = db.Column(db.Float, nullable=True)
+    image_id = db.Column(db.Integer, db.ForeignKey('images.id'), nullable=True)
     image_url = db.Column(db.Text, nullable=True)
     stock = db.Column(db.Integer, default=0)
     sizes = db.Column(db.String(500), nullable=True)
@@ -19,6 +20,7 @@ class Product(db.Model):
     
     store_id = db.Column(db.Integer, db.ForeignKey('stores.id'), nullable=False)
     store = db.relationship('Store', backref=db.backref('products', lazy=True, cascade='all, delete-orphan'))
+    image = db.relationship('Image', lazy='joined')
     
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)

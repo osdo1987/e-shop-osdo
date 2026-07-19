@@ -1,44 +1,21 @@
-import os
-import hashlib
-from flask import Blueprint, request, jsonify, send_from_directory
+from flask import Blueprint, request, jsonify
 from app.services.product_service import ProductService
+from app.services.image_service import ImageService
 from app.schemas.product_schema import ProductSchema
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from app.models.user import User
 from app.models.product import Product
-from app.extensions import socketio
+from app.extensions import db, socketio
 
 product_bp = Blueprint('products', __name__)
 
-UPLOAD_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), 'uploads')
-ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp', 'svg'}
-MAX_FILE_SIZE = 5 * 1024 * 1024  # 5MB
-
-
-def _allowed_file(filename):
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-
-
-def _save_upload(file):
-    if not file or not file.filename or not _allowed_file(file.filename):
-        return None
-    ext = file.filename.rsplit('.', 1)[1].lower()
-    file_bytes = file.read()
-    file.seek(0)
-    sha256 = hashlib.sha256(file_bytes).hexdigest()
-    filename = f"{sha256}.{ext}"
-    os.makedirs(UPLOAD_DIR, exist_ok=True)
-    filepath = os.path.join(UPLOAD_DIR, filename)
-    if not os.path.exists(filepath):
-        file.save(filepath)
-    return f"/uploads/{filename}"
+product_schema = ProductSchema()
+products_schema = ProductSchema(many=True)
 
 
 def _is_blob_url(url):
     return url and isinstance(url, str) and url.startswith('blob:')
 
-product_schema = ProductSchema()
-products_schema = ProductSchema(many=True)
 
 @product_bp.route('', methods=['GET'])
 @jwt_required()
@@ -67,7 +44,6 @@ def get_products():
     if not current_user:
         return jsonify({'error': 'Usuario no encontrado'}), 404
     
-    # Get store_id from query or use user's store
     store_id = request.args.get('store_id', current_user.store_id)
     category_id = request.args.get('category_id')
     
@@ -76,6 +52,7 @@ def get_products():
     
     products = ProductService.get_products_by_store(store_id, category_id)
     return jsonify(products), 200
+
 
 @product_bp.route('/<int:product_id>', methods=['GET'])
 @jwt_required()
@@ -100,6 +77,7 @@ def get_product(product_id):
     if not product:
         return jsonify({'error': 'Producto no encontrado'}), 404
     return jsonify(product), 200
+
 
 @product_bp.route('', methods=['POST'])
 @jwt_required()
@@ -147,12 +125,10 @@ def create_product():
     if current_user.role == 'STAFF':
         return jsonify({'error': 'No autorizado: los empleados no pueden crear productos'}), 403
     
-    # Handle both JSON and multipart/form-data requests
     if request.is_json:
         data = request.get_json()
     else:
         data = request.form.to_dict()
-        # Parse numeric fields from form data
         for field in ['price', 'promo_price', 'purchase_price', 'stock', 'category_id', 'store_id']:
             if field in data and data[field]:
                 try:
@@ -168,22 +144,30 @@ def create_product():
     
     if not data.get('store_id'):
         return jsonify({'error': 'El store_id es requerido'}), 400
-    
-    uploaded_url = None
+
     if 'image' in request.files:
-        file = request.files['image']
-        uploaded_url = _save_upload(file)
-        if uploaded_url:
-            data['image_url'] = uploaded_url
-    if _is_blob_url(data.get('image_url')):
+        try:
+            image = ImageService.save_image(request.files['image'])
+            data['image_id'] = image.id
+        except ValueError as e:
+            return jsonify({'error': str(e)}), 400
+
+    if data.get('image_id'):
+        data.pop('image_url', None)
+    elif _is_blob_url(data.get('image_url')):
         data['image_url'] = None
-    
+    elif data.get('image_url') and data['image_url'].startswith('http'):
+        pass
+    else:
+        data.pop('image_url', None)
+
     try:
         product = ProductService.create_product(data['store_id'], data)
         socketio.emit('product_created', product, namespace='/')
         return jsonify(product), 201
     except Exception as e:
         return jsonify({'error': f'Error al crear el producto: {str(e)}'}), 500
+
 
 @product_bp.route('/<int:product_id>', methods=['PUT'])
 @jwt_required()
@@ -240,12 +224,10 @@ def update_product(product_id):
     if current_user.role != 'SUPERADMIN' and current_user.store_id != product_obj.store_id:
         return jsonify({'error': 'No autorizado'}), 403
     
-    # Handle both JSON and multipart/form-data requests
     if request.is_json:
         data = request.get_json()
     else:
         data = request.form.to_dict()
-        # Parse numeric fields from form data
         for field in ['price', 'promo_price', 'purchase_price', 'stock', 'category_id']:
             if field in data and data[field]:
                 try:
@@ -254,15 +236,23 @@ def update_product(product_id):
                     pass
     
     try:
-        uploaded_url = None
         if 'image' in request.files:
-            file = request.files['image']
-            uploaded_url = _save_upload(file)
-            if uploaded_url:
-                data['image_url'] = uploaded_url
-        if _is_blob_url(data.get('image_url')):
-            data['image_url'] = product_obj.image_url or None
-        
+            try:
+                image = ImageService.save_image(request.files['image'])
+                data['image_id'] = image.id
+            except ValueError as e:
+                return jsonify({'error': str(e)}), 400
+
+        if data.get('image_id'):
+            data.pop('image_url', None)
+        elif _is_blob_url(data.get('image_url')):
+            data['image_id'] = product_obj.image_id
+            data.pop('image_url', None)
+        elif data.get('image_url') and data['image_url'].startswith('http'):
+            data['image_id'] = None
+        else:
+            data.pop('image_url', None)
+
         product = ProductService.update_product(product_id, data)
         if not product:
             return jsonify({'error': 'Producto no encontrado'}), 404
@@ -270,6 +260,7 @@ def update_product(product_id):
         return jsonify(product), 200
     except Exception as e:
         return jsonify({'error': f'Error al actualizar el producto: {str(e)}'}), 500
+
 
 @product_bp.route('/<int:product_id>', methods=['DELETE'])
 @jwt_required()

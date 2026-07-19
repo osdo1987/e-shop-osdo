@@ -33,6 +33,8 @@ class OrderItemSchema(ma.SQLAlchemyAutoSchema):
     extra_price = fields.Float(allow_none=True, default=0)
 
 class StoreBriefSchema(ma.SQLAlchemyAutoSchema):
+    logo_url = fields.Method('get_logo_url')
+
     class Meta:
         model = Store
         load_instance = True
@@ -41,10 +43,14 @@ class StoreBriefSchema(ma.SQLAlchemyAutoSchema):
     id = fields.Int(dump_only=True)
     name = fields.String(dump_only=True)
     slug = fields.String(dump_only=True)
-    logo_url = fields.String(dump_only=True)
     whatsapp = fields.String(dump_only=True)
     address = fields.String(dump_only=True)
     schedule = fields.String(dump_only=True)
+
+    def get_logo_url(self, obj):
+        if hasattr(obj, 'logo') and obj.logo:
+            return f'/api/images/{obj.logo.hash}'
+        return None
 
 class OrderSchema(ma.SQLAlchemyAutoSchema):
     class Meta:

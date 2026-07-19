@@ -140,6 +140,7 @@ function SuperAdmin({ user, onLogout }) {
         email: '',
         password: ''
     })
+    const [newStoreLogoFile, setNewStoreLogoFile] = useState(null)
     const [editForm, setEditForm] = useState({
         name: '',
         slug: '',
@@ -150,6 +151,7 @@ function SuperAdmin({ user, onLogout }) {
         schedule: '',
         email: ''
     })
+    const [editLogoFile, setEditLogoFile] = useState(null)
     const [modalError, setModalError] = useState('')
     const toast = useToast()
 
@@ -195,16 +197,28 @@ function SuperAdmin({ user, onLogout }) {
         setLoading(true)
         try {
             const token = localStorage.getItem('token')
+            const body = new FormData()
+            body.append('storeName', newStore.storeName)
+            body.append('slug', newStore.slug)
+            body.append('whatsapp', newStore.whatsapp)
+            body.append('business_type', newStore.business_type)
+            body.append('address', newStore.address)
+            body.append('schedule', newStore.schedule)
+            body.append('email', newStore.email)
+            body.append('password', newStore.password)
+            if (newStoreLogoFile) body.append('logo', newStoreLogoFile)
+
             const res = await fetch('/api/auth/register-seller', {
                 method: 'POST',
-                headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-                body: JSON.stringify(newStore)
+                headers: { 'Authorization': `Bearer ${token}` },
+                body
             })
             const data = await res.json()
             if (res.ok) {
                 toast.success('Negocio y gerente creados exitosamente')
                 setShowCreateModal(false)
                 setNewStore({ storeName: '', slug: '', whatsapp: '', logo_url: '', business_type: 'store', address: '', schedule: '', email: '', password: '' })
+                setNewStoreLogoFile(null)
                 fetchStores()
             } else {
                 toast.error(data.error || 'Error al crear la tienda')
@@ -229,6 +243,7 @@ function SuperAdmin({ user, onLogout }) {
             schedule: store.schedule || '',
             email: sellerEmail
         })
+        setEditLogoFile(null)
         setModalError('')
         setShowEditModal(true)
     }
@@ -239,28 +254,33 @@ function SuperAdmin({ user, onLogout }) {
         setLoading(true)
         try {
             const token = localStorage.getItem('token')
-            const headers = { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
+            const body = new FormData()
+            body.append('name', editForm.name)
+            body.append('slug', editForm.slug)
+            body.append('whatsapp', editForm.whatsapp)
+            body.append('business_type', editForm.business_type)
+            body.append('address', editForm.address)
+            body.append('schedule', editForm.schedule)
+            if (editLogoFile) body.append('logo', editLogoFile)
+
             const storeRes = await fetch(`/api/stores/${editingStore.id}`, {
-                method: 'PUT', headers,
-                body: JSON.stringify({
-                    name: editForm.name, slug: editForm.slug, whatsapp: editForm.whatsapp,
-                    logo_url: editForm.logo_url, business_type: editForm.business_type,
-                    address: editForm.address, schedule: editForm.schedule
-                })
+                method: 'PUT',
+                headers: { 'Authorization': `Bearer ${token}` },
+                body
             })
             const storeData = await storeRes.json()
             if (!storeRes.ok) { toast.error(storeData.error || 'Error al actualizar la tienda'); setLoading(false); return }
             const seller = editingStore.users?.find(u => u.role === 'MANAGER')
             if (seller && editForm.email !== seller.email) {
                 const emailRes = await fetch(`/api/auth/users/${seller.id}/email`, {
-                    method: 'PUT', headers,
+                    method: 'PUT', headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email: editForm.email })
                 })
                 const emailData = await emailRes.json()
                 if (!emailRes.ok) { toast.error(emailData.error || 'Error al actualizar el correo'); setLoading(false); return }
             }
             toast.success('Tienda actualizada exitosamente')
-            setShowEditModal(false); setEditingStore(null)
+            setShowEditModal(false); setEditingStore(null); setEditLogoFile(null)
             fetchStores()
         } catch (error) { toast.error('Error de conexión') }
         finally { setLoading(false) }
@@ -389,7 +409,7 @@ function SuperAdmin({ user, onLogout }) {
         return month ? `${month.label} ${filterYear}` : `${filterYear}`
     }
 
-    const renderStoreForm = (form, setForm, includePassword = false) => (
+    const renderStoreForm = (form, setForm, includePassword = false, setLogoFile = null) => (
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
             <FormControl fullWidth>
                 <InputLabel id="business-type-label">Tipo de Negocio</InputLabel>
@@ -429,8 +449,7 @@ function SuperAdmin({ user, onLogout }) {
                 </>
             )}
             <Box>
-                <TextField label="Logo de la Tienda (opcional)" value={form.logo_url} onChange={(e) => setForm({ ...form, logo_url: e.target.value })} placeholder="https://ejemplo.com/logo.png" fullWidth size="small" sx={{ mb: 1, ...inputSx(isDark) }} />
-                <Typography variant="caption" color="text.disabled" sx={{ display: 'block', mb: 0.5 }}>Puedes pegar una URL o subir una imagen desde tu computador</Typography>
+                <Typography variant="caption" color="text.disabled" sx={{ display: 'block', mb: 0.5 }}>Sube una imagen desde tu computador</Typography>
                 <Box
                     component="label"
                     sx={{
@@ -452,7 +471,7 @@ function SuperAdmin({ user, onLogout }) {
                     }}
                 >
                     📸 Arrastra una imagen aquí o haz clic para seleccionar
-                    <input type="file" accept="image/*" style={{ display: 'none' }} onChange={(e) => { const file = e.target.files[0]; if (file) { const reader = new FileReader(); reader.onload = (ev) => { setForm({ ...form, logo_url: ev.target.result }) }; reader.readAsDataURL(file) } }} />
+                    <input type="file" accept="image/*" style={{ display: 'none' }} onChange={(e) => { const file = e.target.files[0]; if (file) { if (setLogoFile) setLogoFile(file); const preview = URL.createObjectURL(file); setForm({ ...form, logo_url: preview }) } }} />
                 </Box>
                 {form.logo_url && (
                     <Box sx={{ mt: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -1191,7 +1210,7 @@ function SuperAdmin({ user, onLogout }) {
                 <DialogContent sx={{ pt: 2, px: 3 }}>
                     {modalError && <Alert severity="error" sx={{ mb: 2, mt: 1, borderRadius: '12px' }}>{modalError}</Alert>}
                     <Box component="form" onSubmit={handleCreateStore} id="create-store-form" sx={{ mt: 1 }}>
-                        {renderStoreForm(newStore, setNewStore, true)}
+                        {renderStoreForm(newStore, setNewStore, true, setNewStoreLogoFile)}
                     </Box>
                 </DialogContent>
                 <DialogActions sx={{ px: 3, pb: 3, pt: 1, gap: 1.5 }}>
@@ -1271,7 +1290,7 @@ function SuperAdmin({ user, onLogout }) {
                 <DialogContent sx={{ pt: 2, px: 3 }}>
                     {modalError && <Alert severity="error" sx={{ mb: 2, mt: 1, borderRadius: '12px' }}>{modalError}</Alert>}
                     <Box component="form" onSubmit={handleEditStore} id="edit-store-form" sx={{ mt: 1 }}>
-                        {renderStoreForm(editForm, setEditForm, false)}
+                        {renderStoreForm(editForm, setEditForm, false, setEditLogoFile)}
                     </Box>
                 </DialogContent>
                 <DialogActions sx={{ px: 3, pb: 3, pt: 1, gap: 1.5 }}>

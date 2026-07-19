@@ -8,7 +8,6 @@ products_schema = ProductSchema(many=True)
 class ProductService:
     @staticmethod
     def get_products_by_store(store_id, category_id=None):
-        """Get all products for a store, optionally filtered by category"""
         if category_id:
             products = Product.query.filter_by(store_id=store_id, category_id=category_id).all()
         else:
@@ -17,7 +16,6 @@ class ProductService:
     
     @staticmethod
     def get_product_by_id(product_id):
-        """Get product by ID"""
         product = Product.query.get(product_id)
         if product:
             return product_schema.dump(product)
@@ -25,7 +23,6 @@ class ProductService:
     
     @staticmethod
     def create_product(store_id, data):
-        """Create a new product"""
         try:
             product = Product(
                 name=data['name'],
@@ -33,6 +30,7 @@ class ProductService:
                 price=data['price'],
                 promo_price=data.get('promo_price'),
                 purchase_price=data.get('purchase_price'),
+                image_id=data.get('image_id'),
                 image_url=data.get('image_url'),
                 stock=data.get('stock', 0),
                 sizes=data.get('sizes'),
@@ -49,7 +47,6 @@ class ProductService:
     
     @staticmethod
     def update_product(product_id, data):
-        """Update a product"""
         try:
             product = Product.query.get(product_id)
             if not product:
@@ -65,6 +62,8 @@ class ProductService:
                 product.promo_price = data['promo_price']
             if 'purchase_price' in data:
                 product.purchase_price = data['purchase_price']
+            if 'image_id' in data:
+                product.image_id = data['image_id']
             if 'image_url' in data:
                 product.image_url = data['image_url']
             if 'stock' in data:
@@ -84,7 +83,6 @@ class ProductService:
     
     @staticmethod
     def delete_product(product_id):
-        """Delete a product"""
         try:
             product = Product.query.get(product_id)
             if not product:

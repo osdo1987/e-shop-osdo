@@ -70,7 +70,7 @@ class AuthService:
                 name=store_data['name'],
                 slug=store_data['slug'],
                 whatsapp=store_data.get('whatsapp'),
-                logo_url=store_data.get('logo_url'),
+                logo_id=store_data.get('logo_id'),
                 business_type=store_data.get('business_type', 'store'),
                 address=store_data.get('address'),
                 schedule=store_data.get('schedule')

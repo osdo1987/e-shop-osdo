@@ -11,7 +11,6 @@ user_schema = UserSchema(many=True)
 class StoreService:
     @staticmethod
     def get_all_stores():
-        """Get all stores with users"""
         stores = Store.query.all()
         result = stores_schema.dump(stores)
         for store_data in result:
@@ -22,7 +21,6 @@ class StoreService:
     
     @staticmethod
     def get_store_by_id(store_id):
-        """Get store by ID"""
         store = Store.query.get(store_id)
         if store:
             return store_schema.dump(store)
@@ -30,7 +28,6 @@ class StoreService:
     
     @staticmethod
     def get_store_by_slug(slug):
-        """Get store by slug (for public catalog)"""
         store = Store.query.filter_by(slug=slug).first()
         if store:
             return store_schema.dump(store)
@@ -38,8 +35,6 @@ class StoreService:
     
     @staticmethod
     def create_store(data):
-        """Create a new store"""
-        # Check if slug already exists
         existing = Store.query.filter_by(slug=data['slug']).first()
         if existing:
             return None, 'El slug/URL ya está en uso'
@@ -48,7 +43,7 @@ class StoreService:
             name=data['name'],
             slug=data['slug'],
             whatsapp=data.get('whatsapp'),
-            logo_url=data.get('logo_url'),
+            logo_id=data.get('logo_id'),
             business_type=data.get('business_type', 'store'),
             address=data.get('address'),
             schedule=data.get('schedule')
@@ -59,7 +54,6 @@ class StoreService:
     
     @staticmethod
     def update_store(store_id, data):
-        """Update a store"""
         store = Store.query.get(store_id)
         if not store:
             return None, 'Tienda no encontrada'
@@ -67,15 +61,14 @@ class StoreService:
         if 'name' in data:
             store.name = data['name']
         if 'slug' in data:
-            # Check if new slug is taken
             existing = Store.query.filter_by(slug=data['slug']).first()
             if existing and existing.id != store_id:
                 return None, 'El slug/URL ya está en uso'
             store.slug = data['slug']
         if 'whatsapp' in data:
             store.whatsapp = data['whatsapp']
-        if 'logo_url' in data:
-            store.logo_url = data['logo_url']
+        if 'logo_id' in data:
+            store.logo_id = data['logo_id']
         if 'business_type' in data:
             store.business_type = data['business_type']
         if 'address' in data:
@@ -88,7 +81,6 @@ class StoreService:
     
     @staticmethod
     def delete_store(store_id):
-        """Delete a store"""
         store = Store.query.get(store_id)
         if not store:
             return False

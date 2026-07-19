@@ -20,3 +20,9 @@ class Config:
     MAIL_PASSWORD = os.getenv('MAIL_PASSWORD')
     MAIL_DEFAULT_SENDER = os.getenv('MAIL_DEFAULT_SENDER')
     FRONTEND_URL = os.getenv('FRONTEND_URL', 'http://localhost:5173')
+
+    # Image Config
+    UPLOAD_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'uploads')
+    MAX_IMAGE_SIZE = 5 * 1024 * 1024  # 5MB
+    ALLOWED_IMAGE_MIMES = {'image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/avif'}
+    ALLOWED_IMAGE_EXTENSIONS = {'jpg', 'jpeg', 'png', 'webp', 'gif', 'avif'}

@@ -2,7 +2,10 @@ from marshmallow import fields, validate
 from app.extensions import ma
 from app.models.store import Store
 
+
 class StoreSchema(ma.SQLAlchemyAutoSchema):
+    logo_url = fields.Method('get_logo_url')
+
     class Meta:
         model = Store
         load_instance = True
@@ -11,9 +14,14 @@ class StoreSchema(ma.SQLAlchemyAutoSchema):
     slug = fields.String(required=True, validate=validate.Length(min=3, max=100))
     name = fields.String(required=True, validate=validate.Length(min=1, max=200))
     whatsapp = fields.String(allow_none=True, validate=validate.Length(max=20))
-    logo_url = fields.String(allow_none=True)
+    logo_id = fields.Int(allow_none=True)
     business_type = fields.String(required=False, load_default='store', validate=validate.OneOf(['store', 'restaurant']))
     address = fields.String(allow_none=True)
     schedule = fields.String(allow_none=True, validate=validate.Length(max=200))
     created_at = fields.DateTime(dump_only=True)
     updated_at = fields.DateTime(dump_only=True)
+
+    def get_logo_url(self, obj):
+        if hasattr(obj, 'logo') and obj.logo:
+            return f'/api/images/{obj.logo.hash}'
+        return None

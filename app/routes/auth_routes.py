@@ -61,17 +61,27 @@ def register_seller():
     if not current_user or current_user.role != 'SUPERADMIN':
         return jsonify({'error': 'No autorizado'}), 403
     
-    data = request.get_json()
+    if request.is_json:
+        data = request.get_json()
+    else:
+        data = request.form.to_dict()
     
     store_data = {
         'name': data.get('storeName'),
         'slug': data.get('slug'),
         'whatsapp': data.get('whatsapp'),
-        'logo_url': data.get('logo_url'),
         'business_type': data.get('business_type', 'store'),
         'address': data.get('address'),
         'schedule': data.get('schedule')
     }
+
+    if 'logo' in request.files:
+        from app.services.image_service import ImageService
+        try:
+            image = ImageService.save_image(request.files['logo'])
+            store_data['logo_id'] = image.id
+        except ValueError as e:
+            return jsonify({'error': str(e)}), 400
     
     user_data = {
         'email': data.get('email'),

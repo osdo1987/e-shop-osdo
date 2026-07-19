@@ -25,6 +25,7 @@ function Settings({ user, onLogout, darkMode, setDarkMode }) {
     const [store, setStore] = useState(null)
     const [whatsapp, setWhatsapp] = useState('')
     const [logoUrl, setLogoUrl] = useState('')
+    const [logoFile, setLogoFile] = useState(null)
     const [saving, setSaving] = useState(false)
     const [staffList, setStaffList] = useState([])
     const [staffLoading, setStaffLoading] = useState(false)
@@ -65,20 +66,19 @@ function Settings({ user, onLogout, darkMode, setDarkMode }) {
 
         try {
             const token = localStorage.getItem('token')
+            const body = new FormData()
+            body.append('whatsapp', whatsapp)
+            if (logoFile) body.append('logo', logoFile)
+
             const res = await fetch(`/api/stores/${user.storeId}`, {
                 method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify({
-                    whatsapp: whatsapp,
-                    logo_url: logoUrl
-                })
+                headers: { 'Authorization': `Bearer ${token}` },
+                body
             })
 
             if (res.ok) {
                 toast.success('Información de la tienda actualizada exitosamente')
+                setLogoFile(null)
                 fetchStoreData()
             } else {
                 const data = await res.json()
@@ -240,14 +240,8 @@ function Settings({ user, onLogout, darkMode, setDarkMode }) {
                                 </Button>
                             </Box>
 
-                            <TextField
-                                fullWidth label="Logo de la Tienda"
-                                value={logoUrl} onChange={(e) => setLogoUrl(e.target.value)}
-                                placeholder="https://ejemplo.com/logo.png" size="small"
-                                sx={{ mb: 1, ...inputSx }}
-                            />
                             <Typography variant="caption" color="text.disabled" sx={{ display: 'block', mb: 1 }}>
-                                Puedes pegar una URL o subir una imagen desde tu computador
+                                Sube una imagen desde tu computador
                             </Typography>
                             <Box
                                 component="label"
@@ -271,9 +265,8 @@ function Settings({ user, onLogout, darkMode, setDarkMode }) {
                                     onChange={(e) => {
                                         const file = e.target.files[0]
                                         if (file) {
-                                            const reader = new FileReader()
-                                            reader.onload = (ev) => setLogoUrl(ev.target.result)
-                                            reader.readAsDataURL(file)
+                                            setLogoFile(file)
+                                            setLogoUrl(URL.createObjectURL(file))
                                         }
                                     }}
                                 />

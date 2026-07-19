@@ -2,6 +2,7 @@ from flask import Blueprint, request, jsonify
 from app.services.store_service import StoreService
 from app.services.category_service import CategoryService
 from app.services.product_service import ProductService
+from app.services.image_service import ImageService
 from app.services.order_service import OrderService
 from app.schemas.store_schema import StoreSchema
 from flask_jwt_extended import jwt_required, get_jwt_identity
@@ -69,20 +70,50 @@ def update_store(store_id):
     current_user = User.query.get(current_user_id)
     if not current_user:
         return jsonify({'error': 'Usuario no encontrado'}), 404
-    if current_user.role != 'SUPERADMIN':
-        if current_user.role not in ('MANAGER', 'STAFF'):
-            return jsonify({'error': 'No autorizado: rol inválido'}), 403
+
+    if current_user.role == 'STAFF':
         if current_user.store_id is None or current_user.store_id != store_id:
             return jsonify({'error': 'No autorizado: no tienes permiso para esta tienda'}), 403
-        data = request.get_json()
-        if current_user.role == 'STAFF':
-            allowed_data = {'whatsapp': data.get('whatsapp'), 'logo_url': data.get('logo_url')}
-        else:
-            allowed_data = data
+        data = request.get_json() or {}
+        allowed_data = {'whatsapp': data.get('whatsapp')}
+        if 'logo' in request.files:
+            try:
+                image = ImageService.save_image(request.files['logo'])
+                allowed_data['logo_id'] = image.id
+            except ValueError as e:
+                return jsonify({'error': str(e)}), 400
         store, error = StoreService.update_store(store_id, allowed_data)
-    else:
-        data = request.get_json()
+    elif current_user.role in ('MANAGER',):
+        if current_user.store_id is None or current_user.store_id != store_id:
+            return jsonify({'error': 'No autorizado: no tienes permiso para esta tienda'}), 403
+        if request.is_json:
+            data = request.get_json()
+        else:
+            data = request.form.to_dict()
+        if 'logo' in request.files:
+            try:
+                image = ImageService.save_image(request.files['logo'])
+                data['logo_id'] = image.id
+            except ValueError as e:
+                return jsonify({'error': str(e)}), 400
+        data.pop('logo_url', None)
         store, error = StoreService.update_store(store_id, data)
+    elif current_user.role == 'SUPERADMIN':
+        if request.is_json:
+            data = request.get_json()
+        else:
+            data = request.form.to_dict()
+        if 'logo' in request.files:
+            try:
+                image = ImageService.save_image(request.files['logo'])
+                data['logo_id'] = image.id
+            except ValueError as e:
+                return jsonify({'error': str(e)}), 400
+        data.pop('logo_url', None)
+        store, error = StoreService.update_store(store_id, data)
+    else:
+        return jsonify({'error': 'No autorizado: rol inválido'}), 403
+
     if error:
         return jsonify({'error': error}), 400
     return jsonify(store), 200

@@ -1,21 +1,15 @@
 import os
-from flask import Flask, jsonify, send_from_directory
+from flask import Flask, jsonify
 from app.config import Config
 from app.extensions import db, migrate, jwt, ma, bcrypt, swagger, cors, mail, socketio
 from flask_cors import CORS
 
-UPLOAD_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'uploads')
 
 def create_app(config_class=Config):
     app = Flask(__name__)
     app.config.from_object(config_class)
     
-    # Enable CORS for all domains on all routes
     CORS(app)
-
-    @app.route('/uploads/<path:filename>')
-    def serve_upload(filename):
-        return send_from_directory(UPLOAD_DIR, filename)
 
     # Configure Swagger UI
     app.config['SWAGGER'] = {
@@ -41,6 +35,7 @@ def create_app(config_class=Config):
     from app.routes.order_routes import order_bp
     from app.routes.cash_register_routes import cash_register_bp
     from app.routes.invoice_routes import invoice_bp
+    from app.routes.image_routes import image_bp
 
     app.register_blueprint(auth_bp, url_prefix='/api/auth')
     app.register_blueprint(store_bp, url_prefix='/api/stores')
@@ -49,6 +44,7 @@ def create_app(config_class=Config):
     app.register_blueprint(order_bp, url_prefix='/api/orders')
     app.register_blueprint(cash_register_bp, url_prefix='/api/cash-register')
     app.register_blueprint(invoice_bp, url_prefix='/api/invoices')
+    app.register_blueprint(image_bp, url_prefix='/api/images')
 
     # Global Error Handler
     @app.errorhandler(Exception)
