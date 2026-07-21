@@ -35,6 +35,10 @@ import CloseIcon from '@mui/icons-material/Close'
 import AddIcon from '@mui/icons-material/Add'
 import RemoveIcon from '@mui/icons-material/Remove'
 import DeleteIcon from '@mui/icons-material/Delete'
+import Accordion from '@mui/material/Accordion'
+import AccordionSummary from '@mui/material/AccordionSummary'
+import AccordionDetails from '@mui/material/AccordionDetails'
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import StorefrontIcon from '@mui/icons-material/Storefront'
 import LocationOnIcon from '@mui/icons-material/LocationOn'
 import ScheduleIcon from '@mui/icons-material/Schedule'
@@ -270,7 +274,7 @@ function Catalog() {
             if (group && Array.isArray(selectedNames)) {
                 selectedNames.forEach(name => {
                     const option = group.options.find(o => o.name === name)
-                    if (option) total += option.price
+                    if (option) total += Number(option.price) || 0
                 })
             }
         })
@@ -393,7 +397,7 @@ function Catalog() {
                     image_url: product.image_url,
                     selected_size: size,
                     selected_toppings: toppingsKey,
-                    extra_price: extraPrice,
+                    extra_price: Number(extraPrice) || 0,
                     quantity: 1,
                     stock: sizeStock,
                     manage_stock: product.manage_stock !== false,
@@ -1316,42 +1320,51 @@ function Catalog() {
 
                     {cart.length > 0 && (
                         <Box sx={{ p: { xs: 2, md: 2.5 }, borderTop: 1, borderColor: 'divider', bgcolor: 'surface-container-low' }}>
-                            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, mb: 2 }}>
-                                <TextField
-                                    size="small"
-                                    label="Nombre completo *"
-                                    placeholder="Ej. Juan Pérez"
-                                    value={customerName}
-                                    onChange={(e) => setCustomerName(e.target.value)}
-                                    fullWidth
-                                />
-                                <TextField
-                                    size="small"
-                                    label="Teléfono móvil (opcional)"
-                                    placeholder="Ej. +34 600 000 000"
-                                    value={customerPhone}
-                                    onChange={(e) => setCustomerPhone(e.target.value)}
-                                    fullWidth
-                                />
-                                <TextField
-                                    size="small"
-                                    label="Dirección de entrega"
-                                    placeholder="Calle 123 #45-67, Barrio, Ciudad"
-                                    value={deliveryAddress}
-                                    onChange={(e) => setDeliveryAddress(e.target.value)}
-                                    fullWidth
-                                />
-                                <TextField
-                                    size="small"
-                                    label="Notas adicionales (opcional)"
-                                    placeholder="Ej. Sin cebolla, timbre 3A, etc."
-                                    value={customerNotes}
-                                    onChange={(e) => setCustomerNotes(e.target.value)}
-                                    fullWidth
-                                    multiline
-                                    minRows={2}
-                                />
-                            </Box>
+                            <Accordion defaultExpanded={false} disableGutters elevation={0} sx={{ border: 1, borderColor: 'divider', borderRadius: 1, mb: 2, '&::before': { display: 'none' } }}>
+                                <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                                    <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                                        📋 Datos del cliente
+                                    </Typography>
+                                </AccordionSummary>
+                                <AccordionDetails>
+                                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                                        <TextField
+                                            size="small"
+                                            label="Nombre completo *"
+                                            placeholder="Ej. Juan Pérez"
+                                            value={customerName}
+                                            onChange={(e) => setCustomerName(e.target.value)}
+                                            fullWidth
+                                        />
+                                        <TextField
+                                            size="small"
+                                            label="Teléfono móvil (opcional)"
+                                            placeholder="Ej. +34 600 000 000"
+                                            value={customerPhone}
+                                            onChange={(e) => setCustomerPhone(e.target.value)}
+                                            fullWidth
+                                        />
+                                        <TextField
+                                            size="small"
+                                            label="Dirección de entrega"
+                                            placeholder="Calle 123 #45-67, Barrio, Ciudad"
+                                            value={deliveryAddress}
+                                            onChange={(e) => setDeliveryAddress(e.target.value)}
+                                            fullWidth
+                                        />
+                                        <TextField
+                                            size="small"
+                                            label="Notas adicionales (opcional)"
+                                            placeholder="Ej. Sin cebolla, timbre 3A, etc."
+                                            value={customerNotes}
+                                            onChange={(e) => setCustomerNotes(e.target.value)}
+                                            fullWidth
+                                            multiline
+                                            minRows={2}
+                                        />
+                                    </Box>
+                                </AccordionDetails>
+                            </Accordion>
                             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1, pt: 1, borderTop: 1, borderColor: 'divider' }}>
                                 <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 600 }}>Total a pagar:</Typography>
                                 <Typography variant="h5" sx={{ fontWeight: 800, color: 'primary.dark' }}>
@@ -1502,8 +1515,9 @@ function Catalog() {
                             fontWeight: 700,
                             textTransform: 'none',
                             fontSize: '0.9375rem',
-                            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                            '&:disabled': { background: 'action.disabledBackground' },
+                            bgcolor: 'primary-container',
+                            color: 'on-primary-container',
+                            '&:hover': { bgcolor: 'primary.main', color: 'on-primary' },
                         }}
                     >
                         Agregar al carrito

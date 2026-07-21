@@ -5,7 +5,7 @@ from app.extensions import db
 from app.models.order import Order, OrderItem, OrderStatusHistory, STATUS_TRANSITIONS
 from app.models.product import Product
 from app.schemas.order_schema import OrderSchema
-from sqlalchemy.orm import joinedload
+from sqlalchemy.orm import joinedload, lazyload
 
 order_schema = OrderSchema()
 orders_schema = OrderSchema(many=True)
@@ -216,7 +216,7 @@ class OrderService:
         Raises ValueError if stock is insufficient.
         If manage_stock is False, stock control is skipped (e.g., restaurant food made to order).
         """
-        product = Product.query.with_for_update().get(product_id)
+        product = Product.query.options(lazyload(Product.image)).with_for_update().get(product_id)
         if not product:
             raise ValueError(f"El producto con ID {product_id} no existe.")
 
