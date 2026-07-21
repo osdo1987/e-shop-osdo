@@ -214,30 +214,46 @@ class OrderService:
         Locks the product row using with_for_update, validates stock availability if decreasing,
         and adjusts the stock global and size values.
         Raises ValueError if stock is insufficient.
-        If stock is 0, it means no stock control (e.g., restaurant food made to order).
+        If manage_stock is False, stock control is skipped (e.g., restaurant food made to order).
         """
         product = Product.query.with_for_update().get(product_id)
         if not product:
             raise ValueError(f"El producto con ID {product_id} no existe.")
 
-        # If stock is 0, it means "sin control de stock" (food prepared on demand)
-        if product.stock == 0 and not product.sizes:
+        # If manage_stock is False, skip all stock control
+        if not product.manage_stock:
             return
 
         qty_change = quantity if decrease else -quantity
 
-        if product.sizes and product.sizes.startswith('{'):
+        if product.sizes:
             try:
-                sizes_map = json.loads(product.sizes)
+                sizes_data = json.loads(product.sizes)
+                # Handle array format: [{"name":"X","price":"Y","stock":"Z"}, ...]
+                if isinstance(sizes_data, list):
+                    sizes_map = {s['name']: int(s.get('stock', 0)) for s in sizes_data if s.get('name')}
+                # Handle dict format: {"X": stock} (legacy)
+                elif isinstance(sizes_data, dict):
+                    sizes_map = sizes_data
+                else:
+                    sizes_map = {}
+
                 if size:
                     if size not in sizes_map:
                         raise ValueError(f"La talla '{size}' no existe para el producto '{product.name}'.")
-                    
+
                     if decrease and sizes_map[size] < quantity:
                         raise ValueError(f"Stock insuficiente para {product.name} (Talla {size}). Disponibles: {sizes_map[size]}.")
-                    
+
                     sizes_map[size] = max(0, sizes_map[size] - qty_change)
-                    product.sizes = json.dumps(sizes_map)
+                    # Save back in array format
+                    new_sizes = []
+                    for s in json.loads(product.sizes) if isinstance(json.loads(product.sizes), list) else []:
+                        if s.get('name') in sizes_map:
+                            s['stock'] = str(sizes_map[s['name']])
+                        new_sizes.append(s)
+                    if new_sizes:
+                        product.sizes = json.dumps(new_sizes)
                     product.stock = sum(sizes_map.values())
                 else:
                     if decrease and product.stock < quantity:

@@ -64,6 +64,7 @@ const categoryColors = [
 const defaultData = {
   name: "", description: "", category_id: "", price: "",
   promo_price: "", purchase_price: "", stock: "",
+  manage_stock: true,
   sizes: "", toppings_config: "",
   image_url: "", imageFile: null,
 };
@@ -79,7 +80,11 @@ const parseToppingsSafe = (v) => {
   if (!v) return [];
   try {
     const parsed = typeof v === "string" ? JSON.parse(v) : v;
-    return Array.isArray(parsed) ? parsed : [];
+    // Handle wrapped format: {groups: [...]}
+    if (parsed && Array.isArray(parsed.groups)) return parsed.groups;
+    // Handle flat array format (legacy)
+    if (Array.isArray(parsed)) return parsed;
+    return [];
   } catch { return []; }
 };
 
@@ -95,7 +100,7 @@ const fieldMeta = {
   toppings_config: { section: "toppings", label: "Configuración de toppings", required: false },
 };
 
-const sections = [
+const allSections = [
   { id: "category", label: "Categoría", icon: <CategoryIcon fontSize="small" /> },
   { id: "basic", label: "Básico", icon: <InfoIcon fontSize="small" /> },
   { id: "pricing", label: "Precios", icon: <MoneyIcon fontSize="small" /> },
@@ -258,6 +263,9 @@ export default function ProductForm({ user, onLogout }) {
   const { id } = useParams();
   const token = localStorage.getItem("token");
   const isEditing = Boolean(id);
+  const isRestaurant = user?.businessType === 'restaurant';
+
+  const sections = allSections;
 
   const [data, setData] = useState(defaultData);
   const [categories, setCategories] = useState([]);
@@ -288,7 +296,14 @@ export default function ProductForm({ user, onLogout }) {
     if (sectionId === "category") return !!data.category_id;
     if (sectionId === "media") return !!data.image_url;
     if (sectionId === "sizes") return !!data.sizes;
-    if (sectionId === "toppings") return !!data.toppings_config;
+    if (sectionId === "toppings") {
+      if (!data.toppings_config) return false;
+      try {
+        const parsed = JSON.parse(data.toppings_config);
+        const groups = parsed.groups || parsed;
+        return Array.isArray(groups) && groups.length > 0;
+      } catch { return false; }
+    }
     return false;
   }, [data]);
 
@@ -297,9 +312,12 @@ export default function ProductForm({ user, onLogout }) {
   }, [sectionFilled]);
 
   const fillPercentage = useMemo(() => {
-    const filled = [!!data.name, !!data.category_id, !!data.price, !!data.stock].filter(Boolean).length;
-    return Math.round((filled / 4) * 100);
-  }, [data]);
+    const requiredFields = data.manage_stock
+      ? [!!data.name, !!data.category_id, !!data.price, !!data.stock]
+      : [!!data.name, !!data.category_id, !!data.price];
+    const filled = requiredFields.filter(Boolean).length;
+    return Math.round((filled / requiredFields.length) * 100);
+  }, [data, isRestaurant]);
 
   const price = parseFloat(data.price) || 0;
   const cost = parseFloat(data.purchase_price) || 0;
@@ -314,7 +332,7 @@ export default function ProductForm({ user, onLogout }) {
     if (!d.price || parseFloat(d.price) <= 0) e.price = "El precio debe ser mayor a 0";
     if (d.purchase_price && d.price && parseFloat(d.purchase_price) > parseFloat(d.price))
       e.purchase_price = "El costo no puede ser mayor al precio";
-    if (d.stock !== "" && d.stock !== undefined && parseInt(d.stock) < 0)
+    if (d.manage_stock && d.stock !== "" && d.stock !== undefined && parseInt(d.stock) < 0)
       e.stock = "El stock no puede ser negativo";
     return e;
   }, []);
@@ -334,6 +352,7 @@ export default function ProductForm({ user, onLogout }) {
             price: d.price ?? "",
             promo_price: d.promo_price ?? "",
             purchase_price: d.purchase_price ?? "",
+            manage_stock: d.manage_stock !== false,
             stock: d.stock ?? "",
             sizes: d.sizes || "",
             toppings_config: d.toppings_config || "",
@@ -457,65 +476,107 @@ export default function ProductForm({ user, onLogout }) {
 
   const handleToppingsConfigChange = (groupIdx, field, value) => {
     setData((d) => {
-      const groups = parseToppingsSafe(d.toppings_config).map((g) => ({
-        ...g, options: [...(g.options || [])],
-      }));
+      const current = parseToppingsSafe(d.toppings_config);
+      let groups;
+      // Handle both formats: wrapped {groups:[...]} or flat array [...]
+      if (current && current.groups) {
+        groups = current.groups.map((g) => ({ ...g, options: [...(g.options || [])] }));
+      } else if (Array.isArray(current)) {
+        groups = current.map((g) => ({ ...g, options: [...(g.options || [])] }));
+      } else {
+        groups = [];
+      }
       if (!groups[groupIdx]) return d;
       groups[groupIdx][field] = value;
-      return { ...d, toppings_config: JSON.stringify(groups) };
+      return { ...d, toppings_config: JSON.stringify({ groups }) };
     });
     setDirty(true);
   };
 
   const handleToppingOptionChange = (groupIdx, optIdx, field, value) => {
     setData((d) => {
-      const groups = parseToppingsSafe(d.toppings_config).map((g) => ({
-        ...g, options: [...(g.options || [])],
-      }));
+      const current = parseToppingsSafe(d.toppings_config);
+      let groups;
+      if (current && current.groups) {
+        groups = current.groups.map((g) => ({ ...g, options: [...(g.options || [])] }));
+      } else if (Array.isArray(current)) {
+        groups = current.map((g) => ({ ...g, options: [...(g.options || [])] }));
+      } else {
+        groups = [];
+      }
       if (!groups[groupIdx]?.options?.[optIdx]) return d;
       groups[groupIdx].options[optIdx] = { ...groups[groupIdx].options[optIdx], [field]: value };
-      return { ...d, toppings_config: JSON.stringify(groups) };
+      return { ...d, toppings_config: JSON.stringify({ groups }) };
     });
     setDirty(true);
   };
 
   const addToppingGroup = () => {
     setData((d) => {
-      const groups = parseToppingsSafe(d.toppings_config);
-      groups.push({ group_name: "", required: false, min: 0, max: 0, options: [{ name: "", price: "" }] });
-      return { ...d, toppings_config: JSON.stringify(groups) };
+      const current = parseToppingsSafe(d.toppings_config);
+      let groups;
+      if (current && current.groups) {
+        groups = current.groups.map((g) => ({ ...g, options: [...(g.options || [])] }));
+      } else if (Array.isArray(current)) {
+        groups = current.map((g) => ({ ...g, options: [...(g.options || [])] }));
+      } else {
+        groups = [];
+      }
+      groups.push({ id: `group_${Date.now()}`, label: "", required: false, min: 0, max: 0, options: [{ name: "", price: "" }] });
+      return { ...d, toppings_config: JSON.stringify({ groups }) };
     });
     setDirty(true);
   };
 
   const addToppingOption = (groupIdx) => {
     setData((d) => {
-      const groups = parseToppingsSafe(d.toppings_config).map((g) => ({
-        ...g, options: [...(g.options || [])],
-      }));
+      const current = parseToppingsSafe(d.toppings_config);
+      let groups;
+      if (current && current.groups) {
+        groups = current.groups.map((g) => ({ ...g, options: [...(g.options || [])] }));
+      } else if (Array.isArray(current)) {
+        groups = current.map((g) => ({ ...g, options: [...(g.options || [])] }));
+      } else {
+        groups = [];
+      }
       if (!groups[groupIdx]) return d;
       groups[groupIdx].options.push({ name: "", price: "" });
-      return { ...d, toppings_config: JSON.stringify(groups) };
+      return { ...d, toppings_config: JSON.stringify({ groups }) };
     });
     setDirty(true);
   };
 
   const removeToppingOption = (groupIdx, optIdx) => {
     setData((d) => {
-      const groups = parseToppingsSafe(d.toppings_config).map((g) => ({
-        ...g, options: [...(g.options || [])],
-      }));
+      const current = parseToppingsSafe(d.toppings_config);
+      let groups;
+      if (current && current.groups) {
+        groups = current.groups.map((g) => ({ ...g, options: [...(g.options || [])] }));
+      } else if (Array.isArray(current)) {
+        groups = current.map((g) => ({ ...g, options: [...(g.options || [])] }));
+      } else {
+        groups = [];
+      }
       if (!groups[groupIdx]) return d;
       groups[groupIdx].options = groups[groupIdx].options.filter((_, i) => i !== optIdx);
-      return { ...d, toppings_config: JSON.stringify(groups) };
+      return { ...d, toppings_config: JSON.stringify({ groups }) };
     });
     setDirty(true);
   };
 
   const removeToppingGroup = (groupIdx) => {
     setData((d) => {
-      const groups = parseToppingsSafe(d.toppings_config).filter((_, i) => i !== groupIdx);
-      return { ...d, toppings_config: groups.length ? JSON.stringify(groups) : "" };
+      const current = parseToppingsSafe(d.toppings_config);
+      let groups;
+      if (current && current.groups) {
+        groups = current.groups.map((g) => ({ ...g, options: [...(g.options || [])] }));
+      } else if (Array.isArray(current)) {
+        groups = current.map((g) => ({ ...g, options: [...(g.options || [])] }));
+      } else {
+        groups = [];
+      }
+      groups = groups.filter((_, i) => i !== groupIdx);
+      return { ...d, toppings_config: groups.length ? JSON.stringify({ groups }) : "" };
     });
     setDirty(true);
   };
@@ -543,7 +604,8 @@ export default function ProductForm({ user, onLogout }) {
         promo_price: data.promo_price ? parseFloat(data.promo_price) : null,
         purchase_price: data.purchase_price ? parseFloat(data.purchase_price) : null,
         image_url: data.image_url || null,
-        stock: data.stock !== "" ? parseInt(data.stock) || 0 : 0,
+        manage_stock: !!data.manage_stock,
+        stock: (!data.manage_stock || data.stock === "" || data.stock === undefined) ? 0 : parseInt(data.stock) || 0,
         sizes: data.sizes || null,
         toppings_config: data.toppings_config || null,
         category_id: parseInt(data.category_id) || null,
@@ -855,7 +917,28 @@ export default function ProductForm({ user, onLogout }) {
 
                 {/* STOCK SECTION */}
                 <Box ref={(el) => (formSectionRef.current.stock = el)} sx={{ ...sectionBox, p: { xs: 2, md: 3 }, mb: 2.5 }}>
-                  <SectionHeader icon={<StockIcon fontSize="small" />} label="Inventario" filled={!!data.stock} onClick={() => scrollToSection("stock")} />
+                  <SectionHeader icon={<StockIcon fontSize="small" />} label="Inventario" filled={!!data.manage_stock || !!data.stock} onClick={() => scrollToSection("stock")} />
+                  <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 2, p: 1.5, borderRadius: "12px", backgroundColor: (t) => t.palette.mode === "dark" ? "rgba(255,255,255,0.03)" : "rgba(0,0,0,0.02)", border: "1px solid", borderColor: "divider" }}>
+                    <Box>
+                      <Typography variant="body2" sx={{ fontWeight: 600 }}>Gestionar stock</Typography>
+                      <Typography variant="caption" sx={{ color: "text.secondary" }}>
+                        {data.manage_stock ? "Controla inventario y agotamiento automático" : "Sin control de stock (ej: gaseosas, jugos, platos a pedido)"}
+                      </Typography>
+                    </Box>
+                    <Switch
+                      checked={!!data.manage_stock}
+                      onChange={(e) => {
+                        const checked = e.target.checked;
+                        setData((d) => ({
+                          ...d,
+                          manage_stock: checked,
+                          stock: checked ? d.stock : "",
+                        }));
+                      }}
+                      color="primary"
+                    />
+                  </Box>
+                  {data.manage_stock && (
                   <Grid container spacing={2}>
                     <Grid xs={12} sm={6}>
                       <TextField
@@ -867,6 +950,7 @@ export default function ProductForm({ user, onLogout }) {
                       />
                     </Grid>
                   </Grid>
+                  )}
                 </Box>
 
                 {/* MEDIA SECTION */}
@@ -969,8 +1053,8 @@ export default function ProductForm({ user, onLogout }) {
                       }}>
                         <Box sx={{ display: "flex", gap: 1, mb: 1.5, alignItems: "center" }}>
                           <TextField
-                            label="Nombre del grupo" value={group.group_name}
-                            onChange={(e) => handleToppingsConfigChange(gIdx, "group_name", e.target.value)}
+                            label="Nombre del grupo" value={group.label}
+                            onChange={(e) => handleToppingsConfigChange(gIdx, "label", e.target.value)}
                             size="small" sx={{ flex: 1, ...inputSx }}
                             placeholder="Ej: Salsas, Aderezos..."
                           />

@@ -157,9 +157,10 @@ function Dashboard({ user, onLogout }) {
     useEffect(() => { setCurrentPage(1) }, [selectedCategory, searchTerm, viewMode])
 
     const stats = useMemo(() => {
-        const totalStock = products.reduce((sum, p) => sum + (p.stock || 0), 0)
-        const lowStock = products.filter(p => p.stock > 0 && p.stock < 5).length
-        const outOfStock = products.filter(p => p.stock <= 0).length
+        const stockManaged = products.filter(p => p.manage_stock !== false)
+        const totalStock = stockManaged.reduce((sum, p) => sum + (p.stock || 0), 0)
+        const lowStock = stockManaged.filter(p => p.stock > 0 && p.stock < 5).length
+        const outOfStock = stockManaged.filter(p => p.stock <= 0).length
         const withMargin = products.filter(p => p.purchase_price)
         const avgMargin = withMargin.length > 0
             ? withMargin.reduce((sum, p) => {
@@ -436,6 +437,7 @@ function Dashboard({ user, onLogout }) {
                                                 <Chip label="PROMO" size="small"
                                                     sx={{ position: 'absolute', top: 8, left: 8, height: 20, fontSize: '0.55rem', fontWeight: 800, bgcolor: '#ef4444', color: '#fff', letterSpacing: '0.04em' }} />
                                             )}
+                                            {product.manage_stock !== false && (
                                             <Chip
                                                 label={getStockLabel(product.stock)}
                                                 size="small"
@@ -446,6 +448,7 @@ function Dashboard({ user, onLogout }) {
                                                     border: `1px solid ${getStockColor(product.stock)}25`,
                                                 }}
                                             />
+                                            )}
                                         </Box>
 
                                         {/* Info */}
@@ -482,6 +485,7 @@ function Dashboard({ user, onLogout }) {
                                                         {getCategoryName(product.category_id)}
                                                     </Typography>
                                                 </Box>
+                                                {product.manage_stock !== false ? (
                                                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.25 }}
                                                     onClick={(e) => e.stopPropagation()}>
                                                     <IconButton size="small" disabled={updatingStock === product.id}
@@ -498,6 +502,11 @@ function Dashboard({ user, onLogout }) {
                                                         <AddCircleOutlinedIcon sx={{ fontSize: 14 }} />
                                                     </IconButton>
                                                 </Box>
+                                                ) : (
+                                                <Typography sx={{ fontSize: '0.58rem', fontWeight: 600, color: c.dim, fontStyle: 'italic' }}>
+                                                    Sin stock
+                                                </Typography>
+                                                )}
                                             </Box>
                                         </Box>
                                     </Box>
@@ -596,6 +605,7 @@ function Dashboard({ user, onLogout }) {
                                                         )}
                                                     </TableCell>
                                                     <TableCell>
+                                                        {product.manage_stock !== false ? (
                                                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}
                                                             onClick={(e) => e.stopPropagation()}>
                                                             <IconButton size="small" disabled={updatingStock === product.id}
@@ -615,6 +625,11 @@ function Dashboard({ user, onLogout }) {
                                                                 <AddCircleOutlinedIcon sx={{ fontSize: 14 }} />
                                                             </IconButton>
                                                         </Box>
+                                                        ) : (
+                                                        <Typography sx={{ fontSize: '0.75rem', color: c.dim, fontStyle: 'italic' }}>
+                                                            Sin gestión
+                                                        </Typography>
+                                                        )}
                                                     </TableCell>
                                                     <TableCell>
                                                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>

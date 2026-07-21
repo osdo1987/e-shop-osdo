@@ -45,7 +45,8 @@ class AuthService:
                 'email': user.email,
                 'role': user.role,
                 'storeId': user.store_id,
-                'storeName': user.store.name if user.store else None
+                'storeName': user.store.name if user.store else None,
+                'businessType': user.store.business_type if user.store else None
             }
         }, 200
     

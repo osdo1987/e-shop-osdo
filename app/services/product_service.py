@@ -1,3 +1,4 @@
+import json
 from app.extensions import db
 from app.models.product import Product
 from app.schemas.product_schema import ProductSchema
@@ -24,6 +25,12 @@ class ProductService:
     @staticmethod
     def create_product(store_id, data):
         try:
+            sizes = data.get('sizes')
+            if sizes is not None and not isinstance(sizes, str):
+                sizes = json.dumps(sizes)
+            toppings = data.get('toppings_config')
+            if toppings is not None and not isinstance(toppings, str):
+                toppings = json.dumps(toppings)
             product = Product(
                 name=data['name'],
                 description=data.get('description'),
@@ -32,9 +39,10 @@ class ProductService:
                 purchase_price=data.get('purchase_price'),
                 image_id=data.get('image_id'),
                 image_url=data.get('image_url'),
+                manage_stock=data.get('manage_stock', True),
                 stock=data.get('stock', 0),
-                sizes=data.get('sizes'),
-                toppings_config=data.get('toppings_config'),
+                sizes=sizes,
+                toppings_config=toppings,
                 category_id=data['category_id'],
                 store_id=store_id
             )
@@ -66,12 +74,20 @@ class ProductService:
                 product.image_id = data['image_id']
             if 'image_url' in data:
                 product.image_url = data['image_url']
+            if 'manage_stock' in data:
+                product.manage_stock = data['manage_stock']
             if 'stock' in data:
                 product.stock = data['stock']
             if 'sizes' in data:
-                product.sizes = data['sizes']
+                sizes = data['sizes']
+                if sizes is not None and not isinstance(sizes, str):
+                    sizes = json.dumps(sizes)
+                product.sizes = sizes
             if 'toppings_config' in data:
-                product.toppings_config = data['toppings_config']
+                toppings = data['toppings_config']
+                if toppings is not None and not isinstance(toppings, str):
+                    toppings = json.dumps(toppings)
+                product.toppings_config = toppings
             if 'category_id' in data:
                 product.category_id = data['category_id']
             
@@ -88,8 +104,14 @@ class ProductService:
             if not product:
                 return False
             
+            image_id = product.image_id
             db.session.delete(product)
             db.session.commit()
+
+            if image_id:
+                from app.services.image_service import ImageService
+                ImageService.delete_image(image_id)
+
             return True
         except Exception as e:
             db.session.rollback()

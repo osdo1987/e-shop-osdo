@@ -71,6 +71,14 @@ def update_store(store_id):
     if not current_user:
         return jsonify({'error': 'Usuario no encontrado'}), 404
 
+    from app.models.store import Store as StoreModel
+    store_obj = StoreModel.query.get(store_id)
+    if not store_obj:
+        return jsonify({'error': 'Tienda no encontrada'}), 404
+
+    old_logo_id = store_obj.logo_id
+    new_logo_id = None
+
     if current_user.role == 'STAFF':
         if current_user.store_id is None or current_user.store_id != store_id:
             return jsonify({'error': 'No autorizado: no tienes permiso para esta tienda'}), 403
@@ -80,6 +88,7 @@ def update_store(store_id):
             try:
                 image = ImageService.save_image(request.files['logo'])
                 allowed_data['logo_id'] = image.id
+                new_logo_id = image.id
             except ValueError as e:
                 return jsonify({'error': str(e)}), 400
         store, error = StoreService.update_store(store_id, allowed_data)
@@ -94,6 +103,7 @@ def update_store(store_id):
             try:
                 image = ImageService.save_image(request.files['logo'])
                 data['logo_id'] = image.id
+                new_logo_id = image.id
             except ValueError as e:
                 return jsonify({'error': str(e)}), 400
         data.pop('logo_url', None)
@@ -107,6 +117,7 @@ def update_store(store_id):
             try:
                 image = ImageService.save_image(request.files['logo'])
                 data['logo_id'] = image.id
+                new_logo_id = image.id
             except ValueError as e:
                 return jsonify({'error': str(e)}), 400
         data.pop('logo_url', None)
@@ -116,6 +127,10 @@ def update_store(store_id):
 
     if error:
         return jsonify({'error': error}), 400
+
+    if old_logo_id and new_logo_id and new_logo_id != old_logo_id:
+        ImageService.delete_image(old_logo_id)
+
     return jsonify(store), 200
 
 @store_bp.route('/metrics', methods=['GET'])

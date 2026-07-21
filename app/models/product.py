@@ -12,6 +12,7 @@ class Product(db.Model):
     purchase_price = db.Column(db.Float, nullable=True)
     image_id = db.Column(db.Integer, db.ForeignKey('images.id'), nullable=True)
     image_url = db.Column(db.Text, nullable=True)
+    manage_stock = db.Column(db.Boolean, default=True, nullable=False)
     stock = db.Column(db.Integer, default=0)
     sizes = db.Column(db.String(500), nullable=True)
     toppings_config = db.Column(db.Text, nullable=True)

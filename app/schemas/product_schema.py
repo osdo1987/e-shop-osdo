@@ -19,6 +19,7 @@ class ProductSchema(ma.SQLAlchemyAutoSchema):
     promo_price = fields.Float(allow_none=True, validate=validate.Range(min=0))
     purchase_price = fields.Float(allow_none=True, validate=validate.Range(min=0))
     image_id = fields.Int(allow_none=True)
+    manage_stock = fields.Boolean(load_default=True)
     stock = fields.Int(validate=validate.Range(min=0))
     sizes = fields.String(allow_none=True)
     toppings_config = fields.String(allow_none=True)

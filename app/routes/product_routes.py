@@ -135,6 +135,8 @@ def create_product():
                     data[field] = float(data[field]) if field in ['price', 'promo_price', 'purchase_price'] else int(data[field])
                 except ValueError:
                     pass
+        if 'manage_stock' in data:
+            data['manage_stock'] = data['manage_stock'] in ('true', 'True', '1', 1, True)
     
     if current_user.store_id != data.get('store_id') and current_user.role != 'SUPERADMIN':
         return jsonify({'error': 'No autorizado'}), 403
@@ -234,8 +236,12 @@ def update_product(product_id):
                     data[field] = float(data[field]) if field in ['price', 'promo_price', 'purchase_price'] else int(data[field])
                 except ValueError:
                     pass
+        if 'manage_stock' in data:
+            data['manage_stock'] = data['manage_stock'] in ('true', 'True', '1', 1, True)
     
     try:
+        old_image_id = product_obj.image_id
+
         if 'image' in request.files:
             try:
                 image = ImageService.save_image(request.files['image'])
@@ -248,14 +254,24 @@ def update_product(product_id):
         elif _is_blob_url(data.get('image_url')):
             data['image_id'] = product_obj.image_id
             data.pop('image_url', None)
-        elif data.get('image_url') and data['image_url'].startswith('http'):
-            data['image_id'] = None
+        elif data.get('image_url') and (data['image_url'].startswith('http') or data['image_url'].startswith('/api/images/')):
+            if data['image_url'].startswith('/api/images/'):
+                data['image_id'] = product_obj.image_id
+                data.pop('image_url', None)
+            else:
+                data['image_id'] = None
         else:
+            data.pop('image_id', None)
             data.pop('image_url', None)
 
+        new_image_id = data.get('image_id')
         product = ProductService.update_product(product_id, data)
         if not product:
             return jsonify({'error': 'Producto no encontrado'}), 404
+
+        if new_image_id is not None and old_image_id and new_image_id != old_image_id:
+            ImageService.delete_image(old_image_id)
+
         socketio.emit('product_updated', product, namespace='/')
         return jsonify(product), 200
     except Exception as e:

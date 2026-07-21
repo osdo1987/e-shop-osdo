@@ -95,15 +95,16 @@ function StatsDashboard({ user, onLogout }) {
     }
 
     const stats = useMemo(() => {
-        const lowStock = products.filter(p => p.stock > 0 && p.stock < 5)
-        const outOfStock = products.filter(p => p.stock <= 0)
+        const stockManaged = products.filter(p => p.manage_stock !== false)
+        const lowStock = stockManaged.filter(p => p.stock > 0 && p.stock < 5)
+        const outOfStock = stockManaged.filter(p => p.stock <= 0)
 
-        const inventoryValue = products.reduce((sum, p) => {
+        const inventoryValue = stockManaged.reduce((sum, p) => {
             const activePrice = (p.promo_price !== null && p.promo_price !== undefined) ? p.promo_price : p.price
             return sum + (p.stock > 0 ? activePrice * p.stock : 0)
         }, 0)
 
-        const inventoryCost = products.reduce((sum, p) => {
+        const inventoryCost = stockManaged.reduce((sum, p) => {
             return sum + (p.stock > 0 ? (p.purchase_price || 0) * p.stock : 0)
         }, 0)
 
@@ -111,7 +112,7 @@ function StatsDashboard({ user, onLogout }) {
         const marginPercent = inventoryValue > 0 ? (projectedProfit / inventoryValue) * 100 : 0
 
         const promoCount = products.filter(p => p.promo_price !== null && p.promo_price !== undefined).length
-        const totalUnits = products.reduce((sum, p) => sum + (p.stock || 0), 0)
+        const totalUnits = stockManaged.reduce((sum, p) => sum + (p.stock || 0), 0)
 
         return {
             total: products.length,

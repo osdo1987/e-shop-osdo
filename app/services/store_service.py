@@ -85,6 +85,12 @@ class StoreService:
         if not store:
             return False
         
+        logo_id = store.logo_id
         db.session.delete(store)
         db.session.commit()
+
+        if logo_id:
+            from app.services.image_service import ImageService
+            ImageService.delete_image(logo_id)
+
         return True

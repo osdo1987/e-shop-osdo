@@ -54,6 +54,12 @@ class ImageService:
         if not image:
             return False
 
+        from app.models.product import Product
+        from app.models.store import Store
+        in_use = Product.query.filter_by(image_id=image_id).first() or Store.query.filter_by(logo_id=image_id).first()
+        if in_use:
+            return False
+
         upload_dir = current_app.config['UPLOAD_DIR']
         filepath = os.path.join(upload_dir, image.hash[:2], image.hash[2:4], f'{image.hash}.{image.extension}')
         if os.path.exists(filepath):

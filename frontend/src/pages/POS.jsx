@@ -60,25 +60,57 @@ const popIn = keyframes`
 const parseSizes = (sizesStr, overallStock) => {
     if (!sizesStr) return null
     try {
-        if (sizesStr.startsWith('{')) return JSON.parse(sizesStr)
-        const sizesMap = {}
+        const parsed = JSON.parse(sizesStr)
+        // Array format: [{"name":"X","price":"Y","stock":"Z"}, ...]
+        if (Array.isArray(parsed)) {
+            const map = {}
+            parsed.forEach(s => {
+                if (s.name) map[s.name] = { stock: parseInt(s.stock) || 0, price: parseFloat(s.price) || 0 }
+            })
+            return map
+        }
+        // Dict format (legacy): {"X": stock}
+        if (typeof parsed === 'object') {
+            const map = {}
+            Object.entries(parsed).forEach(([k, v]) => {
+                map[k] = { stock: typeof v === 'number' ? v : parseInt(v) || 0, price: 0 }
+            })
+            return map
+        }
+        return null
+    } catch {
+        // Comma-separated legacy format
+        const map = {}
         sizesStr.split(',').forEach(s => {
             const size = s.trim()
-            if (size) sizesMap[size] = overallStock
+            if (size) map[size] = { stock: overallStock || 0, price: 0 }
         })
-        return sizesMap
-    } catch { return null }
+        return Object.keys(map).length > 0 ? map : null
+    }
+}
+
+const getSizePrice = (sizesStr, sizeName, fallbackPrice) => {
+    if (!sizesStr || !sizeName) return fallbackPrice
+    try {
+        const parsed = JSON.parse(sizesStr)
+        if (Array.isArray(parsed)) {
+            const found = parsed.find(s => s.name === sizeName)
+            if (found && parseFloat(found.price) > 0) return parseFloat(found.price)
+        }
+    } catch {}
+    return fallbackPrice
 }
 
 function POSProductCard({ product, cart, isDark, onAdd }) {
     const activePrice = product.promo_price || product.price
-    const isOutOfStock = product.stock === 0 && !product.sizes
+    const managesStock = product.manage_stock !== false
+    const isOutOfStock = managesStock && product.stock === 0 && !product.sizes
     const hasPromo = !!product.promo_price
     const inCart = cart.find(i => i.product.id === product.id && !i.size)
     const parsedSizes = parseSizes(product.sizes, product.stock)
-    const totalSizeStock = parsedSizes ? Object.values(parsedSizes).reduce((a, b) => a + (b || 0), 0) : 0
+    const totalSizeStock = parsedSizes ? Object.values(parsedSizes).reduce((a, b) => a + (b.stock || 0), 0) : 0
     const displayStock = parsedSizes ? totalSizeStock : product.stock
-    const lowStock = displayStock > 0 && displayStock < 5
+    const lowStock = managesStock && displayStock > 0 && displayStock < 5
 
     const handleAdd = (e) => {
         e.stopPropagation()
@@ -239,18 +271,19 @@ function POS({ user, onLogout }) {
 
     const handleAddProduct = useCallback((product) => {
         if (!activeSession) { toast.error('Debes abrir la caja antes de facturar'); return }
+        const managesStock = product.manage_stock !== false
         const parsedSizes = parseSizes(product.sizes, product.stock)
         if (parsedSizes) {
             setSizeModalProduct(product)
             const sizeKeys = Object.keys(parsedSizes).filter(Boolean)
-            const firstAvailable = sizeKeys.find(s => parsedSizes[s] > 0) || sizeKeys[0] || ''
+            const firstAvailable = sizeKeys.find(s => parsedSizes[s].stock > 0) || sizeKeys[0] || ''
             setSelectedSize(firstAvailable)
         } else {
-            if (product.stock > 0) {
+            if (managesStock && product.stock > 0) {
                 const cartItem = cart.find(item => item.product.id === product.id && !item.size)
                 const currentQty = cartItem ? cartItem.quantity : 0
                 if (currentQty >= product.stock) { toast.error(`Stock insuficiente: "${product.name}" (disp: ${product.stock})`); return }
-            } else if (!product.sizes && product.stock === 0) {
+            } else if (managesStock && !product.sizes && product.stock === 0) {
                 toast.error(`"${product.name}" sin stock`); return
             }
             addToCartState(product, null)
@@ -262,7 +295,8 @@ function POS({ user, onLogout }) {
     }, [activeSession, cart])
 
     const addToCartState = useCallback((product, size) => {
-        const price = product.promo_price || product.price
+        const basePrice = product.promo_price || product.price
+        const price = size ? getSizePrice(product.sizes, size, basePrice) : basePrice
         setCart(prev => {
             const idx = prev.findIndex(item => item.product.id === product.id && item.size === size)
             if (idx > -1) {
@@ -279,7 +313,7 @@ function POS({ user, onLogout }) {
         if (!selectedSize) { toast.error('Selecciona una talla'); return }
         const product = sizeModalProduct
         const parsedSizes = parseSizes(product.sizes, product.stock)
-        const sizeStock = parsedSizes ? (parsedSizes[selectedSize] ?? 0) : product.stock
+        const sizeStock = parsedSizes ? (parsedSizes[selectedSize]?.stock ?? 0) : product.stock
         const cartItem = cart.find(item => item.product.id === product.id && item.size === selectedSize)
         const currentQty = cartItem ? cartItem.quantity : 0
         if (currentQty >= sizeStock) { toast.error(`Stock insuficiente: talla ${selectedSize} (disp: ${sizeStock})`); return }
@@ -298,12 +332,15 @@ function POS({ user, onLogout }) {
             const item = next[index]
             const newQty = item.quantity + delta
             if (newQty <= 0) { next.splice(index, 1); return next }
-            const parsedSizes = parseSizes(item.product.sizes, item.product.stock)
-            if (delta > 0 && parsedSizes && item.size) {
-                const available = parsedSizes[item.size] ?? 0
-                if (newQty > available) { toast.error(`Stock maximo: ${available}`); return prev }
-            } else if (delta > 0 && !item.size && item.product.stock > 0) {
-                if (newQty > item.product.stock) { toast.error(`Stock maximo: ${item.product.stock}`); return prev }
+            const managesStock = item.product.manage_stock !== false
+            if (managesStock) {
+                const parsedSizes = parseSizes(item.product.sizes, item.product.stock)
+                if (delta > 0 && parsedSizes && item.size) {
+                    const available = parsedSizes[item.size]?.stock ?? 0
+                    if (newQty > available) { toast.error(`Stock maximo: ${available}`); return prev }
+                } else if (delta > 0 && !item.size && item.product.stock > 0) {
+                    if (newQty > item.product.stock) { toast.error(`Stock maximo: ${item.product.stock}`); return prev }
+                }
             }
             next[index] = { ...item, quantity: newQty }
             return next
@@ -748,12 +785,14 @@ function POS({ user, onLogout }) {
                                 <strong>{sizeModalProduct.name}</strong> - Selecciona una opcion:
                             </Typography>
                             <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-                                {Object.entries(parseSizes(sizeModalProduct.sizes, sizeModalProduct.stock) || {}).map(([size, stock]) => {
+                                {sizeModalProduct && Object.entries(parseSizes(sizeModalProduct.sizes, sizeModalProduct.stock) || {}).map(([size, sizeData]) => {
+                                    const stock = sizeData.stock ?? 0
+                                    const price = sizeData.price || 0
                                     const isSelected = selectedSize === size
-                                    const isAvailable = stock > 0
+                                    const isAvailable = stock > 0 || !sizeModalProduct.manage_stock
                                     return (
                                         <Chip key={size}
-                                            label={`${size} - ${stock > 0 ? `${stock} disp` : 'Agotado'}`}
+                                            label={`${size}${price > 0 ? ` $${price.toLocaleString()}` : ''} - ${stock > 0 ? `${stock} disp` : (sizeModalProduct.manage_stock ? 'Agotado' : 'Disp')}`}
                                             onClick={() => isAvailable && setSelectedSize(size)}
                                             disabled={!isAvailable}
                                             sx={{

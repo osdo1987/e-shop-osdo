@@ -26,6 +26,7 @@ import Chip from '@mui/material/Chip'
 import TextField from '@mui/material/TextField'
 import Snackbar from '@mui/material/Snackbar'
 import MuiAlert from '@mui/material/Alert'
+import { alpha } from '@mui/material/styles'
 import SearchIcon from '@mui/icons-material/Search'
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart'
 import FavoriteIcon from '@mui/icons-material/Favorite'
@@ -45,29 +46,58 @@ import PersonIcon from '@mui/icons-material/Person'
 const parseSizes = (sizesStr, overallStock) => {
     if (!sizesStr) return null
     try {
-        if (sizesStr.startsWith('{')) {
-            return JSON.parse(sizesStr)
-        } else {
+        const parsed = JSON.parse(sizesStr)
+        // Array format: [{"name":"X","price":"Y","stock":"Z"}, ...]
+        if (Array.isArray(parsed)) {
             const map = {}
-            sizesStr.split(',').forEach(s => {
-                const cleanS = s.trim()
-                if (cleanS) {
-                    map[cleanS] = Math.max(0, Math.min(10, overallStock))
-                }
+            parsed.forEach(s => {
+                if (s.name) map[s.name] = { stock: parseInt(s.stock) || 0, price: parseFloat(s.price) || 0 }
             })
             return map
         }
-    } catch (e) {
-        console.error("Error parsing sizes:", e)
+        // Dict format (legacy): {"X": stock}
+        if (typeof parsed === 'object') {
+            const map = {}
+            Object.entries(parsed).forEach(([k, v]) => {
+                map[k] = { stock: typeof v === 'number' ? v : parseInt(v) || 0, price: 0 }
+            })
+            return map
+        }
         return null
+    } catch (e) {
+        // Comma-separated legacy format
+        const map = {}
+        sizesStr.split(',').forEach(s => {
+            const cleanS = s.trim()
+            if (cleanS) {
+                map[cleanS] = { stock: Math.max(0, Math.min(10, overallStock || 0)), price: 0 }
+            }
+        })
+        return Object.keys(map).length > 0 ? map : null
     }
+}
+
+const getSizePrice = (sizesStr, sizeName, fallbackPrice) => {
+    if (!sizesStr || !sizeName) return fallbackPrice
+    try {
+        const parsed = JSON.parse(sizesStr)
+        if (Array.isArray(parsed)) {
+            const found = parsed.find(s => s.name === sizeName)
+            if (found && parseFloat(found.price) > 0) return parseFloat(found.price)
+        }
+    } catch { }
+    return fallbackPrice
 }
 
 const parseToppingsConfig = (toppingsConfigStr) => {
     if (!toppingsConfigStr) return null
     try {
         const config = JSON.parse(toppingsConfigStr)
-        return config.groups || null
+        // Handle wrapped format: {groups: [...]}
+        if (config && Array.isArray(config.groups)) return config.groups
+        // Handle flat array format (legacy)
+        if (Array.isArray(config)) return config
+        return null
     } catch (e) {
         console.error("Error parsing toppings_config:", e)
         return null
@@ -256,8 +286,9 @@ function Catalog() {
         }
         // Initialize empty selections for each group
         const initialSelections = {}
-        config.forEach(group => {
-            initialSelections[group.id] = []
+        config.forEach((group, idx) => {
+            const groupId = group.id || `group_${idx}`
+            initialSelections[groupId] = []
         })
         setToppingConfig(config)
         setToppingSelections(initialSelections)
@@ -270,7 +301,7 @@ function Catalog() {
         setToppingSelections(prev => {
             const current = [...(prev[groupId] || [])]
             const idx = current.indexOf(optionName)
-            const group = toppingConfig?.find(g => g.id === groupId)
+            const group = toppingConfig?.find(g => (g.id || `group_${toppingConfig.indexOf(g)}`) === groupId)
             const max = group?.max || 0
 
             if (idx >= 0) {
@@ -296,13 +327,15 @@ function Catalog() {
         // Validate required groups
         const missingRequired = toppingConfig?.filter(g => {
             if (!g.required) return false
-            const selected = toppingSelections[g.id] || []
+            const groupId = g.id || `group_${toppingConfig.indexOf(g)}`
+            const selected = toppingSelections[groupId] || []
             const min = g.min || 1
             return selected.length < min
         })
 
         if (missingRequired && missingRequired.length > 0) {
-            alert(`Debes seleccionar al menos ${missingRequired[0].min || 1} opción en: ${missingRequired[0].label}`)
+            const label = missingRequired[0].label || missingRequired[0].group_name || 'Grupo'
+            alert(`Debes seleccionar al menos ${missingRequired[0].min || 1} opción en: ${label}`)
             return
         }
 
@@ -335,7 +368,9 @@ function Catalog() {
 
     const addToCartDirect = (product, size, toppings, extraPrice) => {
         const parsedSizes = parseSizes(product.sizes, product.stock)
-        const sizeStock = parsedSizes && size ? (parsedSizes[size] ?? 0) : product.stock
+        const sizeStock = parsedSizes && size ? (parsedSizes[size]?.stock ?? 0) : product.stock
+        const basePrice = product.promo_price || product.price
+        const itemPrice = size ? getSizePrice(product.sizes, size, basePrice) : basePrice
 
         const toppingsKey = toppings ? JSON.stringify(toppings) : null
 
@@ -346,21 +381,22 @@ function Catalog() {
             if (existingItemIndex > -1) {
                 return currentCart.map((item, idx) =>
                     idx === existingItemIndex
-                        ? { ...item, quantity: Math.min(item.quantity + 1, sizeStock) }
+                        ? { ...item, quantity: Math.min(item.quantity + 1, sizeStock || Infinity) }
                         : item
                 )
             } else {
                 return [...currentCart, {
                     id: product.id,
                     name: product.name,
-                    price: product.price,
+                    price: itemPrice,
                     promo_price: product.promo_price,
                     image_url: product.image_url,
                     selected_size: size,
                     selected_toppings: toppingsKey,
                     extra_price: extraPrice,
                     quantity: 1,
-                    stock: sizeStock
+                    stock: sizeStock,
+                    manage_stock: product.manage_stock !== false,
                 }]
             }
         })
@@ -383,8 +419,8 @@ function Catalog() {
 
             if (newQty <= 0) {
                 return currentCart.filter((_, idx) => idx !== itemIndex)
-            } else if (item.stock > 0 && newQty > item.stock) {
-                // Only check stock limit if stock > 0 (stock=0 means no limit for restaurant items)
+            } else if (item.manage_stock !== false && item.stock > 0 && newQty > item.stock) {
+                // Only check stock limit if manage_stock is true and stock > 0
                 return currentCart
             } else {
                 return currentCart.map((it, idx) =>
@@ -466,7 +502,7 @@ function Catalog() {
         message += `*Detalle de Productos:*\n`
 
         cart.forEach(item => {
-            const sizeStr = item.selected_size ? ` (Talla: ${item.selected_size})` : ''
+            const sizeStr = item.selected_size ? ` (${item.selected_size})` : ''
             const basePrice = item.promo_price || item.price
             const itemPrice = basePrice + (item.extra_price || 0)
             const subtotal = itemPrice * item.quantity
@@ -839,8 +875,19 @@ function Catalog() {
                     }}>
                         {filteredProducts.map(product => {
                             const discount = product.promo_price ? Math.round(((product.price - product.promo_price) / product.price) * 100) : null
-                            const isSoldOut = !isRestaurant && product.stock <= 0
+                            const managesStock = product.manage_stock !== false
+                            const isSoldOut = managesStock && product.stock <= 0
                             const hasToppingsConfig = product.toppings_config && parseToppingsConfig(product.toppings_config)
+
+                            const hasSizes = product.sizes && parseSizes(product.sizes, product.stock)
+                            const sizeList = hasSizes ? parseSizes(product.sizes, product.stock) : null
+                            const sizeCount = sizeList ? Object.keys(sizeList).filter(Boolean).length : 0
+                            const sizePriceMin = hasSizes ? (() => {
+                                const sizes = parseSizes(product.sizes, product.stock)
+                                if (!sizes) return null
+                                const prices = Object.values(sizes).map(s => s.price || 0).filter(p => p > 0)
+                                return prices.length > 0 ? Math.min(...prices) : null
+                            })() : null
 
                             return (
                                 <Box
@@ -943,9 +990,22 @@ function Catalog() {
                                             >
                                                 {product.name}
                                             </Typography>
-                                            <Typography sx={{ fontWeight: 700, fontSize: '1rem', color: 'primary.main', flexShrink: 0 }}>
-                                                ${(product.promo_price || product.price).toLocaleString()}
-                                            </Typography>
+                                            <Box sx={{ flexShrink: 0, textAlign: 'right' }}>
+                                                {hasSizes && sizePriceMin ? (
+                                                    <>
+                                                        <Typography sx={{ fontWeight: 700, fontSize: '0.75rem', color: 'text.secondary' }}>
+                                                            Desde
+                                                        </Typography>
+                                                        <Typography sx={{ fontWeight: 700, fontSize: '1rem', color: 'primary.main' }}>
+                                                            ${sizePriceMin.toLocaleString()}
+                                                        </Typography>
+                                                    </>
+                                                ) : (
+                                                    <Typography sx={{ fontWeight: 700, fontSize: '1rem', color: 'primary.main' }}>
+                                                        ${(product.promo_price || product.price).toLocaleString()}
+                                                    </Typography>
+                                                )}
+                                            </Box>
                                         </Box>
 
                                         {product.promo_price && (
@@ -965,7 +1025,17 @@ function Catalog() {
                                             </Typography>
                                         )}
 
-                                        {!isRestaurant && (
+                                        {hasSizes && (
+                                            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75, mb: 1.5 }}>
+                                                {Object.keys(parseSizes(product.sizes, product.stock) || {}).filter(Boolean).map(sizeKey => (
+                                                    <Typography key={sizeKey} variant="caption" sx={{ color: 'text.secondary', fontWeight: 600, fontSize: '0.6875rem' }}>
+                                                        {sizeKey}
+                                                    </Typography>
+                                                ))}
+                                            </Box>
+                                        )}
+
+                                        {managesStock && (
                                             <Typography variant="caption" sx={{ color: isSoldOut ? 'error.main' : 'on-surface-variant', fontWeight: 500, fontSize: '0.75rem', mb: 1.5 }}>
                                                 {isSoldOut ? 'Agotado' : `Stock: ${product.stock} u.`}
                                             </Typography>
@@ -1205,7 +1275,9 @@ function Catalog() {
                                             <Box sx={{ flex: 1, minWidth: 0 }}>
                                                 <Typography variant="body2" sx={{ fontWeight: 600, mb: 0.5 }}>{item.name}</Typography>
                                                 {item.selected_size && (
-                                                    <Chip label={`Talla: ${item.selected_size}`} size="small" variant="outlined" sx={{ fontWeight: 600, fontSize: '0.6875rem', mb: 0.5, mr: 0.5 }} />
+                                                    <Typography variant="caption" sx={{ color: 'primary.main', fontWeight: 600, fontSize: '0.6875rem', mr: 1 }}>
+                                                        {item.selected_size}
+                                                    </Typography>
                                                 )}
                                                 {toppingsDisplay && toppingsDisplay.length > 0 && (
                                                     <Box sx={{ mb: 0.5 }}>
@@ -1228,7 +1300,7 @@ function Catalog() {
                                                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, border: 1, borderColor: 'divider', borderRadius: 20, px: 1, bgcolor: 'surface-container-low' }}>
                                                         <IconButton size="small" onClick={() => updateCartItemQty(item.id, item.selected_size, item.selected_toppings, -1)}><RemoveIcon fontSize="small" /></IconButton>
                                                         <Typography sx={{ fontWeight: 700, minWidth: 16, textAlign: 'center', fontSize: '0.8125rem' }}>{item.quantity}</Typography>
-                                                        <IconButton size="small" onClick={() => updateCartItemQty(item.id, item.selected_size, item.selected_toppings, 1)} disabled={item.quantity >= item.stock}><AddIcon fontSize="small" /></IconButton>
+                                                        <IconButton size="small" onClick={() => updateCartItemQty(item.id, item.selected_size, item.selected_toppings, 1)} disabled={item.manage_stock !== false && item.stock > 0 && item.quantity >= item.stock}><AddIcon fontSize="small" /></IconButton>
                                                     </Box>
                                                 </Box>
                                             </Box>
@@ -1314,47 +1386,134 @@ function Catalog() {
                 onClose={() => setSizeModalProduct(null)}
                 maxWidth="xs"
                 fullWidth
-                slotProps={{ paper: { sx: { borderRadius: 3 } } }}
+                slotProps={{ paper: { sx: { borderRadius: 3, overflow: 'visible' } } }}
             >
-                <DialogTitle sx={{ fontWeight: 700 }}>
-                    Seleccionar Talla
+                <Box sx={{
+                    position: 'absolute',
+                    top: -20,
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    width: 56,
+                    height: 56,
+                    borderRadius: '50%',
+                    bgcolor: 'primary.main',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: 'white',
+                    fontSize: '1.5rem',
+                    boxShadow: '0 4px 14px rgba(0,0,0,0.2)',
+                    zIndex: 1,
+                }}>
+                    📏
+                </Box>
+                <DialogTitle sx={{ fontWeight: 700, textAlign: 'center', pt: 4, pb: 0.5 }}>
+                    {sizeModalProduct?.name}
                 </DialogTitle>
-                <DialogContent>
-                    <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                        Elige una talla para <strong>{sizeModalProduct?.name}</strong> antes de agregarlo al carrito.
+                <DialogContent sx={{ pb: 1 }}>
+                    <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center', mb: 3, fontSize: '0.875rem' }}>
+                        Selecciona una presentación
                     </Typography>
-                    <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap' }}>
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
                         {sizeModalProduct && (() => {
                             const parsedSizes = parseSizes(sizeModalProduct.sizes, sizeModalProduct.stock) || {}
                             const sizeKeys = Object.keys(parsedSizes).filter(Boolean)
+                            const managesStock = sizeModalProduct.manage_stock !== false
                             return sizeKeys.map(size => {
-                                const sizeStock = parsedSizes[size] ?? 0
-                                const isOutOfStock = sizeStock <= 0
+                                const sizeData = parsedSizes[size] || {}
+                                const sizeStock = sizeData.stock ?? 0
+                                const sizePrice = sizeData.price || 0
+                                const isOutOfStock = managesStock && sizeStock <= 0
                                 const isSelected = selectedSizeForModal === size
                                 return (
-                                    <Chip
+                                    <Box
                                         key={size}
-                                        label={<Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', py: 0.5 }}><span>{size}</span><span style={{ fontSize: '0.5625rem', fontWeight: 500, marginTop: 2, color: isSelected ? '#2e7d32' : (isOutOfStock ? '#ef4444' : 'inherit') }}>{isOutOfStock ? 'Agotado' : `${sizeStock} u.`}</span></Box>}
                                         onClick={() => !isOutOfStock && setSelectedSizeForModal(size)}
-                                        disabled={isOutOfStock}
-                                        color={isSelected ? 'success' : 'default'}
-                                        variant={isSelected ? 'filled' : 'outlined'}
-                                        sx={{ minWidth: 60, height: 'auto', py: 0.5, opacity: isOutOfStock ? 0.5 : 1 }}
-                                    />
+                                        sx={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'space-between',
+                                            p: 2,
+                                            borderRadius: 2,
+                                            border: '2px solid',
+                                            borderColor: isSelected ? 'primary.main' : 'divider',
+                                            bgcolor: isSelected ? (theme) => alpha(theme.palette.primary.main, 0.06) : 'transparent',
+                                            cursor: isOutOfStock ? 'not-allowed' : 'pointer',
+                                            opacity: isOutOfStock ? 0.5 : 1,
+                                            transition: 'all 0.2s ease',
+                                            '&:hover': !isOutOfStock ? {
+                                                borderColor: 'primary.main',
+                                                bgcolor: (theme) => alpha(theme.palette.primary.main, 0.04),
+                                            } : {},
+                                        }}
+                                    >
+                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                                            <Box sx={{
+                                                width: 32,
+                                                height: 32,
+                                                borderRadius: '50%',
+                                                bgcolor: isSelected ? 'primary.main' : 'action.hover',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                color: isSelected ? 'white' : 'text.secondary',
+                                                fontSize: '0.75rem',
+                                                fontWeight: 700,
+                                                transition: 'all 0.2s',
+                                            }}>
+                                                {isSelected ? '✓' : size.charAt(0).toUpperCase()}
+                                            </Box>
+                                            <Box>
+                                                <Typography sx={{ fontWeight: 700, fontSize: '0.9375rem' }}>
+                                                    {size}
+                                                </Typography>
+                                                <Typography variant="caption" color={isOutOfStock ? 'error.main' : 'text.secondary'} sx={{ fontWeight: 500, fontSize: '0.6875rem' }}>
+                                                    {isOutOfStock ? 'Agotado' : managesStock ? `${sizeStock} disponibles` : 'Disponible'}
+                                                </Typography>
+                                            </Box>
+                                        </Box>
+                                        <Box sx={{ textAlign: 'right' }}>
+                                            {sizePrice > 0 && (
+                                                <Typography sx={{ fontWeight: 800, fontSize: '1.0625rem', color: isSelected ? 'primary.main' : 'text.primary' }}>
+                                                    ${sizePrice.toLocaleString()}
+                                                </Typography>
+                                            )}
+                                            {isSelected && (
+                                                <Typography variant="caption" sx={{ color: 'success.main', fontWeight: 600, fontSize: '0.625rem' }}>
+                                                    Seleccionado
+                                                </Typography>
+                                            )}
+                                        </Box>
+                                    </Box>
                                 )
                             })
                         })()}
                     </Box>
                 </DialogContent>
-                <DialogActions sx={{ px: 3, pb: 3 }}>
+                <DialogActions sx={{ px: 3, pb: 3, gap: 1, flexDirection: 'column' }}>
                     <Button
                         variant="contained"
                         fullWidth
                         onClick={() => addToCart(sizeModalProduct, selectedSizeForModal)}
                         disabled={!selectedSizeForModal}
-                        sx={{ py: 1.5 }}
+                        sx={{
+                            py: 1.5,
+                            borderRadius: 2,
+                            fontWeight: 700,
+                            textTransform: 'none',
+                            fontSize: '0.9375rem',
+                            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                            '&:disabled': { background: 'action.disabledBackground' },
+                        }}
                     >
-                        Confirmar y Agregar
+                        Agregar al carrito
+                    </Button>
+                    <Button
+                        fullWidth
+                        onClick={() => setSizeModalProduct(null)}
+                        sx={{ textTransform: 'none', fontWeight: 600, color: 'text.secondary' }}
+                    >
+                        Cancelar
                     </Button>
                 </DialogActions>
             </Dialog>
@@ -1372,13 +1531,14 @@ function Catalog() {
                 </DialogTitle>
                 <DialogContent>
                     {toppingConfig && toppingConfig.map((group) => {
-                        const selected = toppingSelections[group.id] || []
+                        const groupId = group.id || `group_${toppingConfig.indexOf(group)}`
+                        const selected = toppingSelections[groupId] || []
                         const isAtMax = group.max > 0 && selected.length >= group.max
 
                         return (
-                            <Box key={group.id} sx={{ mb: 3 }}>
+                            <Box key={groupId} sx={{ mb: 3 }}>
                                 <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1 }}>
-                                    {group.label || 'Grupo'}
+                                    {group.label || group.group_name || 'Grupo'}
                                     {group.required && <span style={{ color: '#ef4444' }}> *</span>}
                                     <Typography component="span" variant="caption" color="text.disabled" sx={{ ml: 1, fontWeight: 500 }}>
                                         ({group.max > 0 ? selected.length + '/' + group.max : selected.length} seleccionados)
