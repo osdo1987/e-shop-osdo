@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import { Navigate } from 'react-router-dom'
 import AdminLayout from '../components/AdminLayout'
 import { useToast } from '../components/Toast'
@@ -25,12 +25,11 @@ import InputAdornment from '@mui/material/InputAdornment'
 import Divider from '@mui/material/Divider'
 import Paper from '@mui/material/Paper'
 import { useTheme } from '@mui/material/styles'
+import { fetchPaymentMethods, getIconByName } from '../paymentMethodIcons'
 
 import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet'
 import HistoryIcon from '@mui/icons-material/History'
-import LocalAtmIcon from '@mui/icons-material/LocalAtm'
-import PaymentIcon from '@mui/icons-material/Payment'
-import AccountBalanceIcon from '@mui/icons-material/AccountBalance'
+
 import PointOfSaleIcon from '@mui/icons-material/PointOfSale'
 import TrendingUpIcon from '@mui/icons-material/TrendingUp'
 import CheckCircleIcon from '@mui/icons-material/CheckCircle'
@@ -98,6 +97,7 @@ function CashRegister({ user, onLogout }) {
     const [history, setHistory] = useState([])
     const [loading, setLoading] = useState(true)
     const [mounted, setMounted] = useState(false)
+    const [paymentMethods, setPaymentMethods] = useState([])
 
     const [openingBalance, setOpeningBalance] = useState('')
     const [openingNotes, setOpeningNotes] = useState('')
@@ -139,6 +139,10 @@ function CashRegister({ user, onLogout }) {
             setLoading(false)
         }
     }
+
+    useEffect(() => {
+        fetchPaymentMethods().then(setPaymentMethods).catch(() => {})
+    }, [])
 
     useEffect(() => {
         fetchData()
@@ -236,6 +240,33 @@ function CashRegister({ user, onLogout }) {
         if (diff < 0) return <Chip label={`Faltante ($${Math.abs(diff).toLocaleString()})`} color="error" size="small" sx={{ fontWeight: 700 }} />
         return <Chip label={`Sobrante (+$${diff.toLocaleString()})`} color="primary" size="small" sx={{ fontWeight: 700 }} />
     }
+
+    const getPaymentTotal = useCallback((code) => {
+        if (!activeSession) return 0
+        const breakdown = activeSession.payment_breakdown || {}
+        if (breakdown[code] !== undefined) return breakdown[code]
+        if (code === 'EFECTIVO') return activeSession.cash_sales || 0
+        if (code === 'TARJETA') return activeSession.card_sales || 0
+        if (code === 'TRANSFERENCIA') return activeSession.transfer_sales || 0
+        return 0
+    }, [activeSession])
+
+    const paymentBreakdownCards = useMemo(() => {
+        if (!activeSession) return []
+        const breakdown = activeSession.payment_breakdown || {}
+        const codesWithSales = new Set(Object.keys(breakdown))
+        if (activeSession.cash_sales) codesWithSales.add('EFECTIVO')
+        if (activeSession.card_sales) codesWithSales.add('TARJETA')
+        if (activeSession.transfer_sales) codesWithSales.add('TRANSFERENCIA')
+
+        return paymentMethods
+            .filter(pm => codesWithSales.has(pm.code))
+            .map(pm => ({
+                ...pm,
+                total: getPaymentTotal(pm.code),
+            }))
+            .filter(pm => pm.total > 0)
+    }, [activeSession, paymentMethods, getPaymentTotal])
 
     const totalSales = activeSession
         ? (activeSession.opening_balance ?? 0) + (activeSession.cash_sales ?? 0) + (activeSession.card_sales ?? 0) + (activeSession.transfer_sales ?? 0)
@@ -418,101 +449,39 @@ function CashRegister({ user, onLogout }) {
                                         </Box>
 
                                         <Grid container spacing={2.5}>
-                                            {/* Cash */}
-                                            <Grid size={{ xs: 12, sm: 4 }}>
-                                                <Box sx={{
-                                                    ...paymentCardAccent(isDark),
-                                                    p: 2.5,
-                                                    '&::before': {
-                                                        ...paymentCardAccent(isDark)['&::before'],
-                                                        background: 'linear-gradient(90deg, #10b981, #34d399)',
-                                                    },
-                                                    animation: mounted ? 'fade-in-up 0.5s ease both' : 'none',
-                                                    animationDelay: '0.15s',
-                                                }}>
-                                                    <Box sx={{
-                                                        p: 1.2,
-                                                        borderRadius: '12px',
-                                                        background: isDark ? 'rgba(16,185,129,0.15)' : 'rgba(16,185,129,0.10)',
-                                                        display: 'inline-flex',
-                                                        mb: 1.5,
-                                                        animation: 'icon-bounce 0.6s ease both',
-                                                        animationDelay: '0.4s',
-                                                    }}>
-                                                        <LocalAtmIcon sx={{ fontSize: 22, color: 'success.main' }} />
-                                                    </Box>
-                                                    <Typography variant="caption" color="text.disabled" sx={{ fontWeight: 600, display: 'block', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                                                        Efectivo (Caja)
-                                                    </Typography>
-                                                    <Typography variant="h6" sx={{ fontWeight: 700, mt: 0.5 }}>
-                                                        ${(activeSession.cash_sales ?? 0).toLocaleString()}
-                                                    </Typography>
-                                                </Box>
-                                            </Grid>
-
-                                            {/* Card */}
-                                            <Grid size={{ xs: 12, sm: 4 }}>
-                                                <Box sx={{
-                                                    ...paymentCardAccent(isDark),
-                                                    p: 2.5,
-                                                    '&::before': {
-                                                        ...paymentCardAccent(isDark)['&::before'],
-                                                        background: 'linear-gradient(90deg, #004ac6, #b4c5ff)',
-                                                    },
-                                                    animation: mounted ? 'fade-in-up 0.5s ease both' : 'none',
-                                                    animationDelay: '0.2s',
-                                                }}>
-                                                    <Box sx={{
-                                                        p: 1.2,
-                                                        borderRadius: '12px',
-                                                        background: isDark ? 'rgba(0,74,198,0.15)' : 'rgba(0,74,198,0.10)',
-                                                        display: 'inline-flex',
-                                                        mb: 1.5,
-                                                        animation: 'icon-bounce 0.6s ease both',
-                                                        animationDelay: '0.5s',
-                                                    }}>
-                                                        <PaymentIcon sx={{ fontSize: 22, color: 'primary.main' }} />
-                                                    </Box>
-                                                    <Typography variant="caption" color="text.disabled" sx={{ fontWeight: 600, display: 'block', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                                                        Tarjeta
-                                                    </Typography>
-                                                    <Typography variant="h6" sx={{ fontWeight: 700, mt: 0.5 }}>
-                                                        ${(activeSession.card_sales ?? 0).toLocaleString()}
-                                                    </Typography>
-                                                </Box>
-                                            </Grid>
-
-                                            {/* Transfer */}
-                                            <Grid size={{ xs: 12, sm: 4 }}>
-                                                <Box sx={{
-                                                    ...paymentCardAccent(isDark),
-                                                    p: 2.5,
-                                                    '&::before': {
-                                                        ...paymentCardAccent(isDark)['&::before'],
-                                                        background: 'linear-gradient(90deg, #f59e0b, #fbbf24)',
-                                                    },
-                                                    animation: mounted ? 'fade-in-up 0.5s ease both' : 'none',
-                                                    animationDelay: '0.25s',
-                                                }}>
-                                                    <Box sx={{
-                                                        p: 1.2,
-                                                        borderRadius: '12px',
-                                                        background: isDark ? 'rgba(245,158,11,0.15)' : 'rgba(245,158,11,0.10)',
-                                                        display: 'inline-flex',
-                                                        mb: 1.5,
-                                                        animation: 'icon-bounce 0.6s ease both',
-                                                        animationDelay: '0.6s',
-                                                    }}>
-                                                        <AccountBalanceIcon sx={{ fontSize: 22, color: 'warning.main' }} />
-                                                    </Box>
-                                                    <Typography variant="caption" color="text.disabled" sx={{ fontWeight: 600, display: 'block', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                                                        Transferencia
-                                                    </Typography>
-                                                    <Typography variant="h6" sx={{ fontWeight: 700, mt: 0.5 }}>
-                                                        ${(activeSession.transfer_sales ?? 0).toLocaleString()}
-                                                    </Typography>
-                                                </Box>
-                                            </Grid>
+                                            {paymentBreakdownCards.map((pm, idx) => {
+                                                const IconComp = getIconByName(pm.icon)
+                                                return (
+                                                    <Grid key={pm.code} size={{ xs: 12, sm: 4 }}>
+                                                        <Box sx={{
+                                                            ...paymentCardAccent(isDark),
+                                                            p: 2.5,
+                                                            '&::before': {
+                                                                ...paymentCardAccent(isDark)['&::before'],
+                                                                background: `linear-gradient(90deg, ${pm.color}, ${pm.color}88)`,
+                                                            },
+                                                            animation: mounted ? 'fade-in-up 0.5s ease both' : 'none',
+                                                            animationDelay: `${0.15 + idx * 0.05}s`,
+                                                        }}>
+                                                            <Box sx={{
+                                                                p: 1.2,
+                                                                borderRadius: '12px',
+                                                                background: isDark ? `${pm.color}26` : `${pm.color}1A`,
+                                                                display: 'inline-flex',
+                                                                mb: 1.5,
+                                                            }}>
+                                                                <IconComp sx={{ fontSize: 22, color: pm.color }} />
+                                                            </Box>
+                                                            <Typography variant="caption" color="text.disabled" sx={{ fontWeight: 600, display: 'block', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                                                                {pm.name}
+                                                            </Typography>
+                                                            <Typography variant="h6" sx={{ fontWeight: 700, mt: 0.5 }}>
+                                                                ${pm.total.toLocaleString()}
+                                                            </Typography>
+                                                        </Box>
+                                                    </Grid>
+                                                )
+                                            })}
                                         </Grid>
 
                                         {/* Expected cash callout */}

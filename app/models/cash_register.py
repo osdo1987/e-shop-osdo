@@ -18,6 +18,7 @@ class CashRegisterSession(db.Model):
     cash_sales = db.Column(db.Float, default=0.0, nullable=False)
     card_sales = db.Column(db.Float, default=0.0, nullable=False)
     transfer_sales = db.Column(db.Float, default=0.0, nullable=False)
+    payment_breakdown = db.Column(db.JSON, default=dict, nullable=True)
     
     status = db.Column(db.String(20), default='ABIERTA', nullable=False)  # 'ABIERTA', 'CERRADA'
     notes = db.Column(db.Text, nullable=True)

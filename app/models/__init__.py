@@ -6,5 +6,6 @@ from app.models.order import Order, OrderItem
 from app.models.cash_register import CashRegisterSession
 from app.models.invoice import Invoice
 from app.models.image import Image
+from app.models.payment_method import PaymentMethod
 
-__all__ = ['User', 'Store', 'Category', 'Product', 'Order', 'OrderItem', 'CashRegisterSession', 'Invoice', 'Image']
+__all__ = ['User', 'Store', 'Category', 'Product', 'Order', 'OrderItem', 'CashRegisterSession', 'Invoice', 'Image', 'PaymentMethod']

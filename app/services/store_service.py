@@ -49,6 +49,11 @@ class StoreService:
             schedule=data.get('schedule')
         )
         db.session.add(store)
+        db.session.flush()
+
+        from app.services.payment_method_service import PaymentMethodService
+        PaymentMethodService.seed_defaults(store.id)
+
         db.session.commit()
         return store_schema.dump(store), None
     

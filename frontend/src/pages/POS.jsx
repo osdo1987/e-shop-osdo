@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react'
+import { fetchPaymentMethods, getIconByName } from '../paymentMethodIcons'
 import AdminLayout from '../components/AdminLayout'
 import { useToast } from '../components/Toast'
 import Box from '@mui/material/Box'
@@ -35,20 +36,8 @@ import StoreIcon from '@mui/icons-material/Store'
 import Inventory2Icon from '@mui/icons-material/Inventory2'
 import ClearAllIcon from '@mui/icons-material/ClearAll'
 import CheckCircleIcon from '@mui/icons-material/CheckCircle'
-import AttachMoneyIcon from '@mui/icons-material/AttachMoney'
-import CreditCardIcon from '@mui/icons-material/CreditCard'
-import AccountBalanceIcon from '@mui/icons-material/AccountBalance'
-import SmartphoneIcon from '@mui/icons-material/Smartphone'
-
-const PAYMENT_METHODS = [
-    { value: 'EFECTIVO', label: 'Efectivo', IconComp: AttachMoneyIcon, color: '#22c55e' },
-    { value: 'TARJETA', label: 'Tarjeta', IconComp: CreditCardIcon, color: '#3b82f6' },
-    { value: 'TRANSFERENCIA', label: 'Transferencia', IconComp: AccountBalanceIcon, color: '#2563eb' },
-    { value: 'NEQUI', label: 'Nequi', IconComp: SmartphoneIcon, color: '#06b6d4' },
-    { value: 'DAVIPLATA', label: 'Daviplata', IconComp: SmartphoneIcon, color: '#f59e0b' },
-]
-
 const QUICK_CASH = [5000, 10000, 15000, 20000, 30000, 50000, 100000]
+
 const CATEGORY_COLORS = ['#004ac6', '#10b981', '#f59e0b', '#ef4444', '#2563eb', '#ec4899', '#06b6d4', '#84cc16']
 
 const popIn = keyframes`
@@ -195,12 +184,13 @@ function POS({ user, onLogout }) {
     const [categories, setCategories] = useState([])
     const [products, setProducts] = useState([])
     const [activeSession, setActiveSession] = useState(null)
+    const [paymentMethods, setPaymentMethods] = useState([])
     const [loading, setLoading] = useState(true)
 
     const [cart, setCart] = useState([])
     const [customerName, setCustomerName] = useState('')
     const [customerDocument, setCustomerDocument] = useState('')
-    const [paymentMethod, setPaymentMethod] = useState('EFECTIVO')
+    const [paymentMethod, setPaymentMethod] = useState('')
     const [searchTerm, setSearchTerm] = useState('')
     const [selectedCategory, setSelectedCategory] = useState('')
     const [showQuickCash, setShowQuickCash] = useState(false)
@@ -222,10 +212,11 @@ function POS({ user, onLogout }) {
         try {
             const token = localStorage.getItem('token')
             const headers = { Authorization: `Bearer ${token}` }
-            const [categoriesRes, productsRes, sessionRes] = await Promise.all([
+            const [categoriesRes, productsRes, sessionRes, pmRes] = await Promise.all([
                 fetch('/api/categories', { headers }),
                 fetch('/api/products', { headers }),
                 fetch('/api/cash-register/session/active', { headers }),
+                fetch('/api/payment-methods', { headers }),
             ])
             if (categoriesRes.ok) setCategories(await categoriesRes.json())
             if (productsRes.ok) setProducts(await productsRes.json())
@@ -233,9 +224,16 @@ function POS({ user, onLogout }) {
                 const data = await sessionRes.json()
                 setActiveSession(data.session)
             }
+            if (pmRes.ok) setPaymentMethods(await pmRes.json())
         } catch { toast.error('Error al cargar datos del POS') }
         finally { setLoading(false) }
     }
+
+    useEffect(() => {
+        if (paymentMethods.length > 0) {
+            setPaymentMethod(paymentMethods[0].code)
+        }
+    }, [paymentMethods])
 
     useEffect(() => { fetchPOSData() }, [])
 
@@ -385,7 +383,7 @@ function POS({ user, onLogout }) {
                 toast.success('Venta registrada')
                 const invoiceRes = await fetch(`/api/invoices/order/${orderData.id}`, { headers })
                 if (invoiceRes.ok) { setReceiptData(await invoiceRes.json()); setShowReceipt(true) }
-                setCart([]); setCustomerName(''); setCustomerDocument(''); setPaymentMethod('EFECTIVO')
+                setCart([]); setCustomerName(''); setCustomerDocument(''); setPaymentMethod(paymentMethods[0]?.code || 'EFECTIVO')
                 setCartDrawerOpen(false)
                 const productsRes = await fetch('/api/products', { headers })
                 if (productsRes.ok) setProducts(await productsRes.json())
@@ -527,14 +525,14 @@ function POS({ user, onLogout }) {
                             METODO DE PAGO
                         </Typography>
                         <Box sx={{ display: 'flex', gap: 0.75, flexWrap: 'wrap' }}>
-                            {PAYMENT_METHODS.map(pm => {
-                                const isActive = paymentMethod === pm.value
-                                const IconComp = pm.IconComp
+                            {paymentMethods.map(pm => {
+                                const isActive = paymentMethod === pm.code
+                                const IconComp = getIconByName(pm.icon)
                                 return (
-                                    <Chip key={pm.value}
+                                    <Chip key={pm.code}
                                         icon={<IconComp sx={{ fontSize: '14px !important', color: isActive ? pm.color : undefined }} />}
-                                        label={pm.label} size="small"
-                                        onClick={() => setPaymentMethod(pm.value)}
+                                        label={pm.name} size="small"
+                                        onClick={() => setPaymentMethod(pm.code)}
                                         sx={{
                                             fontWeight: 600, fontSize: '0.65rem', height: 32,
                                             bgcolor: isActive ? alpha(pm.color, 0.15) : 'background.paper',
@@ -851,7 +849,7 @@ function POS({ user, onLogout }) {
                                     <strong>Fecha:</strong> {new Date(receiptData.invoice.created_at).toLocaleString()}<br />
                                     <strong>Cliente:</strong> {receiptData.invoice.customer_name}<br />
                                     {receiptData.invoice.customer_document && <><strong>Doc:</strong> {receiptData.invoice.customer_document}<br /></>}
-                                    <strong>Pago:</strong> {receiptData.invoice.payment_method}
+                                    <strong>Pago:</strong> {paymentMethods.find(pm => pm.code === receiptData.invoice.payment_method)?.name || receiptData.invoice.payment_method}
                                 </Typography>
                             </Box>
                             <Divider sx={{ borderStyle: 'dashed', my: 1.5 }} />

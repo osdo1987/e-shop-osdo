@@ -35,13 +35,20 @@ class OrderService:
                 raise ValueError("No hay una sesión de caja abierta para registrar ventas locales.")
             cash_register_session_id = active_session.id
             
-            # Update cash register session totals
+            # Update cash register session totals (dynamic payment methods)
             total_price = data['total_price']
-            if payment_method == 'EFECTIVO':
+            pm_code = payment_method or 'OTRO'
+            if active_session.payment_breakdown is None:
+                active_session.payment_breakdown = {}
+            active_session.payment_breakdown[pm_code] = active_session.payment_breakdown.get(pm_code, 0) + total_price
+
+            from app.models.payment_method import PaymentMethod
+            pm_obj = PaymentMethod.query.filter_by(code=pm_code, store_id=store_id).first()
+            if pm_obj and pm_obj.is_cash:
                 active_session.cash_sales += total_price
-            elif payment_method == 'TARJETA':
+            elif pm_code == 'TARJETA':
                 active_session.card_sales += total_price
-            elif payment_method == 'TRANSFERENCIA':
+            elif pm_code == 'TRANSFERENCIA':
                 active_session.transfer_sales += total_price
 
         order = Order(

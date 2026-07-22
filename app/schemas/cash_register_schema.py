@@ -19,5 +19,6 @@ class CashRegisterSessionSchema(ma.SQLAlchemyAutoSchema):
     cash_sales = fields.Float(dump_only=True)
     card_sales = fields.Float(dump_only=True)
     transfer_sales = fields.Float(dump_only=True)
+    payment_breakdown = fields.Raw(allow_none=True)
     status = fields.String(validate=validate.OneOf(['ABIERTA', 'CERRADA']))
     notes = fields.String(allow_none=True)

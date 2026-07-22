@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>✅ Checklist - Espíritus de Fortnite</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+        }
+
+        body {
+            background: #0b1a2b;
+            background-image: radial-gradient(circle at 20% 30%, #1a3a5c, #0a1420);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            max-width: 1300px;
+            width: 100%;
+        }
+
+        .header {
+            text-align: center;
+            padding: 20px 0 25px;
+            border-bottom: 2px solid #2a4c6e;
+            margin-bottom: 25px;
+        }
+
+        .header h1 {
+            font-size: 2.6rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #f7d875, #ff9a3c);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: 1px;
+        }
+
+        .header p {
+            color: #8ab4d6;
+            font-size: 1rem;
+            margin-top: 4px;
+            -webkit-text-fill-color: #8ab4d6;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: center;
+            gap: 25px;
+            margin-top: 12px;
+            flex-wrap: wrap;
+        }
+
+        .stats span {
+            background: rgba(255, 255, 255, 0.06);
+            backdrop-filter: blur(4px);
+            padding: 6px 20px;
+            border-radius: 40px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: #cde0f0;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        .stats strong {
+            color: #f7d875;
+            font-weight: 700;
+        }
+
+        .global-actions {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 15px 0 30px;
+            flex-wrap: wrap;
+        }
+
+        .global-actions button {
+            background: rgba(255, 255, 255, 0.07);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: #d4e8f7;
+            padding: 8px 24px;
+            border-radius: 40px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: 0.2s;
+            backdrop-filter: blur(4px);
+        }
+
+        .global-actions button:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: scale(1.02);
+            border-color: #f7d875;
+            color: #f7d875;
+        }
+
+        .global-actions .btn-reset {
+            border-color: rgba(212, 70, 70, 0.4);
+            color: #f0a0a0;
+        }
+
+        .global-actions .btn-reset:hover {
+            background: rgba(212, 70, 70, 0.2);
+            border-color: #d44646;
+            color: #ffcaca;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 18px;
+        }
+
+        .card {
+            background: rgba(18, 40, 60, 0.7);
+            backdrop-filter: blur(8px);
+            border-radius: 18px;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            padding: 18px 20px 20px;
+            transition: 0.2s;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+        }
+
+        .card:hover {
+            border-color: rgba(247, 216, 117, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .main-check {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            margin-bottom: 12px;
+        }
+
+        .main-check input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            accent-color: #f7d875;
+            transform: scale(1.1);
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .main-check .name {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #ecf5fc;
+            letter-spacing: 0.3px;
+        }
+
+        .rarity-badge {
+            font-size: 0.6rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            padding: 2px 12px;
+            border-radius: 40px;
+            letter-spacing: 0.5px;
+            margin-left: auto;
+            background: #2a4c6e;
+            color: #b0d0ea;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            white-space: nowrap;
+        }
+
+        .rarity-Rare {
+            background: #1e4b6e;
+            color: #7bb8e6;
+            border-color: #2f7db0;
+        }
+
+        .rarity-Epic {
+            background: #4a2a6e;
+            color: #c78be6;
+            border-color: #8b4fbf;
+        }
+
+        .rarity-Legendary {
+            background: #7a5a1a;
+            color: #f7d875;
+            border-color: #d4a82c;
+        }
+
+        .rarity-Mythic {
+            background: #6e1a1a;
+            color: #f58b8b;
+            border-color: #c43a3a;
+        }
+
+        .variants-label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #6a8ea8;
+            margin-bottom: 6px;
+            margin-top: 4px;
+        }
+
+        .variants-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .variant-btn {
+            padding: 4px 14px;
+            border-radius: 40px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            border: 2px solid rgba(255, 255, 255, 0.12);
+            background: rgba(255, 255, 255, 0.04);
+            color: #9bb9d4;
+            cursor: pointer;
+            transition: 0.15s;
+            user-select: none;
+            line-height: 1.3;
+            text-align: center;
+        }
+
+        .variant-btn:hover {
+            background: rgba(255, 255, 255, 0.12);
+            transform: scale(1.04);
+        }
+
+        .variant-btn.active {
+            border-color: #f7d875;
+            color: #fff;
+            box-shadow: 0 0 20px rgba(247, 216, 117, 0.15);
+        }
+
+        .variant-btn.active-gold {
+            border-color: #f5b342;
+            background: rgba(245, 179, 66, 0.25);
+            color: #f5b342;
+        }
+
+        .variant-btn.active-gummy {
+            border-color: #ff6b9d;
+            background: rgba(255, 107, 157, 0.20);
+            color: #ff8eb8;
+        }
+
+        .variant-btn.active-galaxy {
+            border-color: #a855f7;
+            background: rgba(168, 85, 247, 0.20);
+            color: #c084fc;
+        }
+
+        .variant-btn.active-gem {
+            border-color: #22d3ee;
+            background: rgba(34, 211, 238, 0.20);
+            color: #67e8f9;
+        }
+
+        .variant-btn.active-holofoil {
+            border-color: #34d399;
+            background: rgba(52, 211, 153, 0.20);
+            color: #6ee7b7;
+        }
+
+        @media (max-width: 600px) {
+            .header h1 {
+                font-size: 1.8rem;
+            }
+
+            .grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stats span {
+                font-size: 0.75rem;
+                padding: 4px 12px;
+            }
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #0a1420;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #2a4c6e;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+
+        <div class="header">
+            <h1>⛏️ Espíritus de Fortnite</h1>
+            <p>Capítulo 7 · Temporada 3 — Tu listado personal</p>
+            <div class="stats">
+                <span>📦 Base: <strong id="countBase">0</strong>/<span id="totalBase">0</span></span>
+                <span>✨ Variantes: <strong id="countVariant">0</strong>/<span id="totalVariant">0</span></span>
+                <span>🏆 Total: <strong id="countTotal">0</strong>/<span id="totalTotal">0</span></span>
+            </div>
+        </div>
+
+        <div class="global-actions">
+            <button id="selectAllBase">✅ Marcar todos los base</button>
+            <button id="selectAllVariants">🌟 Marcar todas las variantes</button>
+            <button id="clearAll" class="btn-reset">🗑️ Desmarcar todo</button>
+        </div>
+
+        <div id="spiritGrid" class="grid"></div>
+    </div>
+
+    <script>
+        // ---------- CONFIGURACIÓN ----------
+        const STORAGE_KEY = 'fortnite_sprites_user_list';
+
+        const SPIRITS = [
+            { id: 'earth', name: 'Espiritu de Tierra', rarity: 'Rare' },
+            { id: 'water', name: 'Espiritu de Agua', rarity: 'Rare' },
+            { id: 'fire', name: 'Espiritu de Fuego', rarity: 'Rare' },
+            { id: 'duck', name: 'Espiritu Patito', rarity: 'Epic' },
+            { id: 'ghost', name: 'Espiritu Fantasma', rarity: 'Epic' },
+            { id: 'demon', name: 'Espiritu Demoniaco', rarity: 'Epic' },
+            { id: 'monarch', name: 'Espiritu Monarca', rarity: 'Epic' },
+            { id: 'sleeper', name: 'Espiritu Dormilon', rarity: 'Legendary' },
+            { id: 'zero', name: 'Espiritu del Punto Cero', rarity: 'Mythic' },
+            { id: 'boss', name: 'Espiritu Jefe', rarity: 'Legendary' },
+            { id: 'aura', name: 'Espiritu Aura', rarity: 'Epic' },
+            { id: 'striker', name: 'Espiritu Delantero', rarity: 'Epic' },
+            { id: 'chicken', name: 'Espiritu Pollo', rarity: 'Rare' },
+            { id: 'batman', name: 'Espiritu Batman', rarity: 'Legendary' },
+            { id: 'peanut', name: 'Cacahuete Quemado', rarity: 'Mythic' }
+        ];
+
+        // Solo nombres, sin bonus
+        const VARIANTS = [
+            { key: 'gold', label: 'Oro' },
+            { key: 'gummy', label: 'Golosina' },
+            { key: 'galaxy', label: 'Cosmico' },
+            { key: 'gem', label: 'Gema' },
+            { key: 'holofoil', label: 'Holo' }
+        ];
+
+        // ---------- ESTADO INICIAL (con tus marcas) ----------
+        function getDefaultState() {
+            return {
+                earth: { base: true, variants: ['gold', 'gummy', 'galaxy', 'gem', 'holofoil'] },
+                water: { base: true, variants: ['gold', 'gummy', 'galaxy'] },
+                fire: { base: true, variants: ['gold', 'galaxy', 'holofoil'] },
+                duck: { base: true, variants: ['gummy', 'gem'] },
+                ghost: { base: true, variants: ['galaxy', 'holofoil'] },
+                demon: { base: true, variants: ['gold', 'gem'] },
+                monarch: { base: true, variants: ['gold', 'holofoil'] },
+                sleeper: { base: true, variants: ['gummy', 'galaxy'] },
+                zero: { base: true, variants: ['galaxy', 'gem', 'holofoil'] },
+                boss: { base: true, variants: ['gold', 'galaxy', 'holofoil'] },
+                aura: { base: true, variants: ['gold', 'gummy', 'gem'] },
+                striker: { base: true, variants: ['gold', 'galaxy', 'holofoil'] },
+                chicken: { base: true, variants: ['gummy', 'gem'] },
+                batman: { base: true, variants: ['galaxy', 'gem', 'holofoil'] },
+                peanut: { base: true, variants: [] }
+            };
+        }
+
+        // ---------- CARGA Y GUARDADO ----------
+        let state = {};
+
+        function loadState() {
+            try {
+                const saved = localStorage.getItem(STORAGE_KEY);
+                if (saved) {
+                    state = JSON.parse(saved);
+                    SPIRITS.forEach(s => {
+                        if (!state[s.id]) state[s.id] = { base: false, variants: [] };
+                    });
+                } else {
+                    state = getDefaultState();
+                }
+            } catch {
+                state = getDefaultState();
+            }
+            saveState();
+        }
+
+        function saveState() {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+            updateCounters();
+        }
+
+        // ---------- RENDER ----------
+        function render() {
+            const grid = document.getElementById('spiritGrid');
+            grid.innerHTML = '';
+
+            SPIRITS.forEach(spirit => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                const sp = state[spirit.id];
+
+                // Checkbox base
+                const mainDiv = document.createElement('div');
+                mainDiv.className = 'main-check';
+
+                const cb = document.createElement('input');
+                cb.type = 'checkbox';
+                cb.checked = sp.base;
+                cb.addEventListener('change', () => {
+                    sp.base = cb.checked;
+                    saveState();
+                });
+
+                const nameSpan = document.createElement('span');
+                nameSpan.className = 'name';
+                nameSpan.textContent = spirit.name;
+
+                const badge = document.createElement('span');
+                badge.className = `rarity-badge rarity-${spirit.rarity}`;
+                badge.textContent = spirit.rarity;
+
+                mainDiv.appendChild(cb);
+                mainDiv.appendChild(nameSpan);
+                mainDiv.appendChild(badge);
+
+                // Variantes (sin bonus)
+                const label = document.createElement('div');
+                label.className = 'variants-label';
+                label.textContent = '✦ Variantes';
+
+                const group = document.createElement('div');
+                group.className = 'variants-group';
+
+                VARIANTS.forEach(v => {
+                    const btn = document.createElement('div');
+                    btn.className = 'variant-btn';
+                    btn.textContent = v.label;
+
+                    const isActive = sp.variants.includes(v.key);
+                    if (isActive) {
+                        btn.classList.add('active');
+                        btn.classList.add(`active-${v.key}`);
+                    }
+
+                    btn.addEventListener('click', () => {
+                        const idx = sp.variants.indexOf(v.key);
+                        if (idx > -1) {
+                            sp.variants.splice(idx, 1);
+                            btn.classList.remove('active', `active-${v.key}`);
+                        } else {
+                            sp.variants.push(v.key);
+                            btn.classList.add('active', `active-${v.key}`);
+                        }
+                        saveState();
+                    });
+
+                    group.appendChild(btn);
+                });
+
+                card.appendChild(mainDiv);
+                card.appendChild(label);
+                card.appendChild(group);
+                grid.appendChild(card);
+            });
+
+            updateCounters();
+        }
+
+        // ---------- CONTADORES ----------
+        function updateCounters() {
+            let baseCount = 0;
+            let variantCount = 0;
+
+            SPIRITS.forEach(s => {
+                const sp = state[s.id];
+                if (sp.base) baseCount++;
+                variantCount += sp.variants.length;
+            });
+
+            const totalBase = SPIRITS.length;
+            const totalVariant = SPIRITS.length * VARIANTS.length;
+            const totalTotal = totalBase + totalVariant;
+
+            document.getElementById('totalBase').textContent = totalBase;
+            document.getElementById('totalVariant').textContent = totalVariant;
+            document.getElementById('totalTotal').textContent = totalTotal;
+
+            document.getElementById('countBase').textContent = baseCount;
+            document.getElementById('countVariant').textContent = variantCount;
+            document.getElementById('countTotal').textContent = baseCount + variantCount;
+        }
+
+        // ---------- ACCIONES GLOBALES ----------
+        function selectAllBase() {
+            SPIRITS.forEach(s => { state[s.id].base = true; });
+            saveState();
+            render();
+        }
+
+        function selectAllVariants() {
+            SPIRITS.forEach(s => {
+                state[s.id].variants = VARIANTS.map(v => v.key);
+            });
+            saveState();
+            render();
+        }
+
+        function clearAll() {
+            if (!confirm('¿Desmarcar todo?')) return;
+            SPIRITS.forEach(s => {
+                state[s.id].base = false;
+                state[s.id].variants = [];
+            });
+            saveState();
+            render();
+        }
+
+        // ---------- INICIO ----------
+        document.addEventListener('DOMContentLoaded', () => {
+            loadState();
+            render();
+
+            document.getElementById('selectAllBase').addEventListener('click', selectAllBase);
+            document.getElementById('selectAllVariants').addEventListener('click', selectAllVariants);
+            document.getElementById('clearAll').addEventListener('click', clearAll);
+        });
+    </script>
+
+</body>
+
+</html>

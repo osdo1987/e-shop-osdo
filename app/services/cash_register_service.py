@@ -1,6 +1,7 @@
 from datetime import datetime
 from app.extensions import db
 from app.models.cash_register import CashRegisterSession
+from app.models.payment_method import PaymentMethod
 from app.schemas.cash_register_schema import CashRegisterSessionSchema
 
 cash_session_schema = CashRegisterSessionSchema()
@@ -49,8 +50,16 @@ class CashRegisterService:
         if session.status == 'CERRADA':
             raise ValueError("Esta sesión de caja ya se encuentra cerrada.")
             
-        # Expected balance in cash drawer is: opening_balance + cash_sales
-        session.closing_balance_expected = session.opening_balance + session.cash_sales
+        # Expected cash: opening_balance + cash_sales + is_cash payment methods from payment_breakdown
+        expected_cash = session.opening_balance + (session.cash_sales or 0)
+        if session.payment_breakdown:
+            for code, total in session.payment_breakdown.items():
+                if code == 'EFECTIVO':
+                    continue
+                pm = PaymentMethod.query.filter_by(code=code, store_id=session.store_id).first()
+                if pm and pm.is_cash:
+                    expected_cash += total
+        session.closing_balance_expected = expected_cash
         session.closing_balance_real = closing_balance_real
         session.closed_at = datetime.utcnow()
         session.status = 'CERRADA'

@@ -25,6 +25,7 @@ import useMediaQuery from '@mui/material/useMediaQuery'
 import PointOfSaleIcon from '@mui/icons-material/PointOfSale'
 import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet'
 import ReceiptLongIcon from '@mui/icons-material/ReceiptLong'
+import PaymentsIcon from '@mui/icons-material/Payments'
 
 function AdminLayout({ title, children, user, onLogout, superadmin = false, showBack = false }) {
     const isStaff = user?.role === 'STAFF'
@@ -55,6 +56,7 @@ function AdminLayout({ title, children, user, onLogout, superadmin = false, show
             { path: '/admin/cash-register', label: 'Control de Caja', icon: <AccountBalanceWalletIcon />, managerOnly: true },
             { path: '/admin/invoices', label: 'Facturas', icon: <ReceiptLongIcon />, managerOnly: true },
             { path: '/admin/orders', label: 'Pedidos Web', icon: <ShoppingCartIcon /> },
+            { path: '/admin/payment-methods', label: 'Métodos de Pago', icon: <PaymentsIcon />, managerOnly: true },
             { path: '/admin/settings', label: 'Configuración', icon: <SettingsIcon />, managerOnly: true }
         ]
 

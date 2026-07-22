@@ -4,6 +4,7 @@ import ConfirmModal from '../components/ConfirmModal'
 import { TableSkeleton } from '../components/Skeleton'
 import { useToast } from '../components/Toast'
 import { useSocket } from '../context/SocketContext'
+import { fetchPaymentMethods } from '../paymentMethodIcons'
 import Box from '@mui/material/Box'
 import Card from '@mui/material/Card'
 import CardContent from '@mui/material/CardContent'
@@ -70,14 +71,6 @@ const STATUS_TRANSITIONS = {
     CANCELADO:      { canReactivate: true },
 }
 
-const PAYMENT_LABELS = {
-    EFECTIVO: { label: 'Efectivo', color: '#22c55e', icon: '💵' },
-    TARJETA:  { label: 'Tarjeta',  color: '#3b82f6', icon: '💳' },
-    TRANSFERENCIA: { label: 'Transferencia', color: '#2563eb', icon: '🏦' },
-    NEQUI:    { label: 'Nequi',    color: '#06b6d4', icon: '📱' },
-    DAVIPLATA:{ label: 'Daviplata', color: '#f59e0b', icon: '📱' },
-}
-
 function timeAgo(dateStr) {
     const now = new Date()
     const date = new Date(dateStr)
@@ -142,10 +135,12 @@ function OrderProgressStepper({ status, compact = false }) {
     )
 }
 
-function OrderCard({ order, onView, onStatusChange, isDark }) {
+function OrderCard({ order, onView, onStatusChange, isDark, paymentMethods }) {
     const meta = STATUS_META[order.status] || STATUS_META.PENDIENTE
     const trans = STATUS_TRANSITIONS[order.status] || {}
-    const payment = PAYMENT_LABELS[order.payment_method] || null
+    const pm = paymentMethods?.find(p => p.code === order.payment_method)
+    const orderPayment = pm ? { label: pm.name, color: pm.color || '#888', icon: pm.is_cash ? '💵' : '💳' }
+        : order.payment_method ? { label: order.payment_method, color: '#888', icon: '💳' } : null
     const itemCount = order.items?.length || 0
     const elapsed = timeAgo(order.created_at)
     const elapsedColor = timeAgoColor(order.created_at, order.status)
@@ -204,12 +199,12 @@ function OrderCard({ order, onView, onStatusChange, isDark }) {
                             sx={{ fontSize: '0.6rem', height: 20, fontWeight: 600 }}
                         />
                     )}
-                    {payment && (
+                    {orderPayment && (
                         <Chip
-                            label={`${payment.icon} ${payment.label}`}
+                            label={`${orderPayment.icon} ${orderPayment.label}`}
                             size="small"
                             variant="outlined"
-                            sx={{ fontSize: '0.6rem', height: 20, fontWeight: 600, borderColor: alpha(payment.color, 0.3), color: payment.color }}
+                            sx={{ fontSize: '0.6rem', height: 20, fontWeight: 600, borderColor: alpha(orderPayment.color, 0.3), color: orderPayment.color }}
                         />
                     )}
                     <Chip
@@ -302,7 +297,7 @@ function OrderCard({ order, onView, onStatusChange, isDark }) {
     )
 }
 
-function OrderDetailModal({ order, onClose, onStatusChange, onUpdateNotes, onCopyLink, history, isDark, user }) {
+function OrderDetailModal({ order, onClose, onStatusChange, onUpdateNotes, onCopyLink, history, isDark, user, paymentMethods }) {
     const isStaff = user?.role === 'STAFF'
     const [sellerNotes, setSellerNotes] = useState(order.seller_notes || '')
     const [estimatedDelivery, setEstimatedDelivery] = useState(
@@ -311,7 +306,12 @@ function OrderDetailModal({ order, onClose, onStatusChange, onUpdateNotes, onCop
     const [expandedItems, setExpandedItems] = useState(true)
     const meta = STATUS_META[order.status] || STATUS_META.PENDIENTE
     const trans = STATUS_TRANSITIONS[order.status] || {}
-    const payment = PAYMENT_LABELS[order.payment_method] || null
+    const orderPayment = useMemo(() => {
+        if (!order.payment_method) return null
+        const pm = paymentMethods.find(p => p.code === order.payment_method)
+        if (!pm) return { label: order.payment_method, color: '#888', icon: '💳' }
+        return { label: pm.name, color: pm.color || '#3b82f6', icon: pm.is_cash ? '💵' : '💳' }
+    }, [order.payment_method, paymentMethods])
 
     useEffect(() => {
         setSellerNotes(order.seller_notes || '')
@@ -370,12 +370,12 @@ function OrderDetailModal({ order, onClose, onStatusChange, onUpdateNotes, onCop
                             border: `1px solid ${alpha(meta.color, 0.3)}`,
                         }}
                     />
-                    {payment && (
+                    {orderPayment && (
                         <Chip
-                            label={`${payment.icon} ${payment.label}`}
+                            label={`${orderPayment.icon} ${orderPayment.label}`}
                             size="small"
                             variant="outlined"
-                            sx={{ fontWeight: 600, height: 24, borderColor: alpha(payment.color, 0.3), color: payment.color }}
+                            sx={{ fontWeight: 600, height: 24, borderColor: alpha(orderPayment.color, 0.3), color: orderPayment.color }}
                         />
                     )}
                 </Box>
@@ -675,6 +675,7 @@ function Orders({ user, onLogout }) {
     const isStaff = user?.role === 'STAFF'
     const [orders, setOrders] = useState([])
     const [loading, setLoading] = useState(true)
+    const [paymentMethods, setPaymentMethods] = useState([])
     const [statusFilter, setStatusFilter] = useState('ALL')
     const [dateFilter, setDateFilter] = useState('')
     const [searchTerm, setSearchTerm] = useState('')
@@ -685,6 +686,17 @@ function Orders({ user, onLogout }) {
     const socket = useSocket()
     const theme = useTheme()
     const isDark = theme.palette.mode === 'dark'
+
+    const getPaymentLabel = useCallback((code) => {
+        if (!code) return null
+        const pm = paymentMethods.find(p => p.code === code)
+        if (!pm) return { label: code, color: '#888', icon: '💳' }
+        return { label: pm.name, color: pm.color || '#3b82f6', icon: pm.is_cash ? '💵' : '💳' }
+    }, [paymentMethods])
+
+    useEffect(() => {
+        fetchPaymentMethods().then(setPaymentMethods).catch(() => {})
+    }, [])
 
     useEffect(() => { fetchOrders() }, [])
 
@@ -1010,7 +1022,7 @@ function Orders({ user, onLogout }) {
                                         {filteredOrders.map(order => {
                                             const meta = STATUS_META[order.status] || STATUS_META.PENDIENTE
                                             const trans = STATUS_TRANSITIONS[order.status] || {}
-                                            const payment = PAYMENT_LABELS[order.payment_method] || null
+                                            const payment = getPaymentLabel(order.payment_method)
                                             const elapsed = timeAgo(order.created_at)
                                             const elapsedColor = timeAgoColor(order.created_at, order.status)
                                             const itemCount = order.items?.length || 0
@@ -1146,6 +1158,7 @@ function Orders({ user, onLogout }) {
                                         onView={openDetail}
                                         onStatusChange={handleUpdateStatus}
                                         isDark={isDark}
+                                        paymentMethods={paymentMethods}
                                     />
                                 ))}
                             </Box>
@@ -1165,6 +1178,7 @@ function Orders({ user, onLogout }) {
                     history={orderHistory}
                     isDark={isDark}
                     user={user}
+                    paymentMethods={paymentMethods}
                 />
             )}
 

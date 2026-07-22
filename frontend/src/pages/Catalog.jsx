@@ -46,6 +46,7 @@ import HomeIcon from '@mui/icons-material/Home'
 import CategoryIcon from '@mui/icons-material/Category'
 import ReceiptLongIcon from '@mui/icons-material/ReceiptLong'
 import PersonIcon from '@mui/icons-material/Person'
+import { fetchPublicPaymentMethods, getIconByName } from '../paymentMethodIcons'
 
 const parseSizes = (sizesStr, overallStock) => {
     if (!sizesStr) return null
@@ -147,6 +148,8 @@ function Catalog() {
     const [customerPhone, setCustomerPhone] = useState('')
     const [deliveryAddress, setDeliveryAddress] = useState('')
     const [customerNotes, setCustomerNotes] = useState('')
+    const [paymentMethods, setPaymentMethods] = useState([])
+    const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('')
     const [toastOpen, setToastOpen] = useState(false)
     const [toastMessage, setToastMessage] = useState('')
 
@@ -196,6 +199,11 @@ function Catalog() {
                 setStore(data)
                 setCategories(data.categories || [])
                 setProducts(data.products || [])
+                const methods = await fetchPublicPaymentMethods(data.id)
+                setPaymentMethods(methods)
+                if (methods.length > 0) {
+                    setSelectedPaymentMethod(methods[0].code)
+                }
             }
         } catch (error) {
             console.error('Error fetching store data:', error)
@@ -467,6 +475,7 @@ function Catalog() {
             customer_phone: customerPhone.trim(),
             delivery_address: deliveryAddress.trim(),
             customer_notes: customerNotes.trim(),
+            payment_method: selectedPaymentMethod,
             total_price: cartSubtotal,
             items: cart.map(item => ({
                 product_id: item.id,
@@ -533,8 +542,12 @@ function Catalog() {
             }
         })
 
+        const selectedMethod = paymentMethods.find(m => m.code === selectedPaymentMethod)
         message += `\n━━━━━━━━━━━━━━━━━━━━━━━━━\n`
         message += `💰 *Total a pagar:* $${cartSubtotal.toLocaleString()}\n`
+        if (selectedMethod) {
+            message += `💳 *Método de pago:* ${selectedMethod.name}\n`
+        }
         message += `━━━━━━━━━━━━━━━━━━━━━━━━━\n\n`
         message += `¡Hola! Me gustaría realizar el pedido de los productos listados arriba. ¿Tienen disponibilidad?`
 
@@ -547,6 +560,7 @@ function Catalog() {
         setCustomerPhone('')
         setDeliveryAddress('')
         setCustomerNotes('')
+        setSelectedPaymentMethod(paymentMethods.length > 0 ? paymentMethods[0].code : '')
         setCartOpen(false)
     }
 
@@ -1362,6 +1376,40 @@ function Catalog() {
                                             multiline
                                             minRows={2}
                                         />
+                                        {paymentMethods.length > 0 && (
+                                            <Box>
+                                                <Typography variant="caption" sx={{ fontWeight: 600, display: 'block', mb: 1, color: 'on-surface-variant' }}>
+                                                    Método de pago
+                                                </Typography>
+                                                <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                                                    {paymentMethods.map(method => {
+                                                        const Icon = getIconByName(method.icon)
+                                                        const isSelected = selectedPaymentMethod === method.code
+                                                        return (
+                                                            <Chip
+                                                                key={method.code}
+                                                                icon={<Icon sx={{ fontSize: 18, color: isSelected ? `${method.color} !important` : undefined }} />}
+                                                                label={method.name}
+                                                                onClick={() => setSelectedPaymentMethod(method.code)}
+                                                                sx={{
+                                                                    fontWeight: 600,
+                                                                    fontSize: '0.8125rem',
+                                                                    px: 1,
+                                                                    height: 36,
+                                                                    borderRadius: 'full',
+                                                                    border: '2px solid',
+                                                                    borderColor: isSelected ? method.color : 'divider',
+                                                                    bgcolor: isSelected ? `${method.color}1A` : 'transparent',
+                                                                    color: isSelected ? method.color : 'on-surface-variant',
+                                                                    '&:hover': { borderColor: method.color, bgcolor: `${method.color}0D` },
+                                                                    transition: 'all 0.2s ease',
+                                                                }}
+                                                            />
+                                                        )
+                                                    })}
+                                                </Box>
+                                            </Box>
+                                        )}
                                     </Box>
                                 </AccordionDetails>
                             </Accordion>

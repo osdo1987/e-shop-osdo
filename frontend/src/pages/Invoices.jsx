@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { Navigate } from 'react-router-dom'
 import AdminLayout from '../components/AdminLayout'
 import { useToast } from '../components/Toast'
+import { fetchPaymentMethods } from '../paymentMethodIcons'
 import Box from '@mui/material/Box'
 import Card from '@mui/material/Card'
 import CardContent from '@mui/material/CardContent'
@@ -52,6 +53,7 @@ function Invoices({ user, onLogout }) {
     const [searchTerm, setSearchTerm] = useState('')
     const [showReceipt, setShowReceipt] = useState(false)
     const [receiptData, setReceiptData] = useState(null)
+    const [paymentMethods, setPaymentMethods] = useState([])
 
     const toast = useToast()
     const printAreaRef = useRef(null)
@@ -73,6 +75,25 @@ function Invoices({ user, onLogout }) {
             setLoading(false)
         }
     }
+
+    const getPaymentName = (code) => {
+        const pm = paymentMethods.find(p => p.code === code)
+        return pm?.name || code
+    }
+
+    const getPaymentColor = (code) => {
+        const pm = paymentMethods.find(p => p.code === code)
+        return pm?.color || '#3b82f6'
+    }
+
+    const isCashMethod = (code) => {
+        const pm = paymentMethods.find(p => p.code === code)
+        return pm?.is_cash || code === 'EFECTIVO'
+    }
+
+    useEffect(() => {
+        fetchPaymentMethods().then(setPaymentMethods).catch(() => {})
+    }, [])
 
     useEffect(() => {
         fetchInvoices()
@@ -317,15 +338,16 @@ function Invoices({ user, onLogout }) {
                                             </TableCell>
                                             <TableCell>
                                                 <Chip
-                                                    label={inv.payment_method}
+                                                    label={getPaymentName(inv.payment_method)}
                                                     size="small"
-                                                    color={inv.payment_method === 'EFECTIVO' ? 'success' : 'primary'}
                                                     variant="outlined"
                                                     sx={{
                                                         fontWeight: 600,
                                                         fontSize: '0.6875rem',
                                                         height: 26,
                                                         borderRadius: '8px',
+                                                        borderColor: alpha(getPaymentColor(inv.payment_method), 0.3),
+                                                        color: getPaymentColor(inv.payment_method),
                                                     }}
                                                 />
                                             </TableCell>
@@ -457,7 +479,7 @@ function Invoices({ user, onLogout }) {
                                         {receiptData.invoice.customer_document && (
                                             <><strong>Doc:</strong> {receiptData.invoice.customer_document}<br /></>
                                         )}
-                                        <strong>Medio Pago:</strong> {receiptData.invoice.payment_method}
+                                        <strong>Medio Pago:</strong> {getPaymentName(receiptData.invoice.payment_method)}
                                     </Typography>
                                 </Box>
 

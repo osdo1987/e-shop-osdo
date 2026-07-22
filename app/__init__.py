@@ -36,6 +36,7 @@ def create_app(config_class=Config):
     from app.routes.cash_register_routes import cash_register_bp
     from app.routes.invoice_routes import invoice_bp
     from app.routes.image_routes import image_bp
+    from app.routes.payment_method_routes import payment_method_bp
 
     app.register_blueprint(auth_bp, url_prefix='/api/auth')
     app.register_blueprint(store_bp, url_prefix='/api/stores')
@@ -45,6 +46,19 @@ def create_app(config_class=Config):
     app.register_blueprint(cash_register_bp, url_prefix='/api/cash-register')
     app.register_blueprint(invoice_bp, url_prefix='/api/invoices')
     app.register_blueprint(image_bp, url_prefix='/api/images')
+    app.register_blueprint(payment_method_bp, url_prefix='/api/payment-methods')
+
+    # Seed default payment methods for stores that don't have any
+    with app.app_context():
+        try:
+            from app.models.store import Store
+            from app.services.payment_method_service import PaymentMethodService
+            stores = Store.query.all()
+            for store in stores:
+                PaymentMethodService.seed_defaults(store.id)
+        except Exception:
+            # Tables may not exist yet during initial migration
+            pass
 
     # Global Error Handler
     @app.errorhandler(Exception)
