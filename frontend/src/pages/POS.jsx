@@ -662,9 +662,8 @@ function POS({ user, onLogout }) {
                                         onClick={() => setPaymentMethod(pm.code)}
                                         sx={{
                                             fontWeight: 600, fontSize: '0.65rem', height: 32,
-                                            bgcolor: isActive ? alpha(pm.color, 0.15) : 'background.paper',
+                                            bgcolor: isActive ? alpha(pm.color, 0.15) : 'transparent',
                                             color: isActive ? pm.color : 'text.secondary',
-                                            border: '2px solid', borderColor: isActive ? alpha(pm.color, 0.35) : 'divider',
                                             cursor: 'pointer',
                                             '&:hover': { bgcolor: alpha(pm.color, 0.08) },
                                         }}
@@ -722,10 +721,10 @@ function POS({ user, onLogout }) {
                         onClick={handleCheckout} startIcon={loading ? null : <ReceiptIcon />}
                         sx={{
                             py: 1.5, fontWeight: 700, borderRadius: '14px', textTransform: 'none', fontSize: '1rem',
-                            background: cart.length > 0 && activeSession ? 'linear-gradient(135deg, #004ac6, #b4c5ff)' : undefined,
+                            bgcolor: cart.length > 0 && activeSession ? 'primary.main' : undefined,
                             boxShadow: cart.length > 0 && activeSession ? `0 6px 24px ${alpha('#004ac6', 0.35)}` : undefined,
                             '&:hover': cart.length > 0 && activeSession ? {
-                                boxShadow: `0 8px 30px ${alpha('#004ac6', 0.45)}`, transform: 'translateY(-1px)',
+                                bgcolor: 'primary.dark', boxShadow: `0 8px 30px ${alpha('#004ac6', 0.45)}`, transform: 'translateY(-1px)',
                             } : {},
                         }}
                     >
@@ -977,7 +976,7 @@ function POS({ user, onLogout }) {
                 <DialogActions sx={{ px: 3, pb: 3, gap: 1, flexDirection: 'column' }}>
                     <Button variant="contained" fullWidth onClick={handleSizeConfirm} disabled={!selectedSize} sx={{
                         py: 1.5, borderRadius: 2, fontWeight: 700, textTransform: 'none', fontSize: '0.9375rem',
-                        background: 'linear-gradient(135deg, #004ac6, #b4c5ff)',
+                        bgcolor: 'primary.main',
                     }}>
                         Agregar al carrito
                     </Button>

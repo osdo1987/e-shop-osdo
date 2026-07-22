@@ -26,7 +26,9 @@ import Chip from '@mui/material/Chip'
 import TextField from '@mui/material/TextField'
 import Snackbar from '@mui/material/Snackbar'
 import MuiAlert from '@mui/material/Alert'
-import { alpha } from '@mui/material/styles'
+import { useTheme, alpha, keyframes } from '@mui/material/styles'
+import useMediaQuery from '@mui/material/useMediaQuery'
+import InputAdornment from '@mui/material/InputAdornment'
 import SearchIcon from '@mui/icons-material/Search'
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart'
 import FavoriteIcon from '@mui/icons-material/Favorite'
@@ -35,10 +37,6 @@ import CloseIcon from '@mui/icons-material/Close'
 import AddIcon from '@mui/icons-material/Add'
 import RemoveIcon from '@mui/icons-material/Remove'
 import DeleteIcon from '@mui/icons-material/Delete'
-import Accordion from '@mui/material/Accordion'
-import AccordionSummary from '@mui/material/AccordionSummary'
-import AccordionDetails from '@mui/material/AccordionDetails'
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import StorefrontIcon from '@mui/icons-material/Storefront'
 import LocationOnIcon from '@mui/icons-material/LocationOn'
 import ScheduleIcon from '@mui/icons-material/Schedule'
@@ -94,6 +92,12 @@ const getSizePrice = (sizesStr, sizeName, fallbackPrice) => {
     return fallbackPrice
 }
 
+const popIn = keyframes`
+  0% { transform: scale(0.7); opacity: 0; }
+  60% { transform: scale(1.08); }
+  100% { transform: scale(1); opacity: 1; }
+`
+
 const parseToppingsConfig = (toppingsConfigStr) => {
     if (!toppingsConfigStr) return null
     try {
@@ -111,6 +115,9 @@ const parseToppingsConfig = (toppingsConfigStr) => {
 
 function Catalog() {
     const { slug } = useParams()
+    const theme = useTheme()
+    const isDark = theme.palette.mode === 'dark'
+    const isMobile = useMediaQuery(theme.breakpoints.down('md'))
     const [store, setStore] = useState(null)
     const [categories, setCategories] = useState([])
     const [products, setProducts] = useState([])
@@ -1240,91 +1247,102 @@ function Catalog() {
             </Drawer>
 
             {/* Cart Drawer */}
-            <Drawer
-                anchor="right"
-                open={cartOpen}
-                onClose={toggleCart}
-                slotProps={{ paper: { sx: { width: '100%', maxWidth: 420 } } }}
-            >
-                <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-                    <Box sx={{ p: { xs: 2, md: 2.5 }, borderBottom: 1, borderColor: 'divider', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <Typography variant="h6" sx={{ fontWeight: 700, display: 'flex', alignItems: 'center', gap: 1, fontSize: { xs: '1rem', md: '1.25rem' } }}>
-                            🛒 Mi Carrito
-                            <Chip label={cartTotalItems} size="small" color="primary" sx={{ fontWeight: 700 }} />
-                        </Typography>
-                        <IconButton onClick={toggleCart} size="small"><CloseIcon /></IconButton>
+            <Drawer anchor={isMobile ? 'bottom' : 'right'} open={cartOpen} onClose={toggleCart}
+                slotProps={{
+                    paper: { sx: { bgcolor: 'transparent', boxShadow: 'none', ...(isMobile && { borderRadius: '24px 24px 0 0', maxHeight: '90vh' }) } },
+                    backdrop: { sx: { bgcolor: alpha('#000', 0.5), backdropFilter: 'blur(4px)' } },
+                }}>
+                {isMobile && (
+                    <Box sx={{ display: 'flex', justifyContent: 'center', pt: 1.5, pb: 0.5 }}>
+                        <Box sx={{ width: 40, height: 4, borderRadius: 2, bgcolor: alpha('#004ac6', 0.2) }} />
+                    </Box>
+                )}
+                <Box sx={{ width: isMobile ? '100%' : 400, height: '100%', display: 'flex', flexDirection: 'column', bgcolor: isDark ? 'rgba(10,10,28,0.98)' : '#fff' }}>
+                    <Box sx={{ px: 2.5, pt: 2.5, pb: 1.5, background: `linear-gradient(180deg, ${alpha('#004ac6', isDark ? 0.08 : 0.04)}, transparent)` }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                <ShoppingCartIcon sx={{ fontSize: 22, color: 'primary.main' }} />
+                                <Typography variant="h6" sx={{ fontWeight: 800, fontSize: '1rem' }}>Mi Carrito</Typography>
+                                {cartTotalItems > 0 && (
+                                    <Chip label={`${cartTotalItems} items`} size="small" sx={{
+                                        height: 22, fontSize: '0.65rem', fontWeight: 700,
+                                        bgcolor: 'primary.main', color: '#fff', borderRadius: '8px',
+                                    }} />
+                                )}
+                            </Box>
+                            <IconButton size="small" onClick={toggleCart} sx={{ color: 'text.secondary' }}>
+                                <CloseIcon sx={{ fontSize: 20 }} />
+                            </IconButton>
+                        </Box>
                     </Box>
 
-                    <Box sx={{ flex: 1, overflowY: 'auto', p: { xs: 2, md: 2.5 } }}>
+                    <Box sx={{ flex: 1, overflowY: 'auto', px: 2.5, pt: 1.5 }}>
                         {cart.length === 0 ? (
-                            <Box sx={{ textAlign: 'center', py: 5, color: 'text.disabled' }}>
-                                <Box sx={{ fontSize: '3rem', mb: 2 }}>🛒</Box>
-                                <Typography>Tu carrito está vacío</Typography>
-                                <Button variant="contained" onClick={toggleCart} sx={{ mt: 1.5, bgcolor: 'primary-container', color: 'on-primary-container', '&:hover': { bgcolor: 'primary.main' } }}>Seguir explorando</Button>
+                            <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', py: 8, gap: 1 }}>
+                                <ShoppingCartIcon sx={{ fontSize: 40, color: 'text.disabled' }} />
+                                <Typography color="text.secondary" sx={{ fontWeight: 600, fontSize: '0.9rem' }}>Carrito vacío</Typography>
+                                <Typography variant="caption" color="text.secondary" sx={{ textAlign: 'center' }}>Agrega productos para comenzar</Typography>
                             </Box>
                         ) : (
-                            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                            <Box component="ul" sx={{ listStyle: 'none', p: 0, m: 0 }}>
                                 {cart.map((item, idx) => {
                                     const basePrice = item.promo_price || item.price
-                                    const toppingsStr = item.selected_toppings
-                                    let toppingsDisplay = null
-                                    if (toppingsStr) {
-                                        try {
-                                            const toppings = JSON.parse(toppingsStr)
-                                            toppingsDisplay = Object.entries(toppings)
-                                                .filter(([, names]) => names && names.length > 0)
-                                                .map(([groupId, names]) => {
-                                                    const config = parseToppingsConfig(products.find(p => p.id === item.id)?.toppings_config)
-                                                    const group = config?.find(g => g.id === groupId)
-                                                    return `${group?.label || groupId}: ${names.join(', ')}`
-                                                })
-                                        } catch (e) { }
-                                    }
 
                                     return (
-                                        <Box key={`${item.id}-${item.selected_size}-${item.selected_toppings}-${idx}`} sx={{ display: 'flex', gap: 1.5, pb: 2, borderBottom: 1, borderColor: 'divider' }}>
-                                            <Box sx={{ width: 60, height: 60, borderRadius: 1.5, overflow: 'hidden', bgcolor: 'surface-container-low', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                                                {item.image_url ? (
-                                                    <Box component="img" src={item.image_url} alt={item.name} sx={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
-                                                ) : (
-                                                    <Box sx={{ fontSize: '1.5rem' }}>📦</Box>
-                                                )}
-                                            </Box>
-                                            <Box sx={{ flex: 1, minWidth: 0 }}>
-                                                <Typography variant="body2" sx={{ fontWeight: 600, mb: 0.5 }}>{item.name}</Typography>
-                                                {item.selected_size && (
-                                                    <Typography variant="caption" sx={{ color: 'primary.main', fontWeight: 600, fontSize: '0.6875rem', mr: 1 }}>
-                                                        {item.selected_size}
-                                                    </Typography>
-                                                )}
-                                                {toppingsDisplay && toppingsDisplay.length > 0 && (
-                                                    <Box sx={{ mb: 0.5 }}>
-                                                        {toppingsDisplay.map((line, i) => (
-                                                            <Typography key={i} variant="caption" color="primary.main" sx={{ display: 'block', fontSize: '0.625rem', fontWeight: 600 }}>
-                                                                🍕 {line}
-                                                            </Typography>
-                                                        ))}
-                                                        {item.extra_price > 0 && (
-                                                            <Typography variant="caption" color="warning.main" sx={{ fontWeight: 700, fontSize: '0.625rem' }}>
-                                                                +${item.extra_price.toLocaleString()} extra
-                                                            </Typography>
+                                        <Box key={`${item.id}-${item.selected_size}-${item.selected_toppings}-${idx}`}
+                                            component="li"
+                                            sx={{ position: 'relative', py: 1.25, pr: 5, borderBottom: '1px solid', borderColor: alpha('#004ac6', 0.05), animation: `${popIn} 0.25s ease`, '&:last-child': { borderBottom: 'none' } }}>
+                                            <IconButton size="small" onClick={() => removeCartItem(item.id, item.selected_size, item.selected_toppings)}
+                                                sx={{ position: 'absolute', right: 0, top: 12, color: 'text.secondary', '&:hover': { color: '#ef4444', bgcolor: alpha('#ef4444', 0.08) } }}>
+                                                <DeleteIcon sx={{ fontSize: 16 }} />
+                                            </IconButton>
+                                            <Box sx={{ display: 'flex', gap: 1.5 }}>
+                                                <Box sx={{ flex: 1, minWidth: 0 }}>
+                                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flexWrap: 'wrap' }}>
+                                                        <Typography variant="body2" sx={{ fontWeight: 700, fontSize: '0.85rem' }}>
+                                                            {item.name}
+                                                        </Typography>
+                                                        {item.selected_size && (
+                                                            <Chip label={item.selected_size} size="small" sx={{
+                                                                height: 18, fontSize: '0.55rem', fontWeight: 700,
+                                                                bgcolor: alpha('#004ac6', 0.1), color: 'primary.main',
+                                                            }} />
                                                         )}
+                                                        {item.selected_toppings && (() => {
+                                                            try {
+                                                                const tops = JSON.parse(item.selected_toppings)
+                                                                return Object.entries(tops).filter(([, names]) => names && names.length > 0).map(([groupId, names]) => {
+                                                                    const config = parseToppingsConfig(products.find(p => p.id === item.id)?.toppings_config)
+                                                                    const group = config?.find(g => g.id === groupId)
+                                                                    return (
+                                                                        <Chip key={groupId} label={`${group?.label || groupId}: ${names.join(', ')}`}
+                                                                            size="small" sx={{ height: 16, fontSize: '0.5rem', fontWeight: 600, bgcolor: alpha('#f59e0b', 0.1), color: '#f59e0b' }} />
+                                                                    )
+                                                                })
+                                                            } catch { return null }
+                                                        })()}
                                                     </Box>
-                                                )}
-                                                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                                    <Typography variant="body2" sx={{ fontWeight: 700, color: 'primary.dark' }}>
-                                                        ${((basePrice + (item.extra_price || 0)) * item.quantity).toLocaleString()}
-                                                    </Typography>
-                                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, border: 1, borderColor: 'divider', borderRadius: 20, px: 1, bgcolor: 'surface-container-low' }}>
-                                                        <IconButton size="small" onClick={() => updateCartItemQty(item.id, item.selected_size, item.selected_toppings, -1)}><RemoveIcon fontSize="small" /></IconButton>
-                                                        <Typography sx={{ fontWeight: 700, minWidth: 16, textAlign: 'center', fontSize: '0.8125rem' }}>{item.quantity}</Typography>
-                                                        <IconButton size="small" onClick={() => updateCartItemQty(item.id, item.selected_size, item.selected_toppings, 1)} disabled={item.manage_stock !== false && item.stock > 0 && item.quantity >= item.stock}><AddIcon fontSize="small" /></IconButton>
+                                                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mt: 0.75 }}>
+                                                        <Typography sx={{ fontWeight: 800, color: 'primary.main', fontSize: '0.9rem' }}>
+                                                            ${((basePrice + (item.extra_price || 0)) * item.quantity).toLocaleString()}
+                                                        </Typography>
+                                                        <Box sx={{ display: 'flex', alignItems: 'center', border: '2px solid', borderColor: 'divider', borderRadius: '10px', bgcolor: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)' }}>
+                                                            <IconButton size="small" onClick={() => updateCartItemQty(item.id, item.selected_size, item.selected_toppings, -1)}
+                                                                sx={{ p: 0.5, borderRadius: 0, '&:hover': { color: '#ef4444' } }}>
+                                                                <RemoveIcon sx={{ fontSize: 14 }} />
+                                                            </IconButton>
+                                                            <Typography sx={{ fontSize: '0.85rem', fontWeight: 800, minWidth: 32, textAlign: 'center' }}>
+                                                                {item.quantity}
+                                                            </Typography>
+                                                            <IconButton size="small" onClick={() => updateCartItemQty(item.id, item.selected_size, item.selected_toppings, 1)}
+                                                                disabled={item.manage_stock !== false && item.stock > 0 && item.quantity >= item.stock}
+                                                                sx={{ p: 0.5, borderRadius: 0, '&:hover': { color: '#22c55e' } }}>
+                                                                <AddIcon sx={{ fontSize: 14 }} />
+                                                            </IconButton>
+                                                        </Box>
                                                     </Box>
                                                 </Box>
                                             </Box>
-                                            <IconButton size="small" onClick={() => removeCartItem(item.id, item.selected_size, item.selected_toppings)} sx={{ color: 'error.main', alignSelf: 'center' }}>
-                                                <DeleteIcon fontSize="small" />
-                                            </IconButton>
                                         </Box>
                                     )
                                 })}
@@ -1333,109 +1351,72 @@ function Catalog() {
                     </Box>
 
                     {cart.length > 0 && (
-                        <Box sx={{ p: { xs: 2, md: 2.5 }, borderTop: 1, borderColor: 'divider', bgcolor: 'surface-container-low' }}>
-                            <Accordion defaultExpanded={false} disableGutters elevation={0} sx={{ border: 1, borderColor: 'divider', borderRadius: 1, mb: 2, '&::before': { display: 'none' } }}>
-                                <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                                    <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                                        📋 Datos del cliente
-                                    </Typography>
-                                </AccordionSummary>
-                                <AccordionDetails>
-                                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-                                        <TextField
-                                            size="small"
-                                            label="Nombre completo *"
-                                            placeholder="Ej. Juan Pérez"
-                                            value={customerName}
-                                            onChange={(e) => setCustomerName(e.target.value)}
-                                            fullWidth
-                                        />
-                                        <TextField
-                                            size="small"
-                                            label="Teléfono móvil (opcional)"
-                                            placeholder="Ej. +34 600 000 000"
-                                            value={customerPhone}
-                                            onChange={(e) => setCustomerPhone(e.target.value)}
-                                            fullWidth
-                                        />
-                                        <TextField
-                                            size="small"
-                                            label="Dirección de entrega"
-                                            placeholder="Calle 123 #45-67, Barrio, Ciudad"
-                                            value={deliveryAddress}
-                                            onChange={(e) => setDeliveryAddress(e.target.value)}
-                                            fullWidth
-                                        />
-                                        <TextField
-                                            size="small"
-                                            label="Notas adicionales (opcional)"
-                                            placeholder="Ej. Sin cebolla, timbre 3A, etc."
-                                            value={customerNotes}
-                                            onChange={(e) => setCustomerNotes(e.target.value)}
-                                            fullWidth
-                                            multiline
-                                            minRows={2}
-                                        />
-                                        {paymentMethods.length > 0 && (
-                                            <Box>
-                                                <Typography variant="caption" sx={{ fontWeight: 600, display: 'block', mb: 1, color: 'on-surface-variant' }}>
-                                                    Método de pago
-                                                </Typography>
-                                                <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-                                                    {paymentMethods.map(method => {
-                                                        const Icon = getIconByName(method.icon)
-                                                        const isSelected = selectedPaymentMethod === method.code
-                                                        return (
-                                                            <Chip
-                                                                key={method.code}
-                                                                icon={<Icon sx={{ fontSize: 18, color: isSelected ? `${method.color} !important` : undefined }} />}
-                                                                label={method.name}
-                                                                onClick={() => setSelectedPaymentMethod(method.code)}
-                                                                sx={{
-                                                                    fontWeight: 600,
-                                                                    fontSize: '0.8125rem',
-                                                                    px: 1,
-                                                                    height: 36,
-                                                                    borderRadius: 'full',
-                                                                    border: '2px solid',
-                                                                    borderColor: isSelected ? method.color : 'divider',
-                                                                    bgcolor: isSelected ? `${method.color}1A` : 'transparent',
-                                                                    color: isSelected ? method.color : 'on-surface-variant',
-                                                                    '&:hover': { borderColor: method.color, bgcolor: `${method.color}0D` },
-                                                                    transition: 'all 0.2s ease',
-                                                                }}
-                                                            />
-                                                        )
-                                                    })}
-                                                </Box>
-                                            </Box>
-                                        )}
+                        <Box sx={{ px: 2.5, pt: 2, pb: 2, borderTop: '1px solid', borderColor: alpha('#004ac6', 0.06) }}>
+                            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                                <Box sx={{ display: 'flex', gap: 0.75 }}>
+                                    <TextField size="small" label="Nombre *" placeholder="Ej. Juan Pérez" value={customerName}
+                                        onChange={(e) => setCustomerName(e.target.value)} sx={{ flex: 1 }}
+                                        slotProps={{ input: { startAdornment: <InputAdornment position="start"><PersonIcon sx={{ fontSize: 16, color: 'text.secondary' }} /></InputAdornment> } }} />
+                                    <TextField size="small" label="Teléfono" placeholder="+57 300..." value={customerPhone}
+                                        onChange={(e) => setCustomerPhone(e.target.value)} sx={{ width: 130 }} />
+                                </Box>
+                                <TextField size="small" label="Dirección de entrega" placeholder="Calle 123 #45-67, Barrio, Ciudad"
+                                    value={deliveryAddress} onChange={(e) => setDeliveryAddress(e.target.value)} fullWidth />
+                                <TextField size="small" label="Notas (opcional)" placeholder="Ej. Sin cebolla, timbre 3A, etc."
+                                    value={customerNotes} onChange={(e) => setCustomerNotes(e.target.value)} fullWidth multiline minRows={1} />
+
+                                {paymentMethods.length > 0 && (
+                                    <Box>
+                                        <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600, fontSize: '0.65rem', mb: 0.75, display: 'block' }}>
+                                            MÉTODO DE PAGO
+                                        </Typography>
+                                        <Box sx={{ display: 'flex', gap: 0.75, flexWrap: 'wrap' }}>
+                                            {paymentMethods.map(method => {
+                                                const Icon = getIconByName(method.icon)
+                                                const isSelected = selectedPaymentMethod === method.code
+                                                return (
+                                                    <Chip key={method.code}
+                                                        icon={<Icon sx={{ fontSize: '14px !important', color: isSelected ? method.color : undefined }} />}
+                                                        label={method.name} size="small"
+                                                        onClick={() => setSelectedPaymentMethod(method.code)}
+                                                        sx={{
+                                                            fontWeight: 600, fontSize: '0.65rem', height: 32,
+                                                            bgcolor: isSelected ? `${method.color}26` : 'transparent',
+                                                            color: isSelected ? method.color : 'text.secondary',
+                                                            cursor: 'pointer',
+                                                            '&:hover': { bgcolor: alpha(method.color, 0.08) },
+                                                        }}
+                                                    />
+                                                )
+                                            })}
+                                        </Box>
                                     </Box>
-                                </AccordionDetails>
-                            </Accordion>
-                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1, pt: 1, borderTop: 1, borderColor: 'divider' }}>
-                                <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 600 }}>Total a pagar:</Typography>
-                                <Typography variant="h5" sx={{ fontWeight: 800, color: 'primary.dark' }}>
-                                    ${cartSubtotal.toLocaleString()}
-                                </Typography>
+                                )}
+
+                                <Box sx={{
+                                    p: 1.5, borderRadius: 2,
+                                    bgcolor: isDark ? 'rgba(0,74,198,0.06)' : 'rgba(0,74,198,0.04)',
+                                    border: '1px solid', borderColor: alpha('#004ac6', 0.08),
+                                }}>
+                                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                        <Typography variant="subtitle1" sx={{ fontWeight: 800 }}>Total</Typography>
+                                        <Typography variant="h6" sx={{ fontWeight: 900, color: 'primary.main', fontSize: '1.4rem' }}>
+                                            ${cartSubtotal.toLocaleString()}
+                                        </Typography>
+                                    </Box>
+                                </Box>
+
+                                <Button variant="contained" fullWidth size="large" onClick={handleCheckout}
+                                    disabled={cart.length === 0}
+                                    sx={{
+                                        py: 1.5, fontWeight: 700, borderRadius: 2, textTransform: 'none', fontSize: '1rem',
+                                        bgcolor: 'primary.main',
+                                        boxShadow: '0 6px 24px rgba(0,74,198,0.35)',
+                                        '&:hover': { bgcolor: 'primary.dark', boxShadow: '0 8px 30px rgba(0,74,198,0.45)', transform: 'translateY(-1px)' },
+                                    }}>
+                                    Finalizar pedido por WhatsApp
+                                </Button>
                             </Box>
-                            <Typography variant="caption" color="text.disabled" sx={{ display: 'block', mb: 1.5, textAlign: 'center', fontSize: '0.6875rem' }}>
-                                * El valor no contempla los costos de envío o domicilio
-                            </Typography>
-                            <Button
-                                variant="contained"
-                                fullWidth
-                                onClick={handleCheckout}
-                                sx={{
-                                    bgcolor: '#25D366',
-                                    '&:hover': { bgcolor: '#128C7E' },
-                                    py: 1.75,
-                                    fontWeight: 700,
-                                    gap: 1,
-                                }}
-                            >
-                                Finalizar pedido por WhatsApp
-                            </Button>
                         </Box>
                     )}
                 </Box>
