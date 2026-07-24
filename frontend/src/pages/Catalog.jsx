@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from 'react'
 import { useParams } from 'react-router-dom'
 import useDebounce from '../hooks/useDebounce'
 import { GridSkeleton } from '../components/Skeleton'
+import { useToast } from '../components/Toast'
 import Box from '@mui/material/Box'
 import Typography from '@mui/material/Typography'
 import AppBar from '@mui/material/AppBar'
@@ -24,8 +25,7 @@ import DialogActions from '@mui/material/DialogActions'
 import Button from '@mui/material/Button'
 import Chip from '@mui/material/Chip'
 import TextField from '@mui/material/TextField'
-import Snackbar from '@mui/material/Snackbar'
-import MuiAlert from '@mui/material/Alert'
+import Tooltip from '@mui/material/Tooltip'
 import { useTheme, alpha, keyframes } from '@mui/material/styles'
 import useMediaQuery from '@mui/material/useMediaQuery'
 import InputAdornment from '@mui/material/InputAdornment'
@@ -44,6 +44,7 @@ import HomeIcon from '@mui/icons-material/Home'
 import CategoryIcon from '@mui/icons-material/Category'
 import ReceiptLongIcon from '@mui/icons-material/ReceiptLong'
 import PersonIcon from '@mui/icons-material/Person'
+import LocalShippingIcon from '@mui/icons-material/LocalShipping'
 import { fetchPublicPaymentMethods, getIconByName } from '../paymentMethodIcons'
 
 const parseSizes = (sizesStr, overallStock) => {
@@ -54,7 +55,12 @@ const parseSizes = (sizesStr, overallStock) => {
         if (Array.isArray(parsed)) {
             const map = {}
             parsed.forEach(s => {
-                if (s.name) map[s.name] = { stock: parseInt(s.stock) || 0, price: parseFloat(s.price) || 0 }
+                if (s.name) map[s.name] = { 
+                    stock: parseInt(s.stock) || 0, 
+                    price: parseFloat(s.price) || 0,
+                    type: s.type || 'size',
+                    color: s.color || null
+                }
             })
             return map
         }
@@ -157,8 +163,7 @@ function Catalog() {
     const [customerNotes, setCustomerNotes] = useState('')
     const [paymentMethods, setPaymentMethods] = useState([])
     const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('')
-    const [toastOpen, setToastOpen] = useState(false)
-    const [toastMessage, setToastMessage] = useState('')
+    const toast = useToast()
 
     useEffect(() => {
         localStorage.setItem(`favorites_${slug}`, JSON.stringify(favorites))
@@ -354,7 +359,7 @@ function Catalog() {
 
         if (missingRequired && missingRequired.length > 0) {
             const label = missingRequired[0].label || missingRequired[0].group_name || 'Grupo'
-            alert(`Debes seleccionar al menos ${missingRequired[0].min || 1} opción en: ${label}`)
+            toast.warning(`Debes seleccionar al menos ${missingRequired[0].min || 1} opción en: ${label}`)
             return
         }
 
@@ -422,8 +427,7 @@ function Catalog() {
 
         setSizeModalProduct(null)
         setSelectedSizeForModal('')
-        setToastMessage(`"${product.name}" agregado al carrito`)
-        setToastOpen(true)
+        toast.success(`"${product.name}" agregado al carrito`, 2000)
     }
 
     const updateCartItemQty = (productId, size, toppings, change) => {
@@ -472,7 +476,12 @@ function Catalog() {
         if (cart.length === 0) return
 
         if (!customerName.trim()) {
-            alert('Por favor, ingresa tu nombre para completar el pedido.')
+            toast.warning('Por favor, ingresa tu nombre para completar el pedido.')
+            return
+        }
+
+        if (!deliveryAddress.trim()) {
+            toast.warning('Por favor, ingresa la dirección de entrega para completar el pedido.')
             return
         }
 
@@ -503,12 +512,12 @@ function Catalog() {
             })
             if (!res.ok) {
                 const errData = await res.json()
-                alert(errData.error || "Hubo un problema al registrar tu pedido. Por favor, inténtalo de nuevo.")
+                toast.error(errData.error || "Hubo un problema al registrar tu pedido. Por favor, inténtalo de nuevo.")
                 return
             }
         } catch (error) {
             console.error("Error de conexión al registrar el pedido:", error)
-            alert("Error de conexión con el servidor. Por favor, verifica tu conexión a internet.")
+            toast.error("Error de conexión con el servidor. Por favor, verifica tu conexión a internet.")
             return
         }
 
@@ -742,6 +751,7 @@ function Catalog() {
                                 </Typography>
                                 <Button
                                     onClick={() => {
+                                        setOnlyPromo(true)
                                         const el = document.getElementById('product-grid')
                                         el?.scrollIntoView({ behavior: 'smooth' })
                                     }}
@@ -798,6 +808,14 @@ function Catalog() {
                                 <Typography variant="caption" sx={{ color: 'on-surface-variant', display: 'flex', alignItems: 'center', gap: 0.5, mt: 0.25 }}>
                                     <LocationOnIcon sx={{ fontSize: 14 }} />
                                     {store.address}
+                                </Typography>
+                            )}
+                            {(store.schedule || (store.opening_time && store.closing_time)) && (
+                                <Typography variant="caption" sx={{ color: 'on-surface-variant', display: 'flex', alignItems: 'center', gap: 0.5, mt: 0.25 }}>
+                                    <ScheduleIcon sx={{ fontSize: 14 }} />
+                                    {store.opening_time && store.closing_time
+                                        ? `${store.opening_time} - ${store.closing_time}`
+                                        : store.schedule}
                                 </Typography>
                             )}
                         </Box>
@@ -1051,12 +1069,36 @@ function Catalog() {
                                         )}
 
                                         {hasSizes && (
-                                            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75, mb: 1.5 }}>
-                                                {Object.keys(parseSizes(product.sizes, product.stock) || {}).filter(Boolean).map(sizeKey => (
-                                                    <Typography key={sizeKey} variant="caption" sx={{ color: 'text.secondary', fontWeight: 600, fontSize: '0.6875rem' }}>
-                                                        {sizeKey}
-                                                    </Typography>
-                                                ))}
+                                            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75, mb: 1.5, alignItems: 'center' }}>
+                                                {Object.entries(parseSizes(product.sizes, product.stock) || {}).filter(([k]) => !!k).map(([sizeKey, sizeVal]) => {
+                                                    if (sizeVal.type === 'color' && sizeVal.color) {
+                                                        return (
+                                                            <Tooltip key={sizeKey} title={sizeKey} arrow>
+                                                                <Box sx={{
+                                                                    width: 14,
+                                                                    height: 14,
+                                                                    borderRadius: '50%',
+                                                                    bgcolor: sizeVal.color,
+                                                                    border: '1px solid rgba(0,0,0,0.15)',
+                                                                    boxShadow: '0 1px 2px rgba(0,0,0,0.1)'
+                                                                }} />
+                                                            </Tooltip>
+                                                        )
+                                                    }
+                                                    return (
+                                                        <Typography key={sizeKey} variant="caption" sx={{ 
+                                                            color: 'on-surface-variant', 
+                                                            fontWeight: 700, 
+                                                            fontSize: '0.6875rem',
+                                                            bgcolor: 'surface-container-high',
+                                                            px: 0.8,
+                                                            py: 0.3,
+                                                            borderRadius: 1
+                                                        }}>
+                                                            {sizeKey}
+                                                        </Typography>
+                                                    )
+                                                })}
                                             </Box>
                                         )}
 
@@ -1360,8 +1402,9 @@ function Catalog() {
                                     <TextField size="small" label="Teléfono" placeholder="+57 300..." value={customerPhone}
                                         onChange={(e) => setCustomerPhone(e.target.value)} sx={{ width: 130 }} />
                                 </Box>
-                                <TextField size="small" label="Dirección de entrega" placeholder="Calle 123 #45-67, Barrio, Ciudad"
-                                    value={deliveryAddress} onChange={(e) => setDeliveryAddress(e.target.value)} fullWidth />
+                                <TextField size="small" label="Dirección de entrega *" placeholder="Calle 123 #45-67, Barrio, Ciudad"
+                                    value={deliveryAddress} onChange={(e) => setDeliveryAddress(e.target.value)} fullWidth
+                                    required />
                                 <TextField size="small" label="Notas (opcional)" placeholder="Ej. Sin cebolla, timbre 3A, etc."
                                     value={customerNotes} onChange={(e) => setCustomerNotes(e.target.value)} fullWidth multiline minRows={1} />
 
@@ -1393,6 +1436,39 @@ function Catalog() {
                                     </Box>
                                 )}
 
+                                {store.delivery_fee !== null && store.delivery_fee !== undefined && (
+                                    <Box sx={{
+                                        p: 1.5, borderRadius: 2,
+                                        bgcolor: isDark ? 'rgba(16,185,129,0.06)' : 'rgba(16,185,129,0.04)',
+                                        border: '1px solid', borderColor: alpha('#22c55e', 0.08),
+                                    }}>
+                                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                            <Typography variant="body2" sx={{ fontWeight: 600, display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                                <LocalShippingIcon sx={{ fontSize: 16 }} />
+                                                {store.delivery_fee > 0 ? 'Costo de domicilio' : 'Domicilio gratis'}
+                                            </Typography>
+                                            {store.delivery_fee > 0 && (
+                                                <Typography variant="body2" sx={{ fontWeight: 700, color: '#22c55e' }}>
+                                                    +${store.delivery_fee.toLocaleString()}
+                                                </Typography>
+                                            )}
+                                        </Box>
+                                    </Box>
+                                )}
+
+                                {store.delivery_fee === null && (
+                                    <Box sx={{
+                                        p: 1.5, borderRadius: 2,
+                                        bgcolor: isDark ? 'rgba(239,68,68,0.06)' : 'rgba(239,68,68,0.04)',
+                                        border: '1px solid', borderColor: alpha('#ef4444', 0.08),
+                                    }}>
+                                        <Typography variant="body2" sx={{ fontWeight: 600, color: 'text.secondary', display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                            <LocalShippingIcon sx={{ fontSize: 16 }} />
+                                            No contempla domicilio
+                                        </Typography>
+                                    </Box>
+                                )}
+
                                 <Box sx={{
                                     p: 1.5, borderRadius: 2,
                                     bgcolor: isDark ? 'rgba(0,74,198,0.06)' : 'rgba(0,74,198,0.04)',
@@ -1401,7 +1477,7 @@ function Catalog() {
                                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                         <Typography variant="subtitle1" sx={{ fontWeight: 800 }}>Total</Typography>
                                         <Typography variant="h6" sx={{ fontWeight: 900, color: 'primary.main', fontSize: '1.4rem' }}>
-                                            ${cartSubtotal.toLocaleString()}
+                                            ${(cartSubtotal + (store.delivery_fee || 0)).toLocaleString()}
                                         </Typography>
                                     </Box>
                                 </Box>
@@ -1447,14 +1523,22 @@ function Catalog() {
                     boxShadow: '0 4px 14px rgba(0,0,0,0.2)',
                     zIndex: 1,
                 }}>
-                    📏
+                    {(() => {
+                        const parsedSizes = sizeModalProduct ? parseSizes(sizeModalProduct.sizes, sizeModalProduct.stock) || {} : {}
+                        const firstVal = Object.values(parsedSizes)[0]
+                        return firstVal?.type === 'color' ? '🎨' : '📏'
+                    })()}
                 </Box>
                 <DialogTitle sx={{ fontWeight: 700, textAlign: 'center', pt: 4, pb: 0.5 }}>
                     {sizeModalProduct?.name}
                 </DialogTitle>
                 <DialogContent sx={{ pb: 1 }}>
                     <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center', mb: 3, fontSize: '0.875rem' }}>
-                        Selecciona una presentación
+                        {(() => {
+                            const parsedSizes = sizeModalProduct ? parseSizes(sizeModalProduct.sizes, sizeModalProduct.stock) || {} : {}
+                            const firstVal = Object.values(parsedSizes)[0]
+                            return firstVal?.type === 'color' ? 'Selecciona un color' : 'Selecciona una presentación o talla'
+                        })()}
                     </Typography>
                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
                         {sizeModalProduct && (() => {
@@ -1467,6 +1551,7 @@ function Catalog() {
                                 const sizePrice = sizeData.price || 0
                                 const isOutOfStock = managesStock && sizeStock <= 0
                                 const isSelected = selectedSizeForModal === size
+                                const isColorType = sizeData.type === 'color'
                                 return (
                                     <Box
                                         key={size}
@@ -1490,21 +1575,38 @@ function Catalog() {
                                         }}
                                     >
                                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                                            <Box sx={{
-                                                width: 32,
-                                                height: 32,
-                                                borderRadius: '50%',
-                                                bgcolor: isSelected ? 'primary.main' : 'action.hover',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'center',
-                                                color: isSelected ? 'white' : 'text.secondary',
-                                                fontSize: '0.75rem',
-                                                fontWeight: 700,
-                                                transition: 'all 0.2s',
-                                            }}>
-                                                {isSelected ? '✓' : size.charAt(0).toUpperCase()}
-                                            </Box>
+                                            {isColorType && sizeData.color ? (
+                                                <Box sx={{
+                                                    width: 32,
+                                                    height: 32,
+                                                    borderRadius: '50%',
+                                                    bgcolor: sizeData.color,
+                                                    border: '2px solid',
+                                                    borderColor: isSelected ? 'primary.main' : 'divider',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                    boxShadow: 'inset 0 0 4px rgba(0,0,0,0.2)',
+                                                }}>
+                                                    {isSelected && <span style={{ color: '#fff', fontSize: '0.8rem', fontWeight: 'bold', textShadow: '0px 0px 3px rgba(0,0,0,0.8)' }}>✓</span>}
+                                                </Box>
+                                            ) : (
+                                                <Box sx={{
+                                                    width: 32,
+                                                    height: 32,
+                                                    borderRadius: '50%',
+                                                    bgcolor: isSelected ? 'primary.main' : 'action.hover',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                    color: isSelected ? 'white' : 'text.secondary',
+                                                    fontSize: '0.75rem',
+                                                    fontWeight: 700,
+                                                    transition: 'all 0.2s',
+                                                }}>
+                                                    {isSelected ? '✓' : size.charAt(0).toUpperCase()}
+                                                </Box>
+                                            )}
                                             <Box>
                                                 <Typography sx={{ fontWeight: 700, fontSize: '0.9375rem' }}>
                                                     {size}
@@ -1654,22 +1756,6 @@ function Catalog() {
                 </DialogActions>
             </Dialog>
 
-            {/* Add to Cart Toast */}
-            <Snackbar
-                open={toastOpen}
-                autoHideDuration={2000}
-                onClose={() => setToastOpen(false)}
-                anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-            >
-                <MuiAlert
-                    onClose={() => setToastOpen(false)}
-                    severity="success"
-                    variant="filled"
-                    sx={{ width: '100%', fontWeight: 600 }}
-                >
-                    🛒 {toastMessage}
-                </MuiAlert>
-            </Snackbar>
         </Box>
     )
 }

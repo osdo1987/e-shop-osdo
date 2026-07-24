@@ -4,6 +4,7 @@ import {
   CircularProgress, Chip, Tooltip, Card, CardContent,
   LinearProgress, useMediaQuery, Dialog, DialogTitle,
   DialogContent, Zoom, Fade, Grow, FormControlLabel, Switch,
+  Radio, RadioGroup, FormControl, FormLabel,
 } from "@mui/material";
 import { useTheme, alpha } from "@mui/material/styles";
 import {
@@ -96,7 +97,7 @@ const fieldMeta = {
   purchase_price: { section: "pricing", label: "Costo / precio de compra ($)", required: false },
   promo_price: { section: "pricing", label: "Precio promo ($) (opcional)", required: false },
   stock: { section: "stock", label: "Stock actual", required: false },
-  sizes: { section: "sizes", label: "Configuración de tamaños", required: false },
+  variants: { section: "variants", label: "Variantes", required: false },
   toppings_config: { section: "toppings", label: "Configuración de toppings", required: false },
 };
 
@@ -107,6 +108,7 @@ const allSections = [
   { id: "stock", label: "Stock", icon: <StockIcon fontSize="small" /> },
   { id: "media", label: "Imágenes", icon: <ImageIcon fontSize="small" /> },
   { id: "sizes", label: "Tamaños", icon: <SizeIcon fontSize="small" /> },
+  { id: "variants", label: "Variantes", icon: <SizeIcon fontSize="small" /> },
   { id: "toppings", label: "Toppings", icon: <ToppingIcon fontSize="small" /> },
 ];
 
@@ -203,12 +205,29 @@ function ProductPreview({ data, categories, theme }) {
         {sizeList.length > 0 && (
           <Box sx={{ mt: 1.5 }}>
             <Typography variant="caption" sx={{ color: "text.secondary", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em" }}>
-              Tamaños disponibles
+              {sizeList[0]?.type === "color" ? "Colores disponibles" : "Tamaños disponibles"}
             </Typography>
-            <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5, mt: 0.5 }}>
-              {sizeList.map((s, i) => (
-                <Chip key={i} label={`${s.name} $${parseFloat(s.price || 0).toFixed(2)}`} size="small" variant="outlined" sx={{ fontSize: "0.7rem" }} />
-              ))}
+            <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5, mt: 0.5, alignItems: "center" }}>
+              {sizeList.map((s, i) => {
+                if (s.type === "color" && s.color) {
+                  return (
+                    <Tooltip key={i} title={`${s.name} ${parseFloat(s.price || 0) > 0 ? `(+$${parseFloat(s.price).toFixed(2)})` : ''}`} arrow>
+                      <Box sx={{
+                        width: 20,
+                        height: 20,
+                        borderRadius: "50%",
+                        bgcolor: s.color,
+                        border: "1px solid rgba(0,0,0,0.2)",
+                        cursor: "pointer",
+                        boxShadow: "0 1px 3px rgba(0,0,0,0.1)"
+                      }} />
+                    </Tooltip>
+                  );
+                }
+                return (
+                  <Chip key={i} label={`${s.name} ${parseFloat(s.price || 0) > 0 ? `+$${parseFloat(s.price || 0).toFixed(2)}` : ''}`} size="small" variant="outlined" sx={{ fontSize: "0.7rem" }} />
+                );
+              })}
             </Box>
           </Box>
         )}
@@ -265,13 +284,18 @@ export default function ProductForm({ user, onLogout }) {
   const isEditing = Boolean(id);
   const isRestaurant = user?.businessType === 'restaurant';
 
-  const sections = allSections;
+  const sections = isRestaurant
+    ? allSections.filter((s) => s.id !== 'variants')
+    : allSections.filter((s) => s.id !== 'sizes' && s.id !== 'toppings');
 
   const [data, setData] = useState(defaultData);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(false);
   const [pageLoading, setPageLoading] = useState(isEditing);
   const [toast, setToast] = useState({ open: false, message: "", severity: "success" });
+  const [toppingTemplates, setToppingTemplates] = useState([]);
+  const [selectedTemplate, setSelectedTemplate] = useState('');
+  const [saveTemplateName, setSaveTemplateName] = useState('');
   const [errors, setErrors] = useState({});
   const [touched, setTouched] = useState({});
   const [dirty, setDirty] = useState(false);
@@ -296,6 +320,7 @@ export default function ProductForm({ user, onLogout }) {
     if (sectionId === "category") return !!data.category_id;
     if (sectionId === "media") return !!data.image_url;
     if (sectionId === "sizes") return !!data.sizes;
+    if (sectionId === "variants") return !!data.sizes;
     if (sectionId === "toppings") {
       if (!data.toppings_config) return false;
       try {
@@ -375,6 +400,15 @@ export default function ProductForm({ user, onLogout }) {
         console.error("Error fetching categories:", err);
         setToast({ open: true, message: "Error al cargar categorías", severity: "error" });
       });
+  }, [token]);
+
+  useEffect(() => {
+    fetch(`/api/topping-groups`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then((r) => r.json())
+      .then((d) => setToppingTemplates(Array.isArray(d) ? d : []))
+      .catch(() => {});
   }, [token]);
 
   useEffect(() => {
@@ -995,7 +1029,7 @@ export default function ProductForm({ user, onLogout }) {
                 </Box>
 
                 {/* SIZES SECTION */}
-                <Box ref={(el) => (formSectionRef.current.sizes = el)} sx={{ ...sectionBox, p: { xs: 2, md: 3 }, mb: 2.5 }}>
+                {isRestaurant && <Box ref={(el) => (formSectionRef.current.sizes = el)} sx={{ ...sectionBox, p: { xs: 2, md: 3 }, mb: 2.5 }}>
                   <SectionHeader icon={<SizeIcon fontSize="small" />} label="Tamaños (opcional)" filled={!!data.sizes} onClick={() => scrollToSection("sizes")} />
                   <Typography variant="body2" sx={{ color: "text.secondary", mb: 2 }}>
                     Define variantes de tamaño con su propio precio y stock.
@@ -1036,14 +1070,83 @@ export default function ProductForm({ user, onLogout }) {
                   <Button startIcon={<AddIcon />} onClick={addSize} sx={{ mt: 1, textTransform: "none", fontWeight: 600, borderRadius: "10px" }}>
                     Agregar tamaño
                   </Button>
-                </Box>
+                </Box>}
 
                 {/* TOPPINGS SECTION */}
-                <Box ref={(el) => (formSectionRef.current.toppings = el)} sx={{ ...sectionBox, p: { xs: 2, md: 3 }, mb: 2.5 }}>
+                {isRestaurant && <Box ref={(el) => (formSectionRef.current.toppings = el)} sx={{ ...sectionBox, p: { xs: 2, md: 3 }, mb: 2.5 }}>
                   <SectionHeader icon={<ToppingIcon fontSize="small" />} label="Toppings / Extras (opcional)" filled={!!data.toppings_config} onClick={() => scrollToSection("toppings")} />
                   <Typography variant="body2" sx={{ color: "text.secondary", mb: 2 }}>
                     Crea grupos de extras (ej: "Salsas", "Aderezos") con opciones y precios.
                   </Typography>
+
+                  {/* Template selector */}
+                  {toppingTemplates.length > 0 && (
+                    <Box sx={{ display: 'flex', gap: 1, mb: 2, alignItems: 'center' }}>
+                      <TextField
+                        select size="small" value={selectedTemplate}
+                        onChange={(e) => setSelectedTemplate(e.target.value)}
+                        sx={{ flex: 1, minWidth: 200, ...inputSx }}
+                        label="Cargar plantilla guardada"
+                      >
+                        <MenuItem value="">Seleccionar...</MenuItem>
+                        {toppingTemplates.map(t => (
+                          <MenuItem key={t.id} value={t.id}>{t.name}</MenuItem>
+                        ))}
+                      </TextField>
+                      <Button
+                        variant="outlined" size="small" disabled={!selectedTemplate}
+                        onClick={() => {
+                          const tmpl = toppingTemplates.find(t => t.id === parseInt(selectedTemplate))
+                          if (tmpl) {
+                            setData(d => ({ ...d, toppings_config: tmpl.config }))
+                            setDirty(true)
+                            setSelectedTemplate('')
+                          }
+                        }}
+                        sx={{ textTransform: 'none', fontWeight: 600, borderRadius: '10px', whiteSpace: 'nowrap' }}
+                      >
+                        Cargar
+                      </Button>
+                    </Box>
+                  )}
+
+                  {toppingGroups.length > 0 && (
+                    <Box sx={{ display: 'flex', gap: 1, mb: 2, alignItems: 'center' }}>
+                      <TextField
+                        size="small" value={saveTemplateName}
+                        onChange={(e) => setSaveTemplateName(e.target.value)}
+                        placeholder="Nombre de la plantilla..."
+                        sx={{ flex: 1, ...inputSx }}
+                      />
+                      <Button
+                        variant="outlined" size="small" disabled={!saveTemplateName.trim() || !data.toppings_config}
+                        onClick={async () => {
+                          try {
+                            const res = await fetch('/api/topping-groups', {
+                              method: 'POST',
+                              headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+                              body: JSON.stringify({ name: saveTemplateName.trim(), config: data.toppings_config })
+                            })
+                            if (res.ok) {
+                              const saved = await res.json()
+                              setToppingTemplates(prev => [...prev, saved])
+                              setSaveTemplateName('')
+                              setToast({ open: true, message: 'Plantilla guardada', severity: 'success' })
+                            } else {
+                              const err = await res.json()
+                              setToast({ open: true, message: err.error || 'Error al guardar', severity: 'error' })
+                            }
+                          } catch {
+                            setToast({ open: true, message: 'Error de red', severity: 'error' })
+                          }
+                        }}
+                        sx={{ textTransform: 'none', fontWeight: 600, borderRadius: '10px', whiteSpace: 'nowrap' }}
+                      >
+                        Guardar plantilla
+                      </Button>
+                    </Box>
+                  )}
+
                   {toppingGroups.map((group, gIdx) => (
                     <Grow in key={gIdx} timeout={300}>
                       <Box sx={{
@@ -1116,7 +1219,167 @@ export default function ProductForm({ user, onLogout }) {
                   <Button startIcon={<AddIcon />} onClick={addToppingGroup} sx={{ mt: 1, textTransform: "none", fontWeight: 600, borderRadius: "10px" }}>
                     Agregar grupo de toppings
                   </Button>
-                </Box>
+                </Box>}
+
+                {/* VARIANTS SECTION (FOR STORES) */}
+                {!isRestaurant && (
+                  <Box ref={(el) => (formSectionRef.current.variants = el)} sx={{ ...sectionBox, p: { xs: 2, md: 3 }, mb: 2.5 }}>
+                    <SectionHeader icon={<SizeIcon fontSize="small" />} label="Variantes del Producto (Tallas / Colores)" filled={!!data.sizes} onClick={() => scrollToSection("variants")} />
+                    <Typography variant="body2" sx={{ color: "text.secondary", mb: 2 }}>
+                      Configura variantes de talla o color para este producto. Los clientes podrán seleccionarlas al comprar.
+                    </Typography>
+
+                    <FormControl component="fieldset" sx={{ mb: 2.5, display: "block" }}>
+                      <FormLabel component="legend" sx={{ fontWeight: 600, fontSize: "0.85rem", mb: 1 }}>Tipo de Variante</FormLabel>
+                      <RadioGroup
+                        row
+                        value={(() => {
+                          const list = parseSizesSafe(data.sizes);
+                          return list[0]?.type || "size";
+                        })()}
+                        onChange={(e) => {
+                          const newType = e.target.value;
+                          setData((d) => {
+                            const list = parseSizesSafe(d.sizes);
+                            const updated = list.map((item) => {
+                              if (newType === "color") {
+                                return { type: "color", name: item.name || "", color: item.color || "#000000", stock: item.stock || "", price: item.price || "" };
+                              } else {
+                                return { type: "size", name: item.name || "", stock: item.stock || "", price: item.price || "" };
+                              }
+                            });
+                            // If empty, initialize with one default row
+                            if (updated.length === 0) {
+                              if (newType === "color") {
+                                updated.push({ type: "color", name: "", color: "#3b82f6", stock: "", price: "" });
+                              } else {
+                                updated.push({ type: "size", name: "", stock: "", price: "" });
+                              }
+                            }
+                            return { ...d, sizes: JSON.stringify(updated) };
+                          });
+                          setDirty(true);
+                        }}
+                      >
+                        <FormControlLabel value="size" control={<Radio size="small" />} label="Tallas / Dimensiones" />
+                        <FormControlLabel value="color" control={<Radio size="small" />} label="Colores" />
+                      </RadioGroup>
+                    </FormControl>
+
+                    {(() => {
+                      const list = parseSizesSafe(data.sizes);
+                      const currentType = list[0]?.type || "size";
+
+                      return (
+                        <Box>
+                          {list.map((variant, idx) => (
+                            <Grow in key={idx} timeout={300}>
+                              <Box sx={{
+                                display: "flex", gap: 1, mb: 1.5, alignItems: "center",
+                                p: 1.5, borderRadius: "12px",
+                                backgroundColor: (t) => t.palette.mode === "dark" ? "rgba(255,255,255,0.03)" : "rgba(0,0,0,0.02)",
+                                border: "1px solid", borderColor: "divider",
+                                flexWrap: { xs: "wrap", sm: "nowrap" }
+                              }}>
+                                {currentType === "color" && (
+                                  <input
+                                    type="color"
+                                    value={variant.color || "#000000"}
+                                    onChange={(e) => {
+                                      const updatedList = [...list];
+                                      updatedList[idx] = { ...updatedList[idx], color: e.target.value };
+                                      setData((d) => ({ ...d, sizes: JSON.stringify(updatedList) }));
+                                      setDirty(true);
+                                    }}
+                                    style={{
+                                      width: "38px",
+                                      height: "38px",
+                                      border: "none",
+                                      borderRadius: "8px",
+                                      cursor: "pointer",
+                                      padding: 0,
+                                      backgroundColor: "transparent"
+                                    }}
+                                  />
+                                )}
+                                <TextField
+                                  label={currentType === "color" ? "Color (Ej: Azul)" : "Talla (Ej: M, L)"}
+                                  value={variant.name || ""}
+                                  onChange={(e) => {
+                                    const updatedList = [...list];
+                                    updatedList[idx] = { ...updatedList[idx], name: e.target.value };
+                                    setData((d) => ({ ...d, sizes: JSON.stringify(updatedList) }));
+                                    setDirty(true);
+                                  }}
+                                  size="small" sx={{ flex: 2, minWidth: "120px", ...inputSx }}
+                                />
+                                <TextField
+                                  label="Precio extra ($)"
+                                  value={variant.price || ""}
+                                  type="number"
+                                  onChange={(e) => {
+                                    const updatedList = [...list];
+                                    updatedList[idx] = { ...updatedList[idx], price: e.target.value };
+                                    setData((d) => ({ ...d, sizes: JSON.stringify(updatedList) }));
+                                    setDirty(true);
+                                  }}
+                                  placeholder="0 = sin extra"
+                                  size="small" slotProps={{ htmlInput: { min: 0, step: 0.01 } }}
+                                  sx={{ flex: 1, minWidth: "80px", ...inputSx }}
+                                />
+                                <TextField
+                                  label="Stock"
+                                  value={variant.stock || ""}
+                                  type="number"
+                                  onChange={(e) => {
+                                    const updatedList = [...list];
+                                    updatedList[idx] = { ...updatedList[idx], stock: e.target.value };
+                                    setData((d) => ({ ...d, sizes: JSON.stringify(updatedList) }));
+                                    setDirty(true);
+                                  }}
+                                  size="small" slotProps={{ htmlInput: { min: 0, step: 1 } }}
+                                  sx={{ flex: 1, minWidth: "80px", ...inputSx }}
+                                />
+                                <Tooltip title="Eliminar variante" arrow>
+                                  <IconButton
+                                    onClick={() => {
+                                      const updatedList = list.filter((_, i) => i !== idx);
+                                      setData((d) => ({ ...d, sizes: updatedList.length ? JSON.stringify(updatedList) : "" }));
+                                      setDirty(true);
+                                    }}
+                                    size="small" sx={{ color: "error.main" }}
+                                  >
+                                    <DeleteIcon fontSize="small" />
+                                  </IconButton>
+                                </Tooltip>
+                              </Box>
+                            </Grow>
+                          ))}
+
+                          <Button
+                            startIcon={<AddIcon />}
+                            onClick={() => {
+                              setData((d) => {
+                                const list = parseSizesSafe(d.sizes);
+                                const currentType = list[0]?.type || "size";
+                                if (currentType === "color") {
+                                  list.push({ type: "color", name: "", color: "#3b82f6", stock: "", price: "" });
+                                } else {
+                                  list.push({ type: "size", name: "", stock: "", price: "" });
+                                }
+                                return { ...d, sizes: JSON.stringify(list) };
+                              });
+                              setDirty(true);
+                            }}
+                            sx={{ mt: 1, textTransform: "none", fontWeight: 600, borderRadius: "10px" }}
+                          >
+                            Agregar variante
+                          </Button>
+                        </Box>
+                      );
+                    })()}
+                  </Box>
+                )}
               </Box>
 
               <Box sx={{

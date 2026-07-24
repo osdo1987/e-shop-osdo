@@ -18,6 +18,9 @@ class StoreSchema(ma.SQLAlchemyAutoSchema):
     business_type = fields.String(required=False, load_default='store', validate=validate.OneOf(['store', 'restaurant']))
     address = fields.String(allow_none=True)
     schedule = fields.String(allow_none=True, validate=validate.Length(max=200))
+    delivery_fee = fields.Float(allow_none=True)
+    opening_time = fields.String(allow_none=True, validate=validate.Length(max=5))
+    closing_time = fields.String(allow_none=True, validate=validate.Length(max=5))
     created_at = fields.DateTime(dump_only=True)
     updated_at = fields.DateTime(dump_only=True)
 

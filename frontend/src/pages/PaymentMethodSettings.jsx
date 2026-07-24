@@ -22,6 +22,28 @@ import EditIcon from '@mui/icons-material/Edit'
 import DeleteIcon from '@mui/icons-material/Delete'
 import DragIndicatorIcon from '@mui/icons-material/DragIndicator'
 import PaymentsIcon from '@mui/icons-material/Payments'
+import { getIconByName } from '../paymentMethodIcons'
+import AttachMoneyIcon from '@mui/icons-material/AttachMoney'
+import CreditCardIcon from '@mui/icons-material/CreditCard'
+import AccountBalanceIcon from '@mui/icons-material/AccountBalance'
+import SmartphoneIcon from '@mui/icons-material/Smartphone'
+import PaymentIcon from '@mui/icons-material/Payment'
+import WalletIcon from '@mui/icons-material/Wallet'
+import CurrencyBitcoinIcon from '@mui/icons-material/CurrencyBitcoin'
+import LocalAtmIcon from '@mui/icons-material/LocalAtm'
+import PointOfSaleIcon from '@mui/icons-material/PointOfSale'
+
+const ICON_OPTIONS = [
+  { name: 'AttachMoneyIcon', icon: <AttachMoneyIcon />, label: 'Efectivo' },
+  { name: 'CreditCardIcon', icon: <CreditCardIcon />, label: 'Tarjeta' },
+  { name: 'AccountBalanceIcon', icon: <AccountBalanceIcon />, label: 'Banco' },
+  { name: 'SmartphoneIcon', icon: <SmartphoneIcon />, label: 'App' },
+  { name: 'PaymentIcon', icon: <PaymentIcon />, label: 'Pago' },
+  { name: 'WalletIcon', icon: <WalletIcon />, label: 'Wallet' },
+  { name: 'CurrencyBitcoinIcon', icon: <CurrencyBitcoinIcon />, label: 'Crypto' },
+  { name: 'LocalAtmIcon', icon: <LocalAtmIcon />, label: 'Efectivo ATM' },
+  { name: 'PointOfSaleIcon', icon: <PointOfSaleIcon />, label: 'POS' },
+]
 
 const PRESET_COLORS = [
   '#22c55e', '#3b82f6', '#2563eb', '#06b6d4', '#f59e0b',
@@ -147,8 +169,12 @@ function PaymentMethodSettings({ user, onLogout }) {
                 width: 40, height: 40, borderRadius: '10px',
                 bgcolor: alpha(pm.color || '#3b82f6', 0.12),
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
+                color: pm.color || '#3b82f6',
               }}>
-                <Box sx={{ width: 20, height: 20, borderRadius: '50%', bgcolor: pm.color || '#3b82f6' }} />
+                {(() => {
+                  const Icon = getIconByName(pm.icon)
+                  return <Icon sx={{ fontSize: 22 }} />
+                })()}
               </Box>
 
               <Box sx={{ flex: 1 }}>
@@ -209,9 +235,34 @@ function PaymentMethodSettings({ user, onLogout }) {
               onChange={(e) => setForm({ ...form, code: e.target.value.toUpperCase().replace(/[^A-Z0-9_]/g, '') })}
               placeholder="Ej: EFECTIVO, NEQUI, CRYPTO"
               helperText="Identificador interno (solo mayúsculas, números y _)" sx={inputSx} />
-            <TextField label="Nombre del Icono (MUI)" fullWidth size="small" value={form.icon}
-              onChange={(e) => setForm({ ...form, icon: e.target.value })}
-              placeholder="Ej: AttachMoneyIcon, CreditCardIcon, SmartphoneIcon" sx={inputSx} />
+            <Box>
+              <Typography variant="caption" sx={{ fontWeight: 600, color: 'text.secondary', display: 'block', mb: 1 }}>
+                Icono
+              </Typography>
+              <Box sx={{ display: 'flex', gap: 0.75, flexWrap: 'wrap' }}>
+                {ICON_OPTIONS.map(opt => {
+                  const isSelected = form.icon === opt.name
+                  return (
+                    <Box key={opt.name} onClick={() => setForm({ ...form, icon: opt.name })}
+                      sx={{
+                        width: 44, height: 44, borderRadius: '10px', cursor: 'pointer',
+                        display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                        bgcolor: isSelected ? alpha(form.color || '#3b82f6', 0.15) : 'action.hover',
+                        color: isSelected ? (form.color || '#3b82f6') : 'text.secondary',
+                        border: isSelected ? '2px solid' : '2px solid transparent',
+                        borderColor: isSelected ? (form.color || '#3b82f6') : 'transparent',
+                        transition: 'all 0.15s',
+                        gap: 0.3,
+                        '&:hover': { transform: 'scale(1.08)', bgcolor: alpha(form.color || '#3b82f6', 0.08) },
+                      }}
+                    >
+                      {opt.icon}
+                      <Typography sx={{ fontSize: '0.5rem', fontWeight: 600, lineHeight: 1 }}>{opt.label}</Typography>
+                    </Box>
+                  )
+                })}
+              </Box>
+            </Box>
 
             <Box>
               <Typography variant="caption" sx={{ fontWeight: 600, color: 'text.secondary', display: 'block', mb: 1 }}>

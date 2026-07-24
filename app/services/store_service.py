@@ -46,7 +46,10 @@ class StoreService:
             logo_id=data.get('logo_id'),
             business_type=data.get('business_type', 'store'),
             address=data.get('address'),
-            schedule=data.get('schedule')
+            schedule=data.get('schedule'),
+            delivery_fee=data.get('delivery_fee'),
+            opening_time=data.get('opening_time'),
+            closing_time=data.get('closing_time')
         )
         db.session.add(store)
         db.session.flush()
@@ -80,6 +83,12 @@ class StoreService:
             store.address = data['address']
         if 'schedule' in data:
             store.schedule = data['schedule']
+        if 'delivery_fee' in data:
+            store.delivery_fee = data['delivery_fee']
+        if 'opening_time' in data:
+            store.opening_time = data['opening_time']
+        if 'closing_time' in data:
+            store.closing_time = data['closing_time']
         
         db.session.commit()
         return store_schema.dump(store), None

@@ -137,6 +137,9 @@ function SuperAdmin({ user, onLogout }) {
         business_type: 'store',
         address: '',
         schedule: '',
+        delivery_fee: '',
+        opening_time: '',
+        closing_time: '',
         email: '',
         password: ''
     })
@@ -149,6 +152,9 @@ function SuperAdmin({ user, onLogout }) {
         business_type: 'store',
         address: '',
         schedule: '',
+        delivery_fee: '',
+        opening_time: '',
+        closing_time: '',
         email: ''
     })
     const [editLogoFile, setEditLogoFile] = useState(null)
@@ -204,6 +210,9 @@ function SuperAdmin({ user, onLogout }) {
             body.append('business_type', newStore.business_type)
             body.append('address', newStore.address)
             body.append('schedule', newStore.schedule)
+            if (newStore.delivery_fee !== '') body.append('delivery_fee', newStore.delivery_fee)
+            if (newStore.opening_time) body.append('opening_time', newStore.opening_time)
+            if (newStore.closing_time) body.append('closing_time', newStore.closing_time)
             body.append('email', newStore.email)
             body.append('password', newStore.password)
             if (newStoreLogoFile) body.append('logo', newStoreLogoFile)
@@ -217,7 +226,7 @@ function SuperAdmin({ user, onLogout }) {
             if (res.ok) {
                 toast.success('Negocio y gerente creados exitosamente')
                 setShowCreateModal(false)
-                setNewStore({ storeName: '', slug: '', whatsapp: '', logo_url: '', business_type: 'store', address: '', schedule: '', email: '', password: '' })
+                setNewStore({ storeName: '', slug: '', whatsapp: '', logo_url: '', business_type: 'store', address: '', schedule: '', delivery_fee: '', opening_time: '', closing_time: '', email: '', password: '' })
                 setNewStoreLogoFile(null)
                 fetchStores()
             } else {
@@ -241,6 +250,9 @@ function SuperAdmin({ user, onLogout }) {
             business_type: store.business_type || 'store',
             address: store.address || '',
             schedule: store.schedule || '',
+            delivery_fee: store.delivery_fee !== null && store.delivery_fee !== undefined ? String(store.delivery_fee) : '',
+            opening_time: store.opening_time || '',
+            closing_time: store.closing_time || '',
             email: sellerEmail
         })
         setEditLogoFile(null)
@@ -261,6 +273,9 @@ function SuperAdmin({ user, onLogout }) {
             body.append('business_type', editForm.business_type)
             body.append('address', editForm.address)
             body.append('schedule', editForm.schedule)
+            if (editForm.delivery_fee !== '') body.append('delivery_fee', editForm.delivery_fee)
+            if (editForm.opening_time) body.append('opening_time', editForm.opening_time)
+            if (editForm.closing_time) body.append('closing_time', editForm.closing_time)
             if (editLogoFile) body.append('logo', editLogoFile)
 
             const storeRes = await fetch(`/api/stores/${editingStore.id}`, {
@@ -446,6 +461,11 @@ function SuperAdmin({ user, onLogout }) {
                 <>
                     <TextField label="Dirección" value={form.address || ''} onChange={(e) => setForm({ ...form, address: e.target.value })} placeholder="Calle 123 #45-67, Ciudad" fullWidth sx={inputSx(isDark)} />
                     <TextField label="Horario" value={form.schedule || ''} onChange={(e) => setForm({ ...form, schedule: e.target.value })} placeholder="Lun-Vie 8am-8pm, Sáb 9am-6pm" fullWidth sx={inputSx(isDark)} />
+                    <Box sx={{ display: 'flex', gap: 1.5 }}>
+                        <TextField label="Costo domicilio ($)" type="number" value={form.delivery_fee || ''} onChange={(e) => setForm({ ...form, delivery_fee: e.target.value })} placeholder="5000" fullWidth sx={inputSx(isDark)} slotProps={{ htmlInput: { min: 0 } }} />
+                        <TextField label="Hora apertura" value={form.opening_time || ''} onChange={(e) => setForm({ ...form, opening_time: e.target.value })} placeholder="08:00" fullWidth sx={inputSx(isDark)} />
+                        <TextField label="Hora cierre" value={form.closing_time || ''} onChange={(e) => setForm({ ...form, closing_time: e.target.value })} placeholder="22:00" fullWidth sx={inputSx(isDark)} />
+                    </Box>
                 </>
             )}
             <Box>

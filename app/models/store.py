@@ -12,6 +12,9 @@ class Store(db.Model):
     business_type = db.Column(db.String(20), nullable=False, default='store')  # 'store' o 'restaurant'
     address = db.Column(db.Text, nullable=True)
     schedule = db.Column(db.String(200), nullable=True)
+    delivery_fee = db.Column(db.Float, nullable=True)
+    opening_time = db.Column(db.String(5), nullable=True)
+    closing_time = db.Column(db.String(5), nullable=True)
     
     logo = db.relationship('Image', lazy='joined')
     

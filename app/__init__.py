@@ -37,6 +37,7 @@ def create_app(config_class=Config):
     from app.routes.invoice_routes import invoice_bp
     from app.routes.image_routes import image_bp
     from app.routes.payment_method_routes import payment_method_bp
+    from app.routes.topping_group_routes import topping_group_bp
 
     app.register_blueprint(auth_bp, url_prefix='/api/auth')
     app.register_blueprint(store_bp, url_prefix='/api/stores')
@@ -47,6 +48,10 @@ def create_app(config_class=Config):
     app.register_blueprint(invoice_bp, url_prefix='/api/invoices')
     app.register_blueprint(image_bp, url_prefix='/api/images')
     app.register_blueprint(payment_method_bp, url_prefix='/api/payment-methods')
+    app.register_blueprint(topping_group_bp, url_prefix='/api/topping-groups')
+
+    # Import models for Alembic
+    from app.models.topping_group import ToppingGroup
 
     # Seed default payment methods for stores that don't have any
     with app.app_context():

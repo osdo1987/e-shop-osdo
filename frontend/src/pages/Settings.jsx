@@ -24,6 +24,9 @@ import DeleteOutlineIcon from '@mui/icons-material/DeleteOutlined'
 function Settings({ user, onLogout, darkMode, setDarkMode }) {
     const [store, setStore] = useState(null)
     const [whatsapp, setWhatsapp] = useState('')
+    const [deliveryFee, setDeliveryFee] = useState('')
+    const [openingTime, setOpeningTime] = useState('')
+    const [closingTime, setClosingTime] = useState('')
     const [logoUrl, setLogoUrl] = useState('')
     const [logoFile, setLogoFile] = useState(null)
     const [saving, setSaving] = useState(false)
@@ -53,6 +56,9 @@ function Settings({ user, onLogout, darkMode, setDarkMode }) {
                 const data = await res.json()
                 setStore(data)
                 setWhatsapp(data.whatsapp || '')
+                setDeliveryFee(data.delivery_fee !== null && data.delivery_fee !== undefined ? String(data.delivery_fee) : '')
+                setOpeningTime(data.opening_time || '')
+                setClosingTime(data.closing_time || '')
                 setLogoUrl(data.logo_url || '')
             }
         } catch (error) {
@@ -68,6 +74,9 @@ function Settings({ user, onLogout, darkMode, setDarkMode }) {
             const token = localStorage.getItem('token')
             const body = new FormData()
             body.append('whatsapp', whatsapp)
+            if (deliveryFee) body.append('delivery_fee', deliveryFee)
+            if (openingTime) body.append('opening_time', openingTime)
+            if (closingTime) body.append('closing_time', closingTime)
             if (logoFile) body.append('logo', logoFile)
 
             const res = await fetch(`/api/stores/${user.storeId}`, {
@@ -221,6 +230,28 @@ function Settings({ user, onLogout, darkMode, setDarkMode }) {
                                     value={whatsapp} onChange={(e) => setWhatsapp(e.target.value)}
                                     placeholder="+573001234567" required size="small"
                                     sx={{ flex: 1, minWidth: 200, ...inputSx }}
+                                />
+                            </Box>
+                            <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'flex-end', flexWrap: 'wrap', mb: 2 }}>
+                                <TextField
+                                    label="Costo de domicilio ($)"
+                                    value={deliveryFee} onChange={(e) => setDeliveryFee(e.target.value)}
+                                    placeholder="5000" size="small" type="number"
+                                    slotProps={{ htmlInput: { min: 0, step: 100 } }}
+                                    helperText={deliveryFee === '' ? 'Vacío = No contempla domicilio' : '0 = Domicilio gratis'}
+                                    sx={{ flex: 1, minWidth: 150, ...inputSx }}
+                                />
+                                <TextField
+                                    label="Hora apertura"
+                                    value={openingTime} onChange={(e) => setOpeningTime(e.target.value)}
+                                    placeholder="08:00" size="small"
+                                    sx={{ flex: 1, minWidth: 120, ...inputSx }}
+                                />
+                                <TextField
+                                    label="Hora cierre"
+                                    value={closingTime} onChange={(e) => setClosingTime(e.target.value)}
+                                    placeholder="22:00" size="small"
+                                    sx={{ flex: 1, minWidth: 120, ...inputSx }}
                                 />
                                 <Button
                                     type="submit" variant="contained" disabled={saving}
