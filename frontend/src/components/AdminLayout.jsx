@@ -26,6 +26,7 @@ import PointOfSaleIcon from '@mui/icons-material/PointOfSale'
 import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet'
 import ReceiptLongIcon from '@mui/icons-material/ReceiptLong'
 import PaymentsIcon from '@mui/icons-material/Payments'
+import ShoppingBagIcon from '@mui/icons-material/ShoppingBag'
 
 function AdminLayout({ title, children, user, onLogout, superadmin = false, showBack = false }) {
     const isStaff = user?.role === 'STAFF'
@@ -52,6 +53,7 @@ function AdminLayout({ title, children, user, onLogout, superadmin = false, show
             { path: '/admin/dashboard', label: 'Dashboard', icon: <DashboardIcon />, managerOnly: true },
             { path: '/admin', label: 'Productos', icon: <Inventory2Icon />, managerOnly: true },
             { path: '/admin/categories', label: 'Categorías', icon: <CategoryIcon />, managerOnly: true },
+            { path: '/admin/combos', label: 'Combos', icon: <ShoppingBagIcon />, managerOnly: true },
             { path: '/admin/pos', label: 'POS / Venta Local', icon: <PointOfSaleIcon /> },
             { path: '/admin/cash-register', label: 'Control de Caja', icon: <AccountBalanceWalletIcon />, managerOnly: true },
             { path: '/admin/invoices', label: 'Facturas', icon: <ReceiptLongIcon />, managerOnly: true },

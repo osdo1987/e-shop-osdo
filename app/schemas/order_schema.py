@@ -31,6 +31,7 @@ class OrderItemSchema(ma.SQLAlchemyAutoSchema):
     selected_size = fields.String(allow_none=True)
     selected_toppings = fields.String(allow_none=True)
     extra_price = fields.Float(allow_none=True, default=0)
+    purchase_price_at_sale = fields.Float(allow_none=True)
 
 class StoreBriefSchema(ma.SQLAlchemyAutoSchema):
     logo_url = fields.Method('get_logo_url')

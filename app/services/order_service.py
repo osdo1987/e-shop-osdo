@@ -4,6 +4,7 @@ from datetime import datetime
 from app.extensions import db
 from app.models.order import Order, OrderItem, OrderStatusHistory, STATUS_TRANSITIONS
 from app.models.product import Product
+from app.models.stock_movement import StockMovement
 from app.schemas.order_schema import OrderSchema
 from sqlalchemy.orm import joinedload, lazyload
 
@@ -81,13 +82,17 @@ class OrderService:
         # Loop through items and validate/adjust stock inside the transaction
         for item_data in data['items']:
             product_id = item_data.get('product_id')
+            purchase_price = 0
             if product_id:
-                OrderService._validate_and_adjust_stock(
+                stock_result = OrderService._validate_and_adjust_stock(
                     product_id=product_id,
                     quantity=item_data['quantity'],
                     size=item_data.get('selected_size'),
-                    decrease=True
+                    decrease=True,
+                    order_id=order.id
                 )
+                if stock_result:
+                    purchase_price = stock_result.get('purchase_price', 0)
             elif not product_id:
                 # For items without product_id (custom items), skip stock validation
                 pass
@@ -100,7 +105,8 @@ class OrderService:
                 price=item_data['price'],
                 selected_size=item_data.get('selected_size'),
                 selected_toppings=item_data.get('selected_toppings'),
-                extra_price=item_data.get('extra_price', 0)
+                extra_price=item_data.get('extra_price', 0),
+                purchase_price_at_sale=purchase_price
             )
             db.session.add(item)
             
@@ -216,12 +222,14 @@ class OrderService:
         } for h in history]
 
     @staticmethod
-    def _validate_and_adjust_stock(product_id, quantity, size=None, decrease=True):
+    def _validate_and_adjust_stock(product_id, quantity, size=None, decrease=True, order_id=None, store_id=None):
         """
         Locks the product row using with_for_update, validates stock availability if decreasing,
-        and adjusts the stock global and size values.
+        adjusts the stock global and size values, and records a StockMovement.
         Raises ValueError if stock is insufficient.
         If manage_stock is False, stock control is skipped (e.g., restaurant food made to order).
+        
+        Returns dict with purchase_price and previous_stock or None if manage_stock is False.
         """
         product = Product.query.options(lazyload(Product.image)).with_for_update().get(product_id)
         if not product:
@@ -229,9 +237,13 @@ class OrderService:
 
         # If manage_stock is False, skip all stock control
         if not product.manage_stock:
-            return
+            return None
 
+        previous_stock = product.stock
         qty_change = quantity if decrease else -quantity
+        movement_type = 'SALE' if decrease else 'CANCELLATION'
+        reference_type = 'order'
+        variant_previous_stock = None
 
         if product.sizes:
             try:
@@ -252,6 +264,7 @@ class OrderService:
                     if decrease and sizes_map[size] < quantity:
                         raise ValueError(f"Stock insuficiente para {product.name} (Talla {size}). Disponibles: {sizes_map[size]}.")
 
+                    variant_previous_stock = sizes_map[size]
                     sizes_map[size] = max(0, sizes_map[size] - qty_change)
                     # Save back in array format
                     new_sizes = []
@@ -276,3 +289,27 @@ class OrderService:
             if decrease and product.stock < quantity:
                 raise ValueError(f"Stock insuficiente para {product.name}. Disponibles: {product.stock}.")
             product.stock = max(0, product.stock - qty_change)
+
+        # Record StockMovement
+        actual_store_id = store_id or product.store_id
+        if actual_store_id and order_id:
+            movement = StockMovement(
+                product_id=product_id,
+                store_id=actual_store_id,
+                quantity_change=-qty_change if decrease else quantity,
+                previous_stock=previous_stock,
+                new_stock=product.stock,
+                variant_name=size,
+                movement_type=movement_type,
+                reference_type=reference_type,
+                reference_id=order_id,
+                cost_at_movement=product.purchase_price or 0,
+                reason=f"{'Venta' if decrease else 'Cancelación'} - Orden #{order_id}"
+            )
+            db.session.add(movement)
+
+        return {
+            'purchase_price': product.purchase_price or 0,
+            'previous_stock': previous_stock,
+            'new_stock': product.stock
+        }

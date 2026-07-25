@@ -21,6 +21,8 @@ import POS from './pages/POS'
 import CashRegister from './pages/CashRegister'
 import Invoices from './pages/Invoices'
 import PaymentMethodSettings from './pages/PaymentMethodSettings'
+import ComboForm from './pages/ComboForm'
+import CombosDashboard from './pages/CombosDashboard'
 
 function parseJwtExp(token) {
     try {
@@ -135,6 +137,15 @@ function App({ darkMode, setDarkMode }) {
                 } />
                 <Route path="/admin/payment-methods" element={
                     isManagerOrAbove ? <PaymentMethodSettings user={user} onLogout={handleLogout} /> : <Navigate to="/admin/pos" />
+                } />
+                <Route path="/admin/combos" element={
+                    isManagerOrAbove ? <CombosDashboard user={user} onLogout={handleLogout} /> : <Navigate to="/admin/pos" />
+                } />
+                <Route path="/admin/combos/new" element={
+                    isManagerOrAbove ? <ComboForm user={user} onLogout={handleLogout} /> : <Navigate to="/admin/pos" />
+                } />
+                <Route path="/admin/combos/edit/:id" element={
+                    isManagerOrAbove ? <ComboForm user={user} onLogout={handleLogout} /> : <Navigate to="/admin/pos" />
                 } />
                 <Route path="/admin/super" element={
                     user && user.role === 'SUPERADMIN' ? <SuperAdmin user={user} onLogout={handleLogout} /> : <Navigate to="/login" />

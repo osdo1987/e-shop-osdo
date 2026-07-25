@@ -55,8 +55,8 @@ const parseSizes = (sizesStr, overallStock) => {
         if (Array.isArray(parsed)) {
             const map = {}
             parsed.forEach(s => {
-                if (s.name) map[s.name] = { 
-                    stock: parseInt(s.stock) || 0, 
+                if (s.name) map[s.name] = {
+                    stock: parseInt(s.stock) || 0,
                     price: parseFloat(s.price) || 0,
                     type: s.type || 'size',
                     color: s.color || null
@@ -127,6 +127,7 @@ function Catalog() {
     const [store, setStore] = useState(null)
     const [categories, setCategories] = useState([])
     const [products, setProducts] = useState([])
+    const [combos, setCombos] = useState([])
     const [loading, setLoading] = useState(true)
     const [promoIndex, setPromoIndex] = useState(0)
 
@@ -211,6 +212,7 @@ function Catalog() {
                 setStore(data)
                 setCategories(data.categories || [])
                 setProducts(data.products || [])
+                setCombos(data.combos || [])
                 const methods = await fetchPublicPaymentMethods(data.id)
                 setPaymentMethods(methods)
                 if (methods.length > 0) {
@@ -894,6 +896,114 @@ function Catalog() {
                     </Box>
                 </Box>
 
+                {/* Combos Section */}
+                {combos.length > 0 && (
+                    <Box sx={{ px: { xs: 2, md: 3 }, mb: 4 }}>
+                        <Typography sx={{ fontWeight: 700, fontSize: '1.125rem', color: 'on-surface', mb: 2 }}>
+                            Combos y paquetes 🎁
+                        </Typography>
+                        <Box sx={{
+                            display: 'grid',
+                            gridTemplateColumns: {
+                                xs: '1fr',
+                                sm: 'repeat(2, 1fr)',
+                                md: 'repeat(3, 1fr)',
+                                lg: 'repeat(4, 1fr)',
+                            },
+                            gap: 3,
+                        }}>
+                            {combos.map(combo => {
+                                const price = combo.promo_price || combo.price
+                                const savings = combo.savings || 0
+                                const savingsPercent = combo.savings_percent || 0
+                                return (
+                                    <Box key={combo.id} sx={{
+                                        position: 'relative',
+                                        bgcolor: 'background.paper',
+                                        borderRadius: 2,
+                                        border: '2px solid',
+                                        borderColor: 'tertiary-container',
+                                        overflow: 'hidden',
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        transition: 'box-shadow 0.3s ease',
+                                        '&:hover': { boxShadow: '0 4px 12px rgba(0,0,0,0.12)' },
+                                    }}>
+                                        <Box sx={{ position: 'absolute', top: 12, left: 12, zIndex: 1 }}>
+                                            <Chip label="COMBO" size="small" sx={{
+                                                fontWeight: 800, fontSize: '0.6rem', height: 22,
+                                                bgcolor: 'success.main', color: '#fff',
+                                            }} />
+                                        </Box>
+                                        <Box sx={{
+                                            height: { xs: 160, md: 180 },
+                                            bgcolor: 'surface-container-low',
+                                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                            overflow: 'hidden',
+                                        }}>
+                                            {combo.image_url ? (
+                                                <Box component="img" src={combo.image_url} alt={combo.name}
+                                                    sx={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                            ) : (
+                                                <Box sx={{ fontSize: '2.5rem', color: 'text.disabled' }}>🎁</Box>
+                                            )}
+                                        </Box>
+                                        <Box sx={{ p: 2, display: 'flex', flexDirection: 'column', flex: 1 }}>
+                                            <Typography sx={{ fontWeight: 700, fontSize: '0.95rem', mb: 0.5 }}>
+                                                {combo.name}
+                                            </Typography>
+                                            {combo.description && (
+                                                <Typography variant="caption" sx={{ color: 'on-surface-variant', fontSize: '0.75rem', mb: 1, lineHeight: 1.4 }}>
+                                                    {combo.description}
+                                                </Typography>
+                                            )}
+                                            <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1, mb: 0.75 }}>
+                                                <Typography sx={{ fontWeight: 800, fontSize: '1.1rem', color: 'success.main' }}>
+                                                    ${price?.toLocaleString()}
+                                                </Typography>
+                                                {savings > 0 && (
+                                                    <Typography sx={{ fontSize: '0.7rem', textDecoration: 'line-through', color: 'on-surface-variant' }}>
+                                                        ${(combo.total_without_discount || 0).toLocaleString()}
+                                                    </Typography>
+                                                )}
+                                            </Box>
+                                            {savings > 0 && (
+                                                <Chip label={`Ahorra ${savingsPercent}%`} size="small" sx={{
+                                                    fontWeight: 700, fontSize: '0.6rem', height: 20,
+                                                    bgcolor: 'rgba(16,185,129,0.12)', color: '#10b981', alignSelf: 'flex-start',
+                                                }} />
+                                            )}
+                                            <Box sx={{ mt: 1, display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                                                {(combo.items || []).slice(0, 4).map((item, idx) => (
+                                                    <Chip key={idx}
+                                                        label={`${item.quantity}x ${item.product_name || `ID:${item.product_id}`}`}
+                                                        size="small" variant="outlined"
+                                                        sx={{ fontSize: '0.55rem', height: 18, borderColor: 'divider' }} />
+                                                ))}
+                                                {(combo.items || []).length > 4 && (
+                                                    <Chip label={`+${combo.items.length - 4}`} size="small"
+                                                        sx={{ fontSize: '0.55rem', height: 18 }} />
+                                                )}
+                                            </Box>
+                                            <Box sx={{ mt: 'auto', pt: 1.5 }}>
+                                                <Button fullWidth variant="contained"
+                                                    onClick={(e) => { e.stopPropagation(); toast.info('Función de compra de combos próximamente'); }}
+                                                    sx={{
+                                                        textTransform: 'none', fontWeight: 700, borderRadius: 2, py: 1.2, fontSize: '0.85rem',
+                                                        bgcolor: 'success.main', color: '#fff',
+                                                        '&:hover': { bgcolor: 'success.dark' },
+                                                    }}>
+                                                    Agregar combo
+                                                </Button>
+                                            </Box>
+                                        </Box>
+                                    </Box>
+                                )
+                            })}
+                        </Box>
+                    </Box>
+                )}
+
                 {/* Product Grid Section */}
                 <Box sx={{ px: { xs: 2, md: 3 }, pb: 4 }}>
                     <Box sx={{ display: 'flex', gap: 3, alignItems: 'flex-start' }}>
@@ -916,244 +1026,244 @@ function Catalog() {
                                 },
                                 gap: 3,
                             }}>
-                        {filteredProducts.map(product => {
-                            const discount = product.promo_price ? Math.round(((product.price - product.promo_price) / product.price) * 100) : null
-                            const managesStock = product.manage_stock !== false
-                            const isSoldOut = managesStock && product.stock <= 0
-                            const hasToppingsConfig = product.toppings_config && parseToppingsConfig(product.toppings_config)
+                                {filteredProducts.map(product => {
+                                    const discount = product.promo_price ? Math.round(((product.price - product.promo_price) / product.price) * 100) : null
+                                    const managesStock = product.manage_stock !== false
+                                    const isSoldOut = managesStock && product.stock <= 0
+                                    const hasToppingsConfig = product.toppings_config && parseToppingsConfig(product.toppings_config)
 
-                            const hasSizes = product.sizes && parseSizes(product.sizes, product.stock)
-                            const sizeList = hasSizes ? parseSizes(product.sizes, product.stock) : null
-                            const sizeCount = sizeList ? Object.keys(sizeList).filter(Boolean).length : 0
-                            const sizePriceMin = hasSizes ? (() => {
-                                const sizes = parseSizes(product.sizes, product.stock)
-                                if (!sizes) return null
-                                const prices = Object.values(sizes).map(s => s.price || 0).filter(p => p > 0)
-                                return prices.length > 0 ? Math.min(...prices) : null
-                            })() : null
+                                    const hasSizes = product.sizes && parseSizes(product.sizes, product.stock)
+                                    const sizeList = hasSizes ? parseSizes(product.sizes, product.stock) : null
+                                    const sizeCount = sizeList ? Object.keys(sizeList).filter(Boolean).length : 0
+                                    const sizePriceMin = hasSizes ? (() => {
+                                        const sizes = parseSizes(product.sizes, product.stock)
+                                        if (!sizes) return null
+                                        const prices = Object.values(sizes).map(s => s.price || 0).filter(p => p > 0)
+                                        return prices.length > 0 ? Math.min(...prices) : null
+                                    })() : null
 
-                            return (
-                                <Box
-                                    key={product.id}
-                                    sx={{
-                                        position: 'relative',
-                                        bgcolor: 'background.paper',
-                                        borderRadius: 2,
-                                        border: '1px solid',
-                                        borderColor: 'outline-variant',
-                                        overflow: 'hidden',
-                                        display: 'flex',
-                                        flexDirection: 'column',
-                                        transition: 'box-shadow 0.3s ease',
-                                        opacity: isSoldOut ? 0.6 : 1,
-                                        '&:hover': { boxShadow: '0 4px 12px rgba(0,0,0,0.08)' },
-                                    }}
-                                >
-                                    {/* Badges */}
-                                    {isSoldOut && (
-                                        <Box sx={{ position: 'absolute', top: 16, left: 16, zIndex: 1, bgcolor: 'error', color: 'on-error', textTransform: 'uppercase', fontWeight: 900, fontSize: '0.625rem', px: 1.25, py: 0.5, borderRadius: 'full', letterSpacing: '0.05em' }}>
-                                            Agotado
-                                        </Box>
-                                    )}
-                                    {!isSoldOut && product.promo_price && (
-                                        <Box sx={{ position: 'absolute', top: 16, left: 16, zIndex: 1, bgcolor: 'tertiary-container', color: 'on-tertiary-container', textTransform: 'uppercase', fontWeight: 900, fontSize: '0.625rem', px: 1.25, py: 0.5, borderRadius: 'full', letterSpacing: '0.05em' }}>
-                                            Oferta
-                                        </Box>
-                                    )}
-                                    {hasToppingsConfig && !isSoldOut && !product.promo_price && (
-                                        <Box sx={{ position: 'absolute', top: 16, left: 16, zIndex: 1, bgcolor: 'tertiary-container', color: 'on-tertiary-container', textTransform: 'uppercase', fontWeight: 900, fontSize: '0.625rem', px: 1.25, py: 0.5, borderRadius: 'full', letterSpacing: '0.05em' }}>
-                                            Personalizable
-                                        </Box>
-                                    )}
+                                    return (
+                                        <Box
+                                            key={product.id}
+                                            sx={{
+                                                position: 'relative',
+                                                bgcolor: 'background.paper',
+                                                borderRadius: 2,
+                                                border: '1px solid',
+                                                borderColor: 'outline-variant',
+                                                overflow: 'hidden',
+                                                display: 'flex',
+                                                flexDirection: 'column',
+                                                transition: 'box-shadow 0.3s ease',
+                                                opacity: isSoldOut ? 0.6 : 1,
+                                                '&:hover': { boxShadow: '0 4px 12px rgba(0,0,0,0.08)' },
+                                            }}
+                                        >
+                                            {/* Badges */}
+                                            {isSoldOut && (
+                                                <Box sx={{ position: 'absolute', top: 16, left: 16, zIndex: 1, bgcolor: 'error', color: 'on-error', textTransform: 'uppercase', fontWeight: 900, fontSize: '0.625rem', px: 1.25, py: 0.5, borderRadius: 'full', letterSpacing: '0.05em' }}>
+                                                    Agotado
+                                                </Box>
+                                            )}
+                                            {!isSoldOut && product.promo_price && (
+                                                <Box sx={{ position: 'absolute', top: 16, left: 16, zIndex: 1, bgcolor: 'tertiary-container', color: 'on-tertiary-container', textTransform: 'uppercase', fontWeight: 900, fontSize: '0.625rem', px: 1.25, py: 0.5, borderRadius: 'full', letterSpacing: '0.05em' }}>
+                                                    Oferta
+                                                </Box>
+                                            )}
+                                            {hasToppingsConfig && !isSoldOut && !product.promo_price && (
+                                                <Box sx={{ position: 'absolute', top: 16, left: 16, zIndex: 1, bgcolor: 'tertiary-container', color: 'on-tertiary-container', textTransform: 'uppercase', fontWeight: 900, fontSize: '0.625rem', px: 1.25, py: 0.5, borderRadius: 'full', letterSpacing: '0.05em' }}>
+                                                    Personalizable
+                                                </Box>
+                                            )}
 
-                                    {/* Favorite button */}
-                                    <IconButton
-                                        onClick={(e) => toggleFavorite(product.id, e)}
-                                        sx={{
-                                            position: 'absolute',
-                                            top: 12,
-                                            right: 12,
-                                            zIndex: 3,
-                                            color: favorites.includes(product.id) ? 'error.main' : 'on-surface-variant',
-                                            bgcolor: 'rgba(255,255,255,0.8)',
-                                            backdropFilter: 'blur(8px)',
-                                            width: 36,
-                                            height: 36,
-                                            '&:hover': { bgcolor: 'rgba(255,255,255,0.9)' },
-                                        }}
-                                        size="small"
-                                    >
-                                        {favorites.includes(product.id) ? <FavoriteIcon sx={{ fontSize: 20 }} /> : <FavoriteBorderIcon sx={{ fontSize: 20 }} />}
-                                    </IconButton>
-
-                                    {/* Image */}
-                                    <Box sx={{
-                                        height: { xs: 180, md: 224 },
-                                        bgcolor: 'surface-container-low',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        filter: isSoldOut ? 'grayscale(100%)' : 'none',
-                                        overflow: 'hidden',
-                                    }}>
-                                        {product.image_url ? (
-                                            <Box
-                                                component="img"
-                                                src={product.image_url}
-                                                alt={product.name}
-                                                className="product-img"
+                                            {/* Favorite button */}
+                                            <IconButton
+                                                onClick={(e) => toggleFavorite(product.id, e)}
                                                 sx={{
-                                                    width: '100%',
-                                                    height: '100%',
-                                                    objectFit: 'cover',
-                                                    transition: 'transform 0.5s ease',
-                                                    '&:hover': { transform: 'scale(1.05)' },
+                                                    position: 'absolute',
+                                                    top: 12,
+                                                    right: 12,
+                                                    zIndex: 3,
+                                                    color: favorites.includes(product.id) ? 'error.main' : 'on-surface-variant',
+                                                    bgcolor: 'rgba(255,255,255,0.8)',
+                                                    backdropFilter: 'blur(8px)',
+                                                    width: 36,
+                                                    height: 36,
+                                                    '&:hover': { bgcolor: 'rgba(255,255,255,0.9)' },
                                                 }}
-                                            />
-                                        ) : (
-                                            <Box sx={{ fontSize: '2.5rem', color: 'text.disabled' }}>📦</Box>
-                                        )}
-                                    </Box>
-
-                                    {/* Content */}
-                                    <Box sx={{ p: 2.5, display: 'flex', flexDirection: 'column', flex: 1 }}>
-                                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1, gap: 1 }}>
-                                            <Typography
-                                                sx={{
-                                                    fontWeight: 700,
-                                                    fontSize: '1rem',
-                                                    lineHeight: 1.3,
-                                                    color: isSoldOut ? 'text.disabled' : 'on-surface',
-                                                    display: '-webkit-box',
-                                                    WebkitLineClamp: 2,
-                                                    WebkitBoxOrient: 'vertical',
-                                                    overflow: 'hidden',
-                                                    textDecoration: isSoldOut ? 'line-through' : 'none',
-                                                }}
+                                                size="small"
                                             >
-                                                {product.name}
-                                            </Typography>
-                                            <Box sx={{ flexShrink: 0, textAlign: 'right' }}>
-                                                {hasSizes && sizePriceMin ? (
-                                                    <>
-                                                        <Typography sx={{ fontWeight: 700, fontSize: '0.75rem', color: 'text.secondary' }}>
-                                                            Desde
-                                                        </Typography>
-                                                        <Typography sx={{ fontWeight: 700, fontSize: '1rem', color: 'primary.main' }}>
-                                                            ${sizePriceMin.toLocaleString()}
-                                                        </Typography>
-                                                    </>
+                                                {favorites.includes(product.id) ? <FavoriteIcon sx={{ fontSize: 20 }} /> : <FavoriteBorderIcon sx={{ fontSize: 20 }} />}
+                                            </IconButton>
+
+                                            {/* Image */}
+                                            <Box sx={{
+                                                height: { xs: 180, md: 224 },
+                                                bgcolor: 'surface-container-low',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                filter: isSoldOut ? 'grayscale(100%)' : 'none',
+                                                overflow: 'hidden',
+                                            }}>
+                                                {product.image_url ? (
+                                                    <Box
+                                                        component="img"
+                                                        src={product.image_url}
+                                                        alt={product.name}
+                                                        className="product-img"
+                                                        sx={{
+                                                            width: '100%',
+                                                            height: '100%',
+                                                            objectFit: 'cover',
+                                                            transition: 'transform 0.5s ease',
+                                                            '&:hover': { transform: 'scale(1.05)' },
+                                                        }}
+                                                    />
                                                 ) : (
-                                                    <Typography sx={{ fontWeight: 700, fontSize: '1rem', color: 'primary.main' }}>
-                                                        ${(product.promo_price || product.price).toLocaleString()}
-                                                    </Typography>
+                                                    <Box sx={{ fontSize: '2.5rem', color: 'text.disabled' }}>📦</Box>
                                                 )}
                                             </Box>
-                                        </Box>
 
-                                        {product.promo_price && (
-                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, mb: 0.5 }}>
-                                                <Typography variant="caption" sx={{ textDecoration: 'line-through', color: 'on-surface-variant', fontSize: '0.75rem' }}>
-                                                    ${product.price.toLocaleString()}
-                                                </Typography>
-                                                <Typography variant="caption" sx={{ fontWeight: 700, fontSize: '0.6875rem', color: 'tertiary' }}>
-                                                    -{discount}%
-                                                </Typography>
-                                            </Box>
-                                        )}
+                                            {/* Content */}
+                                            <Box sx={{ p: 2.5, display: 'flex', flexDirection: 'column', flex: 1 }}>
+                                                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1, gap: 1 }}>
+                                                    <Typography
+                                                        sx={{
+                                                            fontWeight: 700,
+                                                            fontSize: '1rem',
+                                                            lineHeight: 1.3,
+                                                            color: isSoldOut ? 'text.disabled' : 'on-surface',
+                                                            display: '-webkit-box',
+                                                            WebkitLineClamp: 2,
+                                                            WebkitBoxOrient: 'vertical',
+                                                            overflow: 'hidden',
+                                                            textDecoration: isSoldOut ? 'line-through' : 'none',
+                                                        }}
+                                                    >
+                                                        {product.name}
+                                                    </Typography>
+                                                    <Box sx={{ flexShrink: 0, textAlign: 'right' }}>
+                                                        {hasSizes && sizePriceMin ? (
+                                                            <>
+                                                                <Typography sx={{ fontWeight: 700, fontSize: '0.75rem', color: 'text.secondary' }}>
+                                                                    Desde
+                                                                </Typography>
+                                                                <Typography sx={{ fontWeight: 700, fontSize: '1rem', color: 'primary.main' }}>
+                                                                    ${sizePriceMin.toLocaleString()}
+                                                                </Typography>
+                                                            </>
+                                                        ) : (
+                                                            <Typography sx={{ fontWeight: 700, fontSize: '1rem', color: 'primary.main' }}>
+                                                                ${(product.promo_price || product.price).toLocaleString()}
+                                                            </Typography>
+                                                        )}
+                                                    </Box>
+                                                </Box>
 
-                                        {product.description && (
-                                            <Typography variant="caption" sx={{ color: 'on-surface-variant', fontSize: '0.8125rem', lineHeight: 1.5, mb: 1.5, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-                                                {product.description}
-                                            </Typography>
-                                        )}
-
-                                        {hasSizes && (
-                                            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75, mb: 1.5, alignItems: 'center' }}>
-                                                {Object.entries(parseSizes(product.sizes, product.stock) || {}).filter(([k]) => !!k).map(([sizeKey, sizeVal]) => {
-                                                    if (sizeVal.type === 'color' && sizeVal.color) {
-                                                        return (
-                                                            <Tooltip key={sizeKey} title={sizeKey} arrow>
-                                                                <Box sx={{
-                                                                    width: 14,
-                                                                    height: 14,
-                                                                    borderRadius: '50%',
-                                                                    bgcolor: sizeVal.color,
-                                                                    border: '1px solid rgba(0,0,0,0.15)',
-                                                                    boxShadow: '0 1px 2px rgba(0,0,0,0.1)'
-                                                                }} />
-                                                            </Tooltip>
-                                                        )
-                                                    }
-                                                    return (
-                                                        <Typography key={sizeKey} variant="caption" sx={{ 
-                                                            color: 'on-surface-variant', 
-                                                            fontWeight: 700, 
-                                                            fontSize: '0.6875rem',
-                                                            bgcolor: 'surface-container-high',
-                                                            px: 0.8,
-                                                            py: 0.3,
-                                                            borderRadius: 1
-                                                        }}>
-                                                            {sizeKey}
+                                                {product.promo_price && (
+                                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, mb: 0.5 }}>
+                                                        <Typography variant="caption" sx={{ textDecoration: 'line-through', color: 'on-surface-variant', fontSize: '0.75rem' }}>
+                                                            ${product.price.toLocaleString()}
                                                         </Typography>
-                                                    )
-                                                })}
+                                                        <Typography variant="caption" sx={{ fontWeight: 700, fontSize: '0.6875rem', color: 'tertiary' }}>
+                                                            -{discount}%
+                                                        </Typography>
+                                                    </Box>
+                                                )}
+
+                                                {product.description && (
+                                                    <Typography variant="caption" sx={{ color: 'on-surface-variant', fontSize: '0.8125rem', lineHeight: 1.5, mb: 1.5, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                                                        {product.description}
+                                                    </Typography>
+                                                )}
+
+                                                {hasSizes && (
+                                                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75, mb: 1.5, alignItems: 'center' }}>
+                                                        {Object.entries(parseSizes(product.sizes, product.stock) || {}).filter(([k]) => !!k).map(([sizeKey, sizeVal]) => {
+                                                            if (sizeVal.type === 'color' && sizeVal.color) {
+                                                                return (
+                                                                    <Tooltip key={sizeKey} title={sizeKey} arrow>
+                                                                        <Box sx={{
+                                                                            width: 14,
+                                                                            height: 14,
+                                                                            borderRadius: '50%',
+                                                                            bgcolor: sizeVal.color,
+                                                                            border: '1px solid rgba(0,0,0,0.15)',
+                                                                            boxShadow: '0 1px 2px rgba(0,0,0,0.1)'
+                                                                        }} />
+                                                                    </Tooltip>
+                                                                )
+                                                            }
+                                                            return (
+                                                                <Typography key={sizeKey} variant="caption" sx={{
+                                                                    color: 'on-surface-variant',
+                                                                    fontWeight: 700,
+                                                                    fontSize: '0.6875rem',
+                                                                    bgcolor: 'surface-container-high',
+                                                                    px: 0.8,
+                                                                    py: 0.3,
+                                                                    borderRadius: 1
+                                                                }}>
+                                                                    {sizeKey}
+                                                                </Typography>
+                                                            )
+                                                        })}
+                                                    </Box>
+                                                )}
+
+                                                {managesStock && (
+                                                    <Typography variant="caption" sx={{ color: isSoldOut ? 'error.main' : 'on-surface-variant', fontWeight: 500, fontSize: '0.75rem', mb: 1.5 }}>
+                                                        {isSoldOut ? 'Agotado' : `Stock: ${product.stock} u.`}
+                                                    </Typography>
+                                                )}
+
+                                                {/* Add to cart button */}
+                                                <Box sx={{ mt: 'auto' }}>
+                                                    {isSoldOut ? (
+                                                        <Button variant="contained" disabled fullWidth sx={{ textTransform: 'none', fontWeight: 700, borderRadius: 2, py: 1.5, fontSize: '0.875rem' }}>
+                                                            Sin Stock
+                                                        </Button>
+                                                    ) : (
+                                                        <Button
+                                                            fullWidth
+                                                            onClick={(e) => { e.stopPropagation(); addToCart(product); }}
+                                                            startIcon={<ShoppingCartIcon sx={{ fontSize: '20px !important' }} />}
+                                                            sx={{
+                                                                textTransform: 'none',
+                                                                fontWeight: 700,
+                                                                borderRadius: 2,
+                                                                py: 1.5,
+                                                                fontSize: '0.875rem',
+                                                                bgcolor: 'primary-container',
+                                                                color: 'on-primary-container',
+                                                                '&:hover': { bgcolor: 'primary.main', color: 'on-primary' },
+                                                                transition: 'all 0.2s ease',
+                                                            }}
+                                                        >
+                                                            {isRestaurant ? 'Ordenar' : 'Añadir al carrito'}
+                                                        </Button>
+                                                    )}
+                                                </Box>
                                             </Box>
-                                        )}
-
-                                        {managesStock && (
-                                            <Typography variant="caption" sx={{ color: isSoldOut ? 'error.main' : 'on-surface-variant', fontWeight: 500, fontSize: '0.75rem', mb: 1.5 }}>
-                                                {isSoldOut ? 'Agotado' : `Stock: ${product.stock} u.`}
-                                            </Typography>
-                                        )}
-
-                                        {/* Add to cart button */}
-                                        <Box sx={{ mt: 'auto' }}>
-                                            {isSoldOut ? (
-                                                <Button variant="contained" disabled fullWidth sx={{ textTransform: 'none', fontWeight: 700, borderRadius: 2, py: 1.5, fontSize: '0.875rem' }}>
-                                                    Sin Stock
-                                                </Button>
-                                            ) : (
-                                                <Button
-                                                    fullWidth
-                                                    onClick={(e) => { e.stopPropagation(); addToCart(product); }}
-                                                    startIcon={<ShoppingCartIcon sx={{ fontSize: '20px !important' }} />}
-                                                    sx={{
-                                                        textTransform: 'none',
-                                                        fontWeight: 700,
-                                                        borderRadius: 2,
-                                                        py: 1.5,
-                                                        fontSize: '0.875rem',
-                                                        bgcolor: 'primary-container',
-                                                        color: 'on-primary-container',
-                                                        '&:hover': { bgcolor: 'primary.main', color: 'on-primary' },
-                                                        transition: 'all 0.2s ease',
-                                                    }}
-                                                >
-                                                    {isRestaurant ? 'Ordenar' : 'Añadir al carrito'}
-                                                </Button>
-                                            )}
                                         </Box>
-                                    </Box>
-                                </Box>
-                            )
-                        })}
+                                    )
+                                })}
 
-                            {filteredProducts.length === 0 && (
-                                <Box sx={{ textAlign: 'center', py: 7, px: 2.5, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1.5 }}>
-                                    <Box sx={{ fontSize: '3rem', color: 'text.disabled' }}>🔍</Box>
-                                    <Typography variant="h6" sx={{ fontWeight: 700, color: 'on-surface' }}>No se encontraron productos</Typography>
-                                    <Typography variant="body2" color="on-surface-variant" sx={{ maxWidth: 340 }}>
-                                        Prueba cambiando de categoría, buscando otros términos o desactivando los filtros activos.
-                                    </Typography>
-                                    {hasActiveFilters && (
-                                        <Button variant="outlined" onClick={clearFilters} sx={{ mt: 1, borderRadius: 2, textTransform: 'none', fontWeight: 600 }}>
-                                            Restablecer Búsqueda
-                                        </Button>
-                                    )}
-                                </Box>
-                            )}
+                                {filteredProducts.length === 0 && (
+                                    <Box sx={{ textAlign: 'center', py: 7, px: 2.5, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1.5 }}>
+                                        <Box sx={{ fontSize: '3rem', color: 'text.disabled' }}>🔍</Box>
+                                        <Typography variant="h6" sx={{ fontWeight: 700, color: 'on-surface' }}>No se encontraron productos</Typography>
+                                        <Typography variant="body2" color="on-surface-variant" sx={{ maxWidth: 340 }}>
+                                            Prueba cambiando de categoría, buscando otros términos o desactivando los filtros activos.
+                                        </Typography>
+                                        {hasActiveFilters && (
+                                            <Button variant="outlined" onClick={clearFilters} sx={{ mt: 1, borderRadius: 2, textTransform: 'none', fontWeight: 600 }}>
+                                                Restablecer Búsqueda
+                                            </Button>
+                                        )}
+                                    </Box>
+                                )}
                             </Box>
                         </Box>
 

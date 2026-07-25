@@ -46,8 +46,11 @@ def get_store_by_slug(slug):
         return jsonify({'error': 'Tienda no encontrada'}), 404
     categories = CategoryService.get_categories_by_store(store['id'])
     products = ProductService.get_products_by_store(store['id'])
+    from app.services.combo_service import ComboService
+    combos = ComboService.get_combos_by_store(store['id'], only_active=True)
     store['categories'] = categories
     store['products'] = products
+    store['combos'] = combos
     return jsonify(store), 200
 
 @store_bp.route('', methods=['POST'])

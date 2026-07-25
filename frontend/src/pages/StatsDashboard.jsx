@@ -19,7 +19,7 @@ import WarningIcon from '@mui/icons-material/Warning'
 import CheckCircleIcon from '@mui/icons-material/CheckCircle'
 import DeliveryDiningIcon from '@mui/icons-material/DeliveryDining'
 import StorefrontIcon from '@mui/icons-material/Storefront'
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts'
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, BarChart, Bar, PieChart, Pie, Cell } from 'recharts'
 
 const catColors = ['#004ac6', '#10b981', '#f59e0b', '#ef4444', '#2563eb', '#ec4899', '#06b6d4', '#84cc16']
 
@@ -59,6 +59,7 @@ function StatsDashboard({ user, onLogout }) {
     const [categories, setCategories] = useState([])
     const [products, setProducts] = useState([])
     const [orders, setOrders] = useState([])
+    const [metrics, setMetrics] = useState(null)
     const [loading, setLoading] = useState(true)
     const [salesRange, setSalesRange] = useState(30)
     const toast = useToast()
@@ -71,11 +72,13 @@ function StatsDashboard({ user, onLogout }) {
         try {
             const token = localStorage.getItem('token')
             const headers = { 'Authorization': `Bearer ${token}` }
+            const storeId = user?.storeId || user?.store_id
 
-            const [categoriesRes, productsRes, ordersRes] = await Promise.all([
+            const [categoriesRes, productsRes, ordersRes, metricsRes] = await Promise.all([
                 fetch('/api/categories', { headers }),
                 fetch('/api/products', { headers }),
-                fetch('/api/orders', { headers })
+                fetch('/api/orders', { headers }),
+                storeId ? fetch(`/api/metrics/dashboard/${storeId}`, { headers }) : Promise.resolve({ ok: false })
             ])
 
             if (categoriesRes.ok) {
@@ -86,6 +89,9 @@ function StatsDashboard({ user, onLogout }) {
             }
             if (ordersRes.ok) {
                 setOrders(await ordersRes.json())
+            }
+            if (metricsRes.ok) {
+                setMetrics(await metricsRes.json())
             }
         } catch (error) {
             toast.error('Error al cargar estadísticas')
@@ -613,6 +619,192 @@ function StatsDashboard({ user, onLogout }) {
                                             </Typography>
                                         </Box>
                                     )}
+                                </CardContent>
+                            </Card>
+                        )}
+
+                        {/* ── Rentabilidad: Ingresos vs Costos ── */}
+                        {metrics && metrics.profit_summary && (
+                            <Card sx={{
+                                animation: 'fade-in-up 0.5s ease 0.5s both',
+                                border: `1px solid ${isDark ? 'rgba(180,197,255,0.1)' : 'rgba(0,74,198,0.08)'}`,
+                                position: 'relative', overflow: 'visible',
+                                '&::before': {
+                                    content: '""', position: 'absolute', top: 0, left: 0, right: 0,
+                                    height: '3px', borderRadius: '16px 16px 0 0',
+                                    background: 'linear-gradient(90deg, #10b981, #f59e0b)',
+                                },
+                            }}>
+                                <CardContent sx={{ p: '16px !important', '&:last-child': { pb: '16px !important' } }}>
+                                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2, flexWrap: 'wrap', gap: 1 }}>
+                                        <Box>
+                                            <Typography sx={{ fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'text.secondary', mb: 0.5 }}>
+                                                Rentabilidad del mes
+                                            </Typography>
+                                            <Typography sx={{ fontSize: '0.95rem', fontWeight: 700, color: 'text.primary' }}>
+                                                Ingresos vs Costos
+                                            </Typography>
+                                        </Box>
+                                        <Chip
+                                            label={`Margen: ${metrics.profit_summary.margin?.toFixed(1) || 0}%`}
+                                            size="small"
+                                            sx={{
+                                                fontWeight: 700,
+                                                fontSize: '0.6875rem',
+                                                bgcolor: (metrics.profit_summary.margin || 0) >= 0 ? 'rgba(16,185,129,0.12)' : 'rgba(239,68,68,0.12)',
+                                                color: (metrics.profit_summary.margin || 0) >= 0 ? '#10b981' : '#ef4444',
+                                            }}
+                                        />
+                                    </Box>
+
+                                    <Box sx={{ display: 'flex', gap: 1, mb: 2, flexWrap: 'wrap' }}>
+                                        <Box sx={{ flex: 1, minWidth: 120, p: 1.5, borderRadius: 2, bgcolor: isDark ? 'rgba(16,185,129,0.08)' : 'rgba(16,185,129,0.04)', border: '1px solid', borderColor: isDark ? 'rgba(16,185,129,0.15)' : 'rgba(16,185,129,0.1)' }}>
+                                            <Typography sx={{ fontSize: '0.65rem', fontWeight: 600, color: 'text.secondary', mb: 0.5 }}>Ingresos</Typography>
+                                            <Typography sx={{ fontSize: '1.1rem', fontWeight: 800, color: '#10b981' }}>
+                                                ${(metrics.profit_summary.revenue || 0).toLocaleString()}
+                                            </Typography>
+                                        </Box>
+                                        <Box sx={{ flex: 1, minWidth: 120, p: 1.5, borderRadius: 2, bgcolor: isDark ? 'rgba(239,68,68,0.08)' : 'rgba(239,68,68,0.04)', border: '1px solid', borderColor: isDark ? 'rgba(239,68,68,0.15)' : 'rgba(239,68,68,0.1)' }}>
+                                            <Typography sx={{ fontSize: '0.65rem', fontWeight: 600, color: 'text.secondary', mb: 0.5 }}>Costos</Typography>
+                                            <Typography sx={{ fontSize: '1.1rem', fontWeight: 800, color: '#ef4444' }}>
+                                                ${(metrics.profit_summary.cost || 0).toLocaleString()}
+                                            </Typography>
+                                        </Box>
+                                        <Box sx={{ flex: 1, minWidth: 120, p: 1.5, borderRadius: 2, bgcolor: isDark ? 'rgba(0,74,198,0.08)' : 'rgba(0,74,198,0.04)', border: '1px solid', borderColor: isDark ? 'rgba(0,74,198,0.15)' : 'rgba(0,74,198,0.1)' }}>
+                                            <Typography sx={{ fontSize: '0.65rem', fontWeight: 600, color: 'text.secondary', mb: 0.5 }}>Ganancia</Typography>
+                                            <Typography sx={{ fontSize: '1.1rem', fontWeight: 800, color: '#004ac6' }}>
+                                                ${(metrics.profit_summary.gross_profit || 0).toLocaleString()}
+                                            </Typography>
+                                        </Box>
+                                    </Box>
+
+                                    {metrics.profit_summary.by_day && metrics.profit_summary.by_day.length > 0 && (
+                                        <Box sx={{ width: '100%', height: 250 }}>
+                                            <ResponsiveContainer width="100%" height="100%">
+                                                <BarChart data={metrics.profit_summary.by_day} margin={{ top: 5, right: 5, left: -10, bottom: 0 }}>
+                                                    <CartesianGrid strokeDasharray="3 3" stroke={isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'} vertical={false} />
+                                                    <XAxis
+                                                        dataKey="date"
+                                                        tick={{ fontSize: 11, fill: isDark ? 'rgba(255,255,255,0.45)' : 'rgba(0,0,0,0.4)' }}
+                                                        tickLine={false}
+                                                        axisLine={false}
+                                                        tickFormatter={v => {
+                                                            const [, m, d] = v.split('-')
+                                                            return `${d}/${m}`
+                                                        }}
+                                                    />
+                                                    <YAxis
+                                                        tick={{ fontSize: 11, fill: isDark ? 'rgba(255,255,255,0.45)' : 'rgba(0,0,0,0.4)' }}
+                                                        tickLine={false}
+                                                        axisLine={false}
+                                                        tickFormatter={v => `$${v >= 1000 ? `${(v / 1000).toFixed(0)}k` : v}`}
+                                                    />
+                                                    <Tooltip
+                                                        contentStyle={{
+                                                            backgroundColor: isDark ? '#1e1e2e' : '#ffffff',
+                                                            border: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)'}`,
+                                                            borderRadius: 8,
+                                                            fontSize: 12,
+                                                            boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                                                        }}
+                                                        formatter={(value) => [`$${value.toLocaleString()}`, 'Ingresos']}
+                                                    />
+                                                    <Bar dataKey="revenue" fill="#10b981" radius={[3, 3, 0, 0]} />
+                                                </BarChart>
+                                            </ResponsiveContainer>
+                                        </Box>
+                                    )}
+                                </CardContent>
+                            </Card>
+                        )}
+
+                        {/* ── Top Productos más vendidos ── */}
+                        {metrics && metrics.top_products && metrics.top_products.length > 0 && (
+                            <Card sx={{
+                                animation: 'fade-in-up 0.5s ease 0.6s both',
+                                border: `1px solid ${isDark ? 'rgba(180,197,255,0.1)' : 'rgba(0,74,198,0.08)'}`,
+                                position: 'relative', overflow: 'visible',
+                                '&::before': {
+                                    content: '""', position: 'absolute', top: 0, left: 0, right: 0,
+                                    height: '3px', borderRadius: '16px 16px 0 0',
+                                    background: 'linear-gradient(90deg, #f59e0b, #ef4444)',
+                                },
+                            }}>
+                                <CardContent sx={{ p: '16px !important', '&:last-child': { pb: '16px !important' } }}>
+                                    <Typography sx={{ fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'text.secondary', mb: 1.5 }}>
+                                        Top 10 productos más vendidos
+                                    </Typography>
+                                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                                        {metrics.top_products.slice(0, 10).map((p, i) => {
+                                            const maxUnits = Math.max(...metrics.top_products.map(pp => pp.units_sold), 1)
+                                            const pct = (p.units_sold / maxUnits) * 100
+                                            const color = catColors[i % catColors.length]
+                                            return (
+                                                <Box key={p.product_id} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                                    <Typography sx={{ fontSize: '0.7rem', fontWeight: 800, color: i < 3 ? '#f59e0b' : 'text.disabled', width: 16, textAlign: 'center', flexShrink: 0 }}>
+                                                        {i + 1}
+                                                    </Typography>
+                                                    <Typography sx={{ fontSize: '0.72rem', fontWeight: 600, color: 'text.secondary', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                                        {p.name}
+                                                    </Typography>
+                                                    <Box sx={{ width: 70, height: 8, borderRadius: 4, background: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)', overflow: 'hidden', flexShrink: 0 }}>
+                                                        <Box sx={{
+                                                            height: '100%', borderRadius: 4, width: `${pct}%`,
+                                                            background: `linear-gradient(90deg, ${color}, ${color}88)`,
+                                                        }} />
+                                                    </Box>
+                                                    <Typography sx={{ fontSize: '0.7rem', fontWeight: 700, fontFamily: '"Inter", "Helvetica", "Arial", sans-serif', color: 'text.secondary', minWidth: 52, textAlign: 'right' }}>
+                                                        {p.units_sold} uds
+                                                    </Typography>
+                                                </Box>
+                                            )
+                                        })}
+                                    </Box>
+                                </CardContent>
+                            </Card>
+                        )}
+
+                        {/* ── Alertas de Stock Bajo ── */}
+                        {metrics && metrics.low_stock_alerts && metrics.low_stock_alerts.length > 0 && (
+                            <Card sx={{
+                                animation: 'fade-in-up 0.5s ease 0.7s both',
+                                border: `1px solid ${isDark ? 'rgba(239,68,68,0.15)' : 'rgba(239,68,68,0.1)'}`,
+                                position: 'relative', overflow: 'visible',
+                                '&::before': {
+                                    content: '""', position: 'absolute', top: 0, left: 0, right: 0,
+                                    height: '3px', borderRadius: '16px 16px 0 0',
+                                    background: 'linear-gradient(90deg, #f59e0b, #ef4444)',
+                                },
+                            }}>
+                                <CardContent sx={{ p: '16px !important', '&:last-child': { pb: '16px !important' } }}>
+                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
+                                        <WarningIcon sx={{ fontSize: 18, color: '#f59e0b' }} />
+                                        <Typography sx={{ fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'text.secondary' }}>
+                                            Alertas de Stock Bajo
+                                        </Typography>
+                                        <Chip label={metrics.low_stock_alerts.length} size="small" sx={{ fontWeight: 700, fontSize: '0.65rem', bgcolor: 'rgba(239,68,68,0.12)', color: '#ef4444' }} />
+                                    </Box>
+                                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                                        {metrics.low_stock_alerts.slice(0, 8).map((product, i) => (
+                                            <Box key={product.id} sx={{ display: 'flex', alignItems: 'center', gap: 1, p: 1, borderRadius: 1, bgcolor: isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.01)' }}>
+                                                <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: product.stock <= 0 ? '#ef4444' : '#f59e0b', flexShrink: 0 }} />
+                                                <Typography sx={{ fontSize: '0.72rem', fontWeight: 600, color: 'text.secondary', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                                    {product.name}
+                                                </Typography>
+                                                <Chip
+                                                    label={product.stock <= 0 ? 'Agotado' : `${product.stock} uds`}
+                                                    size="small"
+                                                    sx={{
+                                                        height: 20,
+                                                        fontSize: '0.6rem',
+                                                        fontWeight: 700,
+                                                        bgcolor: product.stock <= 0 ? 'rgba(239,68,68,0.12)' : 'rgba(245,158,11,0.12)',
+                                                        color: product.stock <= 0 ? '#ef4444' : '#f59e0b',
+                                                    }}
+                                                />
+                                            </Box>
+                                        ))}
+                                    </Box>
                                 </CardContent>
                             </Card>
                         )}

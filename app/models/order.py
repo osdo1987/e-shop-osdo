@@ -48,6 +48,7 @@ class OrderItem(db.Model):
     selected_size = db.Column(db.String(50), nullable=True)
     selected_toppings = db.Column(db.Text, nullable=True)
     extra_price = db.Column(db.Float, nullable=False, default=0)
+    purchase_price_at_sale = db.Column(db.Float, nullable=True)  # COGS: costo al momento de la venta
     
     product = db.relationship('Product')
 
