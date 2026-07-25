@@ -616,15 +616,8 @@ function Catalog() {
 
     const isRestaurant = store?.business_type === 'restaurant'
 
-    const filterDrawerContent = (
+    const filterContent = (
         <Box sx={{ p: 2.5, width: 300 }}>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-                <Typography variant="h6" sx={{ fontWeight: 700 }}>Filtros</Typography>
-                <IconButton size="small" onClick={() => setSidebarOpen(false)}>
-                    <CloseIcon fontSize="small" />
-                </IconButton>
-            </Box>
-
             <Box sx={{ mb: 3 }}>
                 <Typography variant="caption" sx={{ fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'on-surface-variant', display: 'block', mb: 1.5, fontSize: '0.75rem' }}>
                     Categoría
@@ -857,7 +850,7 @@ function Catalog() {
                         <Button
                             size="small"
                             onClick={() => setSidebarOpen(true)}
-                            sx={{ textTransform: 'none', color: 'primary.main', fontWeight: 600, fontSize: '0.875rem' }}
+                            sx={{ display: { lg: 'none' }, textTransform: 'none', color: 'primary.main', fontWeight: 600, fontSize: '0.875rem' }}
                         >
                             Filtrar
                         </Button>
@@ -903,19 +896,26 @@ function Catalog() {
 
                 {/* Product Grid Section */}
                 <Box sx={{ px: { xs: 2, md: 3 }, pb: 4 }}>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-                        <Typography sx={{ fontWeight: 700, fontSize: '1.125rem', color: 'on-surface' }}>{filteredProducts.length} productos</Typography>
-                    </Box>
+                    <Box sx={{ display: 'flex', gap: 3, alignItems: 'flex-start' }}>
+                        {/* Filter Sidebar (desktop) */}
+                        <Box sx={{ display: { xs: 'none', lg: 'block' }, width: 300, flexShrink: 0, position: 'sticky', top: 24, alignSelf: 'flex-start' }}>
+                            {filterContent}
+                        </Box>
+                        <Box sx={{ flex: 1, minWidth: 0 }}>
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+                                <Typography sx={{ fontWeight: 700, fontSize: '1.125rem', color: 'on-surface' }}>{filteredProducts.length} productos</Typography>
+                            </Box>
 
-                    <Box id="product-grid" sx={{
-                        display: 'grid',
-                        gridTemplateColumns: {
-                            xs: '1fr',
-                            md: 'repeat(2, 1fr)',
-                            lg: 'repeat(3, 1fr)',
-                        },
-                        gap: 3,
-                    }}>
+                            <Box id="product-grid" sx={{
+                                display: 'grid',
+                                gridTemplateColumns: {
+                                    xs: '1fr',
+                                    sm: 'repeat(2, 1fr)',
+                                    md: 'repeat(3, 1fr)',
+                                    lg: 'repeat(4, 1fr)',
+                                },
+                                gap: 3,
+                            }}>
                         {filteredProducts.map(product => {
                             const discount = product.promo_price ? Math.round(((product.price - product.promo_price) / product.price) * 100) : null
                             const managesStock = product.manage_stock !== false
@@ -1139,22 +1139,25 @@ function Catalog() {
                                 </Box>
                             )
                         })}
-                    </Box>
 
-                    {filteredProducts.length === 0 && (
-                        <Box sx={{ textAlign: 'center', py: 7, px: 2.5, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1.5 }}>
-                            <Box sx={{ fontSize: '3rem', color: 'text.disabled' }}>🔍</Box>
-                            <Typography variant="h6" sx={{ fontWeight: 700, color: 'on-surface' }}>No se encontraron productos</Typography>
-                            <Typography variant="body2" color="on-surface-variant" sx={{ maxWidth: 340 }}>
-                                Prueba cambiando de categoría, buscando otros términos o desactivando los filtros activos.
-                            </Typography>
-                            {hasActiveFilters && (
-                                <Button variant="outlined" onClick={clearFilters} sx={{ mt: 1, borderRadius: 2, textTransform: 'none', fontWeight: 600 }}>
-                                    Restablecer Búsqueda
-                                </Button>
+                            {filteredProducts.length === 0 && (
+                                <Box sx={{ textAlign: 'center', py: 7, px: 2.5, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1.5 }}>
+                                    <Box sx={{ fontSize: '3rem', color: 'text.disabled' }}>🔍</Box>
+                                    <Typography variant="h6" sx={{ fontWeight: 700, color: 'on-surface' }}>No se encontraron productos</Typography>
+                                    <Typography variant="body2" color="on-surface-variant" sx={{ maxWidth: 340 }}>
+                                        Prueba cambiando de categoría, buscando otros términos o desactivando los filtros activos.
+                                    </Typography>
+                                    {hasActiveFilters && (
+                                        <Button variant="outlined" onClick={clearFilters} sx={{ mt: 1, borderRadius: 2, textTransform: 'none', fontWeight: 600 }}>
+                                            Restablecer Búsqueda
+                                        </Button>
+                                    )}
+                                </Box>
                             )}
+                            </Box>
                         </Box>
-                    )}
+
+                    </Box>
                 </Box>
             </Box>
 
@@ -1285,7 +1288,13 @@ function Catalog() {
                 onClose={() => setSidebarOpen(false)}
                 slotProps={{ paper: { sx: { width: 300, bgcolor: 'background.paper' } } }}
             >
-                {filterDrawerContent}
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2, p: 2.5, pb: 0 }}>
+                    <Typography variant="h6" sx={{ fontWeight: 700 }}>Filtros</Typography>
+                    <IconButton size="small" onClick={() => setSidebarOpen(false)}>
+                        <CloseIcon fontSize="small" />
+                    </IconButton>
+                </Box>
+                {filterContent}
             </Drawer>
 
             {/* Cart Drawer */}

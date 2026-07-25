@@ -32,21 +32,6 @@ import ReceiptLongIcon from '@mui/icons-material/ReceiptLong'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 import ReceiptIcon from '@mui/icons-material/Receipt'
 
-const keyframes = `
-  @keyframes fade-in-up {
-    from { opacity: 0; transform: translateY(16px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-  @keyframes icon-bounce {
-    0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.15); }
-  }
-  @keyframes shimmer {
-    0% { background-position: -200% 0; }
-    100% { background-position: 200% 0; }
-  }
-`
-
 function Invoices({ user, onLogout }) {
     const [invoices, setInvoices] = useState([])
     const [loading, setLoading] = useState(true)
@@ -168,7 +153,6 @@ function Invoices({ user, onLogout }) {
 
     return (
         <AdminLayout title="Historial de Facturas" user={user} onLogout={onLogout}>
-            <style>{keyframes}</style>
 
             {/* Page Header */}
             <Box sx={{

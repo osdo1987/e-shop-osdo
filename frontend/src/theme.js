@@ -35,6 +35,33 @@ const commonTheme = {
                     from { opacity: 1; transform: translateX(0) scale(1); }
                     to { opacity: 0; transform: translateX(40px) scale(0.9); }
                 }
+                @keyframes orb-float-1 {
+                    0%, 100% { transform: translate(0px, 0px) scale(1); }
+                    33% { transform: translate(40px, -30px) scale(1.05); }
+                    66% { transform: translate(-30px, 20px) scale(0.95); }
+                }
+                @keyframes orb-float-2 {
+                    0%, 100% { transform: translate(0px, 0px) scale(1); }
+                    33% { transform: translate(-35px, 25px) scale(0.95); }
+                    66% { transform: translate(25px, -20px) scale(1.05); }
+                }
+                @keyframes gradient-rotate {
+                    0% { background-position: 0% 50%; }
+                    50% { background-position: 100% 50%; }
+                    100% { background-position: 0% 50%; }
+                }
+                @keyframes float {
+                    0%, 100% { transform: translateY(0px); }
+                    50% { transform: translateY(-8px); }
+                }
+                @keyframes shimmer {
+                    0% { background-position: -200% center; }
+                    100% { background-position: 200% center; }
+                }
+                @keyframes icon-bounce {
+                    0%, 100% { transform: scale(1); }
+                    50% { transform: scale(1.15); }
+                }
             `,
         },
         MuiButton: {

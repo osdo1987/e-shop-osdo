@@ -40,17 +40,6 @@ import Divider from '@mui/material/Divider'
 import Paper from '@mui/material/Paper'
 import { useTheme, alpha } from '@mui/material/styles'
 
-const keyframes = `
-@keyframes fade-in-up {
-  from { opacity: 0; transform: translateY(12px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-@keyframes icon-bounce {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.15); }
-}
-`
-
 const MONTHS = [
     { value: 1, label: 'Enero' },
     { value: 2, label: 'Febrero' },
@@ -541,8 +530,7 @@ function SuperAdmin({ user, onLogout }) {
 
     return (
         <>
-            <style>{keyframes}</style>
-            <AdminLayout title="Gestión de Tiendas" user={user} onLogout={onLogout} superadmin>
+        <AdminLayout title="Gestión de Tiendas" user={user} onLogout={onLogout} superadmin>
                 <Box sx={{ mb: 3, display: 'flex', justifyContent: 'center' }}>
                     <ToggleButtonGroup
                         value={viewMode}
